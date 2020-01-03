@@ -3,7 +3,8 @@ Import-Module BitsTransfer
 #$url = "https://bit.ly/39EmNKI"
 #$url = "https://bit.ly/36pOxB0"
 #$url = "https://bit.ly/2Qnjznf"
-$url = "https://bit.ly/39ELmXR"
+#$url = "https://bit.ly/39ELmXR"
+$url = "https://bit.ly/2SRNwh8"
 $output = "$env:userprofile\desktop\W08R2Harden.ps1"
 Start-BitsTransfer -Source $url -Destination $output
 . $env:userprofile\desktop\W08R2Harden.ps1
