@@ -22,6 +22,7 @@ $host.UI.RawUI.foregroundcolor = "white"
 
 # --------- downloads relevant tools ---------
 function downloadTools{
+    makeOutDir
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nDownloading relevant tools"
     $downloads = @{
@@ -673,11 +674,23 @@ Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
+# --------- run enumeration functions ---------
+function enumerate{
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "Running enumeration functions"
+    regexNetstat
+    firewallStatus
+    runningServices
+    criticalUpdateCheck
+    readOutput
+    }
+
 # --------- run all critical functions ---------
 function runCritical{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "Running critical functions"
 makeOutDir
+enumerate
 turnOnFirewall
 firewallRules
 disableTeredo
@@ -698,21 +711,11 @@ Write-Host "`nOpening Task Scheduler"
 taskschd.msc
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Manually investigate scheduled tasks"
-enumerate
-Write-Host "Restarting computer. Are you sure?"
+Write-Host "All critical functions are finished. Restart computer?"
 $host.UI.RawUI.foregroundcolor = "white"
 restart-computer -Confirm
 }
-# --------- run enumeration functions ---------
-function enumerate{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "Running enumeration functions"
-regexNetstat
-firewallStatus
-runningServices
-criticalUpdateCheck
-readOutput
-}
+
 # --------- provide list of available functions ---------
 function avail{
 $host.UI.RawUI.foregroundcolor = "green"
@@ -762,7 +765,7 @@ readPasswords
 changePAdmin
 changePBinddn
 setPassPol (enable passwd complexity and length 12)
-uniqueUserPols (enable all users require passwords, enable admin sensitive)
+uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
 -----
 readOutput (provide function output in console)
 avail (display this screen)`n"
