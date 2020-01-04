@@ -1,4 +1,4 @@
-# --------- Self-elevate the script if required ---------
+<# --------- Self-elevate the script if required ---------
 if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
     if ([int](Get-CimInstance -Class Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber) -ge 6000) {
         $CommandLine = "-File `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments
@@ -6,6 +6,7 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
         Exit
     }
 }
+#>
 
 # --------- create output directory on desktop ---------
 function makeOutDir{
@@ -88,7 +89,7 @@ cmd
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
-# --------- enable passwd complexity and length 12 ---------
+# --------- sets script extensions to open notepad ---------
 function setAssToTxt{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAssociating script extensions to open with notepad"
@@ -103,10 +104,10 @@ cmd /c assoc .wsh=txtfile
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
-# --------- disable administrative shares ---------
+# --------- disable administrative shares via registry ---------
 function disableAdminShares{
 $host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nDisabling Administrative Shares via registry"
+Write-Host "`nDisabling administrative shares via registry"
 $host.UI.RawUI.foregroundcolor = "cyan"
 REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /v AutoShareServer /t REG_DWORD /d 0
 Write-Host "Stopping and starting server. Are you sure?"
@@ -115,6 +116,7 @@ cmd /c "net stop server && net start server"
 cmd /c "net start Netlogon && net start dfs"
 }
 
+# --------- disable cached credentials via registry ---------
 function disableCacheCreds{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nDisabling cached credentials via registry"
@@ -123,65 +125,64 @@ REG ADD HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WD
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
-# --------- regex netstat -abno --------- 
-function regexNetstat{
-makeOutDir
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nRunning netstat -abno and formatting"
-$host.UI.RawUI.foregroundcolor = "cyan"
-$netstat = (netstat -abno | Select-Object -skip 2) -join "`n" -split "(?= [TU][CD]P\s+(?:\d+\.|\[\w*:\w*:))" |
-ForEach-Object {$_.trim() -replace "`n",' ' -replace '\s{2,}',',' -replace '\*:\*', '*:*,' -replace 'PID', 'PID,Ownership_Info'} | ConvertFrom-Csv
-#create ESTABLISHED and LISTENING netstat files list with only unique PIDs
-Write-Host "Creating ESTABLISHED netstat list file"
-$netstat_est = $netstat | Where-Object {$_.State -eq 'ESTABLISHED'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
-ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
-$netstat_est = ($netstat_est | Out-String).trim() -replace '(?m)^\s{30}', ''
-$netstat_est | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_est.txt
-Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_est.txt`" has ESTABLISHED netstat"
-Write-Host "Creating LISTENING netstat list file"
-$netstat_lsn = $netstat | Where-Object {$_.State -eq 'LISTENING'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
-ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
-$netstat_lsn = ($netstat_lsn | Out-String).trim() -replace '(?m)^\s{30}', ''
-$netstat_lsn | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt
-Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt`" has LISTENING netstat"
-$host.UI.RawUI.foregroundcolor = "white"
+# --------- format netstat -abno --------- 
+function formatNetstat{
+    makeOutDir
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nRunning netstat -abno and formatting"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    $netstat = (netstat -abno | Select-Object -skip 2) -join "`n" -split "(?= [TU][CD]P\s+(?:\d+\.|\[\w*:\w*:))" |
+    ForEach-Object {$_.trim() -replace "`n",' ' -replace '\s{2,}',',' -replace '\*:\*', '*:*,' -replace 'PID', 'PID,Ownership_Info'} | ConvertFrom-Csv
+    #create ESTABLISHED and LISTENING netstat files list with only unique PIDs
+    Write-Host "Creating ESTABLISHED netstat list file"
+    $netstat_est = $netstat | Where-Object {$_.State -eq 'ESTABLISHED'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
+    ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
+    $netstat_est = ($netstat_est | Out-String).trim() -replace '(?m)^\s{30}', ''
+    $netstat_est | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_est.txt
+    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_est.txt`" has ESTABLISHED netstat"
+    Write-Host "Creating LISTENING netstat list file"
+    $netstat_lsn = $netstat | Where-Object {$_.State -eq 'LISTENING'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
+    ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
+    $netstat_lsn = ($netstat_lsn | Out-String).trim() -replace '(?m)^\s{30}', ''
+    $netstat_lsn | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt
+    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt`" has LISTENING netstat"
+    $host.UI.RawUI.foregroundcolor = "white"
 }
 
 #region --------- extract more info on pid ---------
 function morePIDInfo{
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Displays more info on PID(s)"
-$host.UI.RawUI.foregroundcolor = "magenta"
-$aPID = Read-Host "`nEnter a PID to get its properties"
-Write-Host "Displaying properties of $aPID"
-$host.UI.RawUI.foregroundcolor = "darkgray"
-Get-WMIObject Win32_Process -Filter "processid = '$aPID'" | Select-Object *
-$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Displays more info on PID(s)"
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $aPID = Read-Host "`nEnter a PID to get its properties"
+    Write-Host "Displaying properties of $aPID"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    Get-WMIObject Win32_Process -Filter "processid = '$aPID'" | Select-Object *
+    $host.UI.RawUI.foregroundcolor = "white"
 }
 #endregion
+
 # --------- create list of running services file on desktop ---------
 function runningServices{
-makeOutDir
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nCreating list of running services"
-$host.UI.RawUI.foregroundcolor = "cyan"
-Get-Service | Where-Object {$_.Status -eq "Running"} | Out-File $env:USERPROFILE\desktop\Script_Output\running_services.txt
-#$host.UI.RawUI.foregroundcolor = "darkgray"
-#Get-Content $env:USERPROFILE\desktop\Script_Output\running_services.txt
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "`"$env:USERPROFILE\desktop\Script_Output\running_services.txt`" has list of running services"
-$host.UI.RawUI.foregroundcolor = "white"
+    makeOutDir
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nCreating list of running services"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Get-Service | Where-Object {$_.Status -eq "Running"} | Out-File $env:USERPROFILE\desktop\Script_Output\running_services.txt
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\running_services.txt`" has list of running services"
+    $host.UI.RawUI.foregroundcolor = "white"
 }
 
 function serviceInfo{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "Displays more info on service by name"
-$host.UI.RawUI.foregroundcolor = "magenta"
-$service = Read-Host "`nEnter a service name to get its properties"
-Write-Host "Displaying properties of $service"
-$host.UI.RawUI.foregroundcolor = "darkgray"
-cmd /c sc qdescription $service
-$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "Displays more info on service by name"
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $service = Read-Host "`nEnter a service name to get its properties"
+    Write-Host "Displaying properties of $service"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    cmd /c sc qdescription $service
+    $host.UI.RawUI.foregroundcolor = "white"
 }
 
 # --------- enumerate critical updates ---------
@@ -286,8 +287,9 @@ $host.UI.RawUI.foregroundcolor = "white"
 function disableRDP{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nCloses RDP"
-sysdm.cpl
 $host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "Opening sysdm.cpl"
+sysdm.cpl
 Write-Host "Stopping RDP Service"
 $host.UI.RawUI.foregroundcolor = "white"
 net stop "remote desktop services"
@@ -526,9 +528,11 @@ $host.UI.RawUI.foregroundcolor = "white"
 }
 
 # --------- group policy tool ---------
-function setGPO{
+function GPTool{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "Opening GP Tool"
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "Click each drop box item and make the change displayed"
 #WPF AD GUI script
 Add-Type -assembly System.Windows.Forms
 $main_form = New-Object System.Windows.Forms.Form
@@ -551,8 +555,7 @@ Kerberos_Encryption = "Comp Config\Policies\Windows Settings\Security Settings\L
 LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`"";
 LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"?Refuse All`"";
 Win32_Conficker = "Comp Config\Policies\Administrative Templates\Windows Components\Autoplay Policies -> Turn off Autoplay\ `"ENABLE`"";
-Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)
-User Config\Windows Settings\Scripts (Startup/Shutdown)";
+Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)`nUser Config\Windows Settings\Scripts (Startup/Shutdown)";
 Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE ???`"";
 Passwd_Policy = "Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`"";
 Add_Comp_Pol = "Computer Configuration\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`"";
@@ -593,8 +596,7 @@ $Button3.Text = "Open secpol.msc"
 $main_form.Controls.Add($Button3)
 $Button3.Add_Click({secpol.msc})
 $main_form.ShowDialog()
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "All GPO edits done."
+Write-Host "Ending GP tool"
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
@@ -602,7 +604,7 @@ $host.UI.RawUI.foregroundcolor = "white"
 function readOutput{
 #output netstat -abno
 $host.UI.RawUI.foregroundcolor = "green"
-Write-Host "Reading script output to console:`n"
+Write-Host "Reading script results to console:`n"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "#netstat Output:"
 if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\netstat_est.txt)){
@@ -678,7 +680,7 @@ $host.UI.RawUI.foregroundcolor = "white"
 function enumerate{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "Running enumeration functions"
-    regexNetstat
+    formatNetstat
     firewallStatus
     runningServices
     criticalUpdateCheck
@@ -686,7 +688,7 @@ function enumerate{
     }
 
 # --------- run all critical functions ---------
-function runCritical{
+function harden{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "Running critical functions"
 makeOutDir
@@ -705,7 +707,7 @@ changeP
 changePAdmin
 changePBinddn
 setPassPol
-setGPO
+GPTool
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nOpening Task Scheduler"
 taskschd.msc
@@ -722,53 +724,44 @@ $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAvailable Functions:"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "
-Main:
-runCritical (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, disableSMB1, disableRDP, disableGuest, changePAdmin,
-changePBinddn, setGPO, changeP, setPassPol, uniqueUserPols, enumerate)
-enumerate (regexNetstat, firewallStatus, runningServices, criticalUpdateCheck, readOutput)
------
-Injects:
+------- Noninvasive: -------
+makeOutDir (makes script output directory on desktop)
+enumerate (formatNetstat, firewallStatus, runningServices, criticalUpdateCheck, readOutput)
+downloadTools (download relevant tools)
+criticalUpdateCheck (checks list of HotFix KBs against systeminfo)
+pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to Script_Output)
+autoDownloadKB (#incomplete)
 firewallStatus
-configNTP
------
-All:
-makeOutDir (makes script output directory on desktop)
-setAssToTxt (script file type open with notepad)
-setGPO (opens GPO info tool)
-disableGuest (disables Guest account)
-disableRDP (disables RDP via regedit)
-disableAdminShares (disables Admin share via regedit)
-disableTeredo  (disables teredo)
-downloadTools (download relevant tools)
------
-criticalUpdateCheck (checks list of HotFix KBs against systeminfo)
-pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to Script_Output)
-autoDownloadKB (#incomplete)
------
-turnOnFirewall (turns on firewall)
-firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
-firewallStatus
------
-disableSMB1 (disables SMB1 and enable SMB2 via registry)
-SMBStatus (returns SMB registry info)
------
-regexNetstat (format netstat -abno)
+SMBStatus (returns SMB registry info)
+formatNetstat (format netstat -abno)
 runningServices
-morePIDInfo (enter a PID for more info)
-serviceInfo (enter a service name for more info)
------
-configNTP (ipconfig + set NTP server)
+morePIDInfo (enter a PID for more info)
+serviceInfo (enter a service name for more info)
 NTPStripchart
------
-changeP (Kyle's AD user password script enhanced)
 readPasswords
+readOutput (provide function output to console)
+avail (display this screen)
+------- Invasive: -------
+harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, disableSMB1, disableRDP, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
+setAssToTxt (script file type open with notepad)
+GPTool (opens GP info tool)
+disableGuest (disables Guest account)
+disableRDP (disables RDP via regedit)
+disableAdminShares (disables Admin share via regedit)
+disableTeredo  (disables teredo)
+turnOnFirewall (turns on firewall)
+firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
+disableSMB1 (disables SMB1 and enable SMB2 via registry)
+configNTP (ipconfig + set NTP server)
+changeP (Kyle's AD user password script enhanced)
 changePAdmin
 changePBinddn
-setPassPol (enable passwd complexity and length 12)
-uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
------
-readOutput (provide function output in console)
-avail (display this screen)`n"
+setPassPol (enable passwd complexity and length 12)
+uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
+------- Injects: -------
+firewallStatus
+configNTP
+`n"
 $host.UI.RawUI.foregroundcolor = "white"
 }
 avail
