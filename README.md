@@ -12,3 +12,6 @@ Start-BitsTransfer -Source "https://raw.github.com/calebTree/2008_R2_Hardening/m
 Start-BitsTransfer -Source "https://bit.ly/2ZQIlzd" -Destination "$env:userprofile\desktop\script.ps1"
 
 . $env:userprofile\desktop\script.ps1
+
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine</br>
+Get-ExecutionPolicy -List
