@@ -147,7 +147,7 @@ Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt`" has LISTE
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
-# --------- extract more info on pid ---------
+#region --------- extract more info on pid ---------
 function morePIDInfo{
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Displays more info on PID(s)"
@@ -158,7 +158,7 @@ $host.UI.RawUI.foregroundcolor = "darkgray"
 Get-WMIObject Win32_Process -Filter "processid = '$aPID'" | Select-Object *
 $host.UI.RawUI.foregroundcolor = "white"
 }
-
+#endregion
 # --------- create list of running services file on desktop ---------
 function runningServices{
 makeOutDir
@@ -377,7 +377,7 @@ foreach ($user in $users)
     }
     else{
     $host.UI.RawUI.foregroundcolor = "white"
-    $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | % {[char]$_})) -AsPlainText -Force
+    $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
     Write-Host "Changing the password of $user"
     Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
     $user = "$user".Trim() -replace '[CN=]{3}|[\,].*',''
@@ -420,7 +420,7 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Importing ActiveDirectory module"
 Import-Module ActiveDirectory
 Write-Host "Extracting the domain name"
-$domain = wmic computersystem get domain | select -skip 1
+$domain = wmic computersystem get domain | Select-Object -skip 1
 $domain = "$domain".Trim()
 $domaina = "$domain".Trim() -replace '.\b\w+', ''
 $domainb = "$domain".trim() -replace '^\w+\.', ''
