@@ -499,7 +499,7 @@ $host.UI.RawUI.foregroundcolor = "white"
 # --------- Set admin sensitive, password required all, remove members from Schema Admins ---------
 function uniqueUserPols{
 $host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nEnabling admin sensitive, and password required for all users"
+Write-Host "`nEnabling admin sensitive, password required for all, and removing all members from Schema Admins"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Importing ActiveDirectory module"
 Import-Module ActiveDirectory
@@ -520,6 +520,7 @@ try {
         Write-Host "An error occurred:"
         Write-Host $_
     }
+Write-Host "All members removed from Schema Admins group"
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
@@ -681,9 +682,9 @@ turnOnFirewall
 firewallRules
 disableTeredo
 setAssToTxt
+uniqueUserPols
 disableSMB1
 disableRDP
-uniqueUserPols
 disableAdminShares
 disableGuest
 disableCacheCreds
