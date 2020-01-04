@@ -514,9 +514,7 @@ Write-Host "Removing all members from 'Schema Admins' AD group"
 #Remove-ADGroupMember -Identity Schema Admins -Members Administrator -Confirm:$False
 try {
     $Groups = "Schema Admins"
-    foreach ($Group in $Groups){
-        Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group -Confirm:$false
-    }
+    foreach ($Group in $Groups){Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group -Confirm:$false}
     }
     catch [System.SystemException] {
         Write-Host "An error occurred:"
@@ -685,10 +683,10 @@ disableTeredo
 setAssToTxt
 disableSMB1
 disableRDP
+uniqueUserPols
 disableAdminShares
 disableGuest
 disableCacheCreds
-uniqueUserPols
 changeP
 changePAdmin
 changePBinddn
