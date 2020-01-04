@@ -8,3 +8,5 @@ Start-BitsTransfer -Source "https://bit.ly/36mYlvB" -Destination "$env:userprofi
 Public Main Script:</br>
 Import-Module BitsTransfer</br>
 Start-BitsTransfer -Source "https://raw.github.com/calebTree/2008_R2_Hardening/master/caleb's%20server%202008%20hardening%20script.ps1" -Destination "$env:userprofile\desktop\script.ps1"
+
+. $env:userprofile\desktop\script.ps1
