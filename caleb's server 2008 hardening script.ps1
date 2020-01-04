@@ -686,7 +686,7 @@ function enumerate{
     formatNetstat
     firewallStatus
     runningServices
-    criticalUpdateCheck
+    hotFixCheck
     readOutput
 }
 #endregion Enumeration
