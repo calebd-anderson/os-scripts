@@ -688,11 +688,11 @@ disableRDP
 disableAdminShares
 disableGuest
 disableCacheCreds
+uniqueUserPols
 changeP
 changePAdmin
 changePBinddn
 setPassPol
-uniqueUserPols
 setGPO
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nOpening Task Scheduler"
