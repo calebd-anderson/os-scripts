@@ -231,7 +231,7 @@ $installed | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} | ForEach
 $critical_KBs | Out-File $env:USERPROFILE\desktop\Script_Output\might_install.txt
 $critical_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
 $host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host $KB_count "KB(s) in the master list matched the systeminfo HotFix list"
+Write-Host "`n$KB_count KB(s) in the master list matched the systeminfo HotFix list"
 Write-Host "`"$env:USERPROFILE\desktop\Script_Output\might_install.txt`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
 $host.UI.RawUI.foregroundcolor = "darkgray"
 Get-Content $env:USERPROFILE\desktop\Script_Output\might_install.txt
@@ -593,6 +593,7 @@ $Button3.Text = "Open secpol.msc"
 $main_form.Controls.Add($Button3)
 $Button3.Add_Click({secpol.msc})
 $main_form.ShowDialog()
+$host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "All GPO edits done."
 $host.UI.RawUI.foregroundcolor = "white"
 }
@@ -694,8 +695,10 @@ setPassPol
 uniqueUserPols
 setGPO
 $host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nOpening Task Scheduler. Manually investigate scheduled tasks"
+Write-Host "`nOpening Task Scheduler"
 taskschd.msc
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "Manually investigate scheduled tasks"
 enumerate
 Write-Host "Restarting computer. Are you sure?"
 $host.UI.RawUI.foregroundcolor = "white"
@@ -734,6 +737,7 @@ disableGuest (disables Guest account)
 disableRDP (disables RDP via regedit)
 disableAdminShares (disables Admin share via regedit)
 disableTeredo  (disables teredo)
+downloadTools (download relevant tools)
 -----
 criticalUpdateCheck (checks list of HotFix KBs against systeminfo)
 pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to Script_Output)
