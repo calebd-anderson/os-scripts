@@ -394,6 +394,7 @@ $PlainPassword = $hashtable."$username"
 $SecurePassword = ConvertTo-SecureString $PlainPassword
 $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
 $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+[System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
 $host.UI.RawUI.foregroundcolor = "darkgray"
 Write-Host "The $username password is: $UnsecurePassword`n"
 $host.UI.RawUI.foregroundcolor = "white"
