@@ -166,8 +166,8 @@ $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nCreating list of running services"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Get-Service | Where-Object {$_.Status -eq "Running"} | Out-File $env:USERPROFILE\desktop\Script_Output\running_services.txt
-$host.UI.RawUI.foregroundcolor = "darkgray"
-Get-Content $env:USERPROFILE\desktop\Script_Output\running_services.txt
+#$host.UI.RawUI.foregroundcolor = "darkgray"
+#Get-Content $env:USERPROFILE\desktop\Script_Output\running_services.txt
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "`"$env:USERPROFILE\desktop\Script_Output\running_services.txt`" has list of running services"
 $host.UI.RawUI.foregroundcolor = "white"
