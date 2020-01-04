@@ -260,9 +260,9 @@ function disableSMB1{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nDisabling SMB1 via registry"
 $host.UI.RawUI.foregroundcolor = "cyan"
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 –Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0
 Write-Host "SMB1 disabled"
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 1 –Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 1
 Write-Host "SMB2 enabled"
 }
 
@@ -515,7 +515,7 @@ Write-Host "Removing all members from 'Schema Admins' AD group"
 try {
 $Groups = "Schema Admins"
 foreach ($Group in $Groups){
-Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group -Confirm:$false
+Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group #-Confirm:$false
 }
 }
 catch [System.SystemException] {
@@ -693,8 +693,8 @@ changePBinddn
 setPassPol
 uniqueUserPols
 setGPO
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Opening Task Scheduler. Manually investigate scheduled tasks"
+$host.UI.RawUI.foregroundcolor = "green"
+Write-Host "`nOpening Task Scheduler. Manually investigate scheduled tasks"
 taskschd.msc
 enumerate
 Write-Host "Restarting computer. Are you sure?"
