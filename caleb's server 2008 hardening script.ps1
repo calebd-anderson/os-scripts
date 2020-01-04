@@ -706,7 +706,6 @@ $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAvailable Functions:"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "
-. $env:userprofile\desktop\<script>.ps1
 Main:
 runCritical (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, disableSMB1, disableRDP, disableGuest, changePAdmin,
 changePBinddn, setGPO, changeP, setPassPol, uniqueUserPols, enumerate)
