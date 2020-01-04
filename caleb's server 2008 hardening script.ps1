@@ -20,6 +20,7 @@ Write-Host "`n`"Script_Output`" already exists"
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
+# --------- downloads relevant tools ---------
 function downloadTools{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nDownloading relevant tools"
@@ -132,13 +133,13 @@ ForEach-Object {$_.trim() -replace "`n",' ' -replace '\s{2,}',',' -replace '\*:\
 #create ESTABLISHED and LISTENING netstat files list with only unique PIDs
 Write-Host "Creating ESTABLISHED netstat list file"
 $netstat_est = $netstat | Where-Object {$_.State -eq 'ESTABLISHED'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
-ForEach {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
+ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
 $netstat_est = ($netstat_est | Out-String).trim() -replace '(?m)^\s{30}', ''
 $netstat_est | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_est.txt
 Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_est.txt`" has ESTABLISHED netstat"
 Write-Host "Creating LISTENING netstat list file"
-$netstat_lsn = $netstat | Where {$_.State -eq 'LISTENING'} | Select-Object -Expand PID | Sort | Get-Unique | ForEach {Set-Variable -Name c -Value $_ -PassThru} |
-ForEach {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
+$netstat_lsn = $netstat | Where-Object {$_.State -eq 'LISTENING'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
+ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
 $netstat_lsn = ($netstat_lsn | Out-String).trim() -replace '(?m)^\s{30}', ''
 $netstat_lsn | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt
 Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt`" has LISTENING netstat"
@@ -153,7 +154,7 @@ $host.UI.RawUI.foregroundcolor = "magenta"
 $aPID = Read-Host "`nEnter a PID to get its properties"
 Write-Host "Displaying properties of $aPID"
 $host.UI.RawUI.foregroundcolor = "darkgray"
-Get-WMIObject Win32_Process -Filter "processid = '$aPID'" | Select *
+Get-WMIObject Win32_Process -Filter "processid = '$aPID'" | Select-Object *
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
@@ -165,7 +166,7 @@ Write-Host "`nCreating list of running services"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Get-Service | Where-Object {$_.Status -eq "Running"} | Out-File $env:USERPROFILE\desktop\Script_Output\running_services.txt
 $host.UI.RawUI.foregroundcolor = "darkgray"
-cat $env:USERPROFILE\desktop\Script_Output\running_services.txt
+Get-Content $env:USERPROFILE\desktop\Script_Output\running_services.txt
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "`"$env:USERPROFILE\desktop\Script_Output\running_services.txt`" has list of running services"
 $host.UI.RawUI.foregroundcolor = "white"
@@ -219,11 +220,11 @@ $installed = $kb_info | findstr "$kb_list"
 
 #output list of KBs that could be installed
 $KB_count = 0
-if ($installed -ne $null){
+if ($null -ne $installed){
 $installed = $installed.Trim() -replace '\[[0-9]\w\]\:\s+',''
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Creating list of hotfix KBs not in the systeminfo list"
-$installed | foreach {Set-Variable -Name c -Value $_ -PassThru} | ForEach {$KB_count++; $critical_KBs.Remove($c)}
+$installed | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} | ForEach-Object {$KB_count++; $critical_KBs.Remove($c)}
 }
 
 #provide info on results to user
@@ -233,7 +234,7 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host $KB_count "KB(s) in the master list matched the systeminfo HotFix list"
 Write-Host "`"$env:USERPROFILE\desktop\Script_Output\might_install.txt`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
 $host.UI.RawUI.foregroundcolor = "darkgray"
-cat $env:USERPROFILE\desktop\Script_Output\might_install.txt
+Get-Content $env:USERPROFILE\desktop\Script_Output\might_install.txt
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
@@ -274,7 +275,7 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 #reg query HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
 Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters | ForEach-Object {Get-ItemProperty $_.pspath} | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
 $host.UI.RawUI.foregroundcolor = "darkgray"
-cat $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
+Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "`"$env:USERPROFILE\desktop\Script_Output\SMB_status.txt`" has SBM1 status"
 $host.UI.RawUI.foregroundcolor = "white"
@@ -332,7 +333,7 @@ function NTPStripchart{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "NTP Stripchart"
 $host.UI.RawUI.foregroundcolor = "magenta"
-$local_ip = Read-Host 'What is the target ip address? '
+$target_ip = Read-Host 'What is the target ip address? '
 w32tm /stripchart /computer:$target_ip
 $host.UI.RawUI.foregroundcolor = "white"
 }
@@ -345,7 +346,7 @@ $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "Changing all DC user passwords"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Extracting the domain name"
-$domain = wmic computersystem get domain | select -skip 1
+$domain = wmic computersystem get domain | Select-Object -skip 1
 $domain = "$domain".Trim()
 $domaina = "$domain".Trim() -replace '.\b\w+', ''
 $domainb = "$domain".trim() -replace '^\w+\.', ''
@@ -453,7 +454,7 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Importing ActiveDirectory module"
 Import-Module ActiveDirectory
 Write-Host "Extracting the domain name"
-$domain = wmic computersystem get domain | select -skip 1
+$domain = wmic computersystem get domain | Select-Object -skip 1
 $domain = "$domain".Trim()
 $domaina = "$domain".Trim() -replace '.\b\w+', ''
 $domainb = "$domain".trim() -replace '^\w+\.', ''
@@ -488,7 +489,7 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Importing ActiveDirectory module"
 Import-Module ActiveDirectory
 Write-Host "Extracting domain name"
-$domain = wmic computersystem get domain | select -skip 1
+$domain = wmic computersystem get domain | Select-Object -skip 1
 $domain = "$domain".Trim()
 Set-ADDefaultDomainPasswordPolicy -Identity $domain -LockoutDuration 00:40:00 -LockoutObservationWindow 00:20:00 -ComplexityEnabled $True -MaxPasswordAge 10.00:00:00 -MinPasswordLength 12
 Write-Host "Password policies enabled"
