@@ -386,14 +386,14 @@ $host.UI.RawUI.foregroundcolor = "white"
 # --------- read a password ---------
 function readPasswords{
 $host.UI.RawUI.foregroundcolor = "green"
-Write-Host "Retreives AD password from encrypted db file"
+Write-Host "Retreives the plaintext AD password from the encrypted password DB file"
 $host.UI.RawUI.foregroundcolor = "magenta"
 $username = Read-Host "Enter a full username to retreive the password"
 $hashtable = Import-Clixml $env:userprofile\appdata\local\securePasswords.xml
 $PlainPassword = $hashtable."$username"
 $SecurePassword = ConvertTo-SecureString $PlainPassword
 $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
-$UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+$UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
 [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
 $host.UI.RawUI.foregroundcolor = "darkgray"
 Write-Host "The $username password is: $UnsecurePassword`n"
