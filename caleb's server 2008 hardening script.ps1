@@ -20,17 +20,26 @@ Write-Host "`n`"Script_Output`" already exists"
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
-function downloadFirefox{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "Downloading Tools"
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Importing BitsTransfer module"
-Import-Module BitsTransfer
-$url = "https://mzl.la/35e3KDv"
-$output = "$env:userprofile\desktop\Script_Output\firefox_installer.exe"
-Start-BitsTransfer -Source $url -Destination $output
-$host.UI.RawUI.foregroundcolor = "white"
-}
+function downloadTools{
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nDownloading relevant tools"
+    $downloads = @{
+    Malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
+    firefox_installer_exe = "https://mzl.la/35e3KDv"
+    Sysinternals_suit_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
+    }
+    $host.UI.RawUI.foregroundcolor = "cyan"
+       Write-Host "Importing BitsTransfer module"
+       Import-Module BitsTransfer
+       foreach ($key in $downloads.GetEnumerator()) {
+           "Downloading $($key.Name) from $($key.Value)"
+           $filename = $($key.Name)
+           $url = $downloads.$filename
+           $filename = $filename -replace '_(?!.*_)', '.'
+           $output = "$env:userprofile\desktop\Script_Output\$filename"
+           Start-BitsTransfer -Source $url -Destination $output
+       }
+   }
 
 # --------- turn firewall on ---------
 function turnOnFirewall{
