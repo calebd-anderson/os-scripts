@@ -118,11 +118,11 @@ makeOutDir
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nRunning netstat -abno and formatting"
 $host.UI.RawUI.foregroundcolor = "cyan"
-$netstat = (netstat -abno | Select -skip 2) -join "`n" -split "(?= [TU][CD]P\s+(?:\d+\.|\[\w*:\w*:))" |
+$netstat = (netstat -abno | Select-Object -skip 2) -join "`n" -split "(?= [TU][CD]P\s+(?:\d+\.|\[\w*:\w*:))" |
 ForEach-Object {$_.trim() -replace "`n",' ' -replace '\s{2,}',',' -replace '\*:\*', '*:*,' -replace 'PID', 'PID,Ownership_Info'} | ConvertFrom-Csv
 #create ESTABLISHED and LISTENING netstat files list with only unique PIDs
 Write-Host "Creating ESTABLISHED netstat list file"
-$netstat_est = $netstat | Where {$_.State -eq 'ESTABLISHED'} | Select-Object -Expand PID | Sort | Get-Unique | ForEach {Set-Variable -Name c -Value $_ -PassThru} |
+$netstat_est = $netstat | Where-Object {$_.State -eq 'ESTABLISHED'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
 ForEach {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
 $netstat_est = ($netstat_est | Out-String).trim() -replace '(?m)^\s{30}', ''
 $netstat_est | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_est.txt
