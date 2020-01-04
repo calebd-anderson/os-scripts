@@ -308,6 +308,7 @@ function serviceInfo{
 }
 # --------- prompt for a KB to download ---------
 function pickAKB{
+    Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "Here are the KBs to choose from. Try these first: KB2489256, KB2503658, KB2769369" 
