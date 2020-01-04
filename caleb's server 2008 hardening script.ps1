@@ -513,15 +513,15 @@ Write-Host "All users now require a password even Guest :-)"
 Write-Host "Removing all members from 'Schema Admins' AD group"
 #Remove-ADGroupMember -Identity Schema Admins -Members Administrator -Confirm:$False
 try {
-$Groups = "Schema Admins"
-foreach ($Group in $Groups){
-Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group #-Confirm:$false
-}
-}
-catch [System.SystemException] {
-  Write-Host "An error occurred:"
-  Write-Host $_
-}
+    $Groups = "Schema Admins"
+    foreach ($Group in $Groups){
+        Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group -Confirm:$false
+    }
+    }
+    catch [System.SystemException] {
+        Write-Host "An error occurred:"
+        Write-Host $_
+    }
 $host.UI.RawUI.foregroundcolor = "white"
 }
 
