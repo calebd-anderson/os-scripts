@@ -318,8 +318,9 @@ function pickAKB{
     $KB = Read-Host "Enter the full KB you would like to install?"
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\$KB.msu"
-    Start-BitsTransfer -Source $url -Destination $output
-    $host.UI.RawUI.foregroundcolor = "cyan"
+    try{Start-BitsTransfer -Source $url -Destination $output}
+    catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host "Not a valid entry"}
+    #$host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "$KB downloaded to `"Script_Output`""
     $host.UI.RawUI.foregroundcolor = "white"
 }
