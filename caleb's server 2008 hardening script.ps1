@@ -87,8 +87,7 @@ function disableTeredo{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nDisabling Teredo"
 $host.UI.RawUI.foregroundcolor = "cyan"
-cmd /c 'echo > script.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & script.vbs'
-cmd
+cmd /c 'echo > script.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & script.vbs & cmd'
 $host.UI.RawUI.foregroundcolor = "white"
 }
 # --------- disable administrative shares via registry ---------
@@ -700,7 +699,6 @@ makeOutDir
 enumerate
 turnOnFirewall
 firewallRules
-disableTeredo
 uniqueUserPols
 disableSMB1
 disableRDP
@@ -710,6 +708,7 @@ disableCacheCreds
 changeP
 changePAdmin
 changePBinddn
+disableTeredo
 setPassPol
 setAssToTxt
 GPTool
@@ -718,7 +717,8 @@ Write-Host "`nOpening Task Scheduler"
 taskschd.msc
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Manually examine scheduled tasks"
-Write-Host "All hardening functions are finished. Restart computer?"
+$host.UI.RawUI.foregroundcolor = "green"
+Write-Host "`nAll hardening functions are finished. Restart computer?"
 $host.UI.RawUI.foregroundcolor = "white"
 restart-computer -Confirm
 }
