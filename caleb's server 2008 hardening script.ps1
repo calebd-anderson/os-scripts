@@ -318,7 +318,7 @@ function pickAKB{
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\$KB.msu"
     try{Start-BitsTransfer -Source $url -Destination $output}
-    catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host $KB "Is not an available KB";break}
+    catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host $KB "Is not an available KB`n"; break; $host.UI.RawUI.foregroundcolor = "white"}
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "$KB downloaded to `"Script_Output`""
     $host.UI.RawUI.foregroundcolor = "white"
