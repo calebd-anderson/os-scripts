@@ -10,12 +10,13 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 # --------- create output directory on desktop ---------
 function makeOutDir{
-$host.UI.RawUI.foregroundcolor = "green"
 if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output)){
+$host.UI.RawUI.foregroundcolor = "green"
 Write-Host "Creating the output directory `"Script_Output`" on the desktop`n"
 New-Item -Path "$env:USERPROFILE\desktop\Script_Output" -ItemType Directory | Out-Null
 }
 else{
+$host.UI.RawUI.foregroundcolor = "darkgray"
 Write-Host "`n`"Script_Output`" already exists"
 }
 $host.UI.RawUI.foregroundcolor = "white"
@@ -42,42 +43,48 @@ function downloadTools{
            $output = "$env:userprofile\desktop\Script_Output\$filename"
            Start-BitsTransfer -Source $url -Destination $output
        }
+    Write-Host "All the relevant tools have been downloaded"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 
 #region Firewall
 # --------- turn firewall on ---------
 function turnOnFirewall{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nTurning On Firewall"
-$host.UI.RawUI.foregroundcolor = "cyan"
-netsh advfirewall set allprofiles state on
-$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nTurning On Firewall"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    netsh advfirewall set allprofiles state on
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 
 # --------- firewall rules ---------
 function firewallRules{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nCreating firewall rules:"
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Block RDP In"
-netsh advfirewall firewall add rule name="Block RDP In" protocol=TCP dir=in localport=3389 action=block
-Write-Host "Block VNC In"
-netsh advfirewall firewall add rule name="Block VNC In" protocol=TCP dir=in localport=5900 action=block
-Write-Host "Block VNC Java In"
-netsh advfirewall firewall add rule name="Block VNC In" protocol=TCP dir=in localport=5800 action=block
-Write-Host "Block FTP In"
-netsh advfirewall firewall add rule name="Block VNC In" protocol=TCP dir=in localport=20 action=block
-$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nCreating firewall rules:"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Block RDP In"
+    netsh advfirewall firewall add rule name="Block RDP In" protocol=TCP dir=in localport=3389 action=block
+    Write-Host "Block VNC In"
+    netsh advfirewall firewall add rule name="Block VNC In" protocol=TCP dir=in localport=5900 action=block
+    Write-Host "Block VNC Java In"
+    netsh advfirewall firewall add rule name="Block VNC In" protocol=TCP dir=in localport=5800 action=block
+    Write-Host "Block FTP In"
+    netsh advfirewall firewall add rule name="Block VNC In" protocol=TCP dir=in localport=20 action=block
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 
 # --------- firewall status ---------
 function firewallStatus{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nGenerating firewall status"
-$host.UI.RawUI.foregroundcolor = "cyan"
-netsh firewall show config | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_status.txt
-Write-Host "`"$env:USERPROFILE\desktop\Script_Output\firewall_status.txt`" has fireawll status"
-$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nGenerating firewall status"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    netsh firewall show config | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_status.txt
+    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\firewall_status.txt`" has fireawll status"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 #endregion Firewall
 
@@ -90,6 +97,7 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 Start-Process cmd /k, 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs'
 Write-Host "`Teredo disabled"
 $host.UI.RawUI.foregroundcolor = "white"
+cmd /c pause
 }
 # --------- disable administrative shares via registry ---------
 function disableAdminShares{
@@ -104,6 +112,8 @@ function disableAdminShares{
     Start-Service dfs
     Start-Service netlogon
     Start-Service server
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 } 
 # --------- disable cached credentials via registry ---------
 function disableCacheCreds{
@@ -112,6 +122,7 @@ Write-Host "`nDisabling cached credentials via registry"
 $host.UI.RawUI.foregroundcolor = "cyan"
 REG ADD HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential /t REG_DWORD /d 0
 $host.UI.RawUI.foregroundcolor = "white"
+cmd /c pause
 }
 # --------- disable SMB1 via registry ---------
 function disableSMB1{
@@ -122,6 +133,8 @@ function disableSMB1{
     Write-Host "SMB1 disabled"
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 1
     Write-Host "SMB2 enabled"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- disable RDP ---------
 function disableRDP{
@@ -137,6 +150,7 @@ function disableRDP{
     Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" –Value 1 –Force
     Write-Host "RDP disabled"
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 #endregion Disable Services
 
@@ -194,92 +208,92 @@ function changeP{
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
     Write-Host "`"%localappdata%\securePasswords.xml`" has AD users .xml hashtable"
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
     
 # --------- set the admin password ---------
 function changePAdmin{
-makeOutDir
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nChanges Admin password"
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Importing ActiveDirectory module"
-Import-Module ActiveDirectory
-Write-Host "Extracting the domain name"
-$domain = wmic computersystem get domain | Select-Object -skip 1
-$domain = "$domain".Trim()
-$domaina = "$domain".Trim() -replace '.\b\w+', ''
-$domainb = "$domain".trim() -replace '^\w+\.', ''
-Write-Host "Changing the admin password"
-$admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb"
-$host.UI.RawUI.foregroundcolor = "magenta"
-$securePassword = Read-Host "`nEnter a new admin password" -AsSecureString
-Set-ADAccountPassword -Identity $admin -Reset -NewPassword $securePassword
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Encrypting and exporting"
-$encrypted = ConvertFrom-SecureString -SecureString $securePassword
-$admin = "$admin".Trim() -replace '[CN=]{3}|[\,].*',''
-Out-File -FilePath "$env:userprofile\desktop\Script_Output\admin_binddn_passwds.txt" -Append -InputObject $admin, $encrypted, ""
-if(Test-Path -LiteralPath $env:userprofile\appdata\local\securePasswords.xml){
-$hashtable = Import-Clixml $env:userprofile\appdata\local\securePasswords.xml
-}else{
-$hashtable = @{}
-}
-$hashTable[$admin] = $encrypted
-$hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "admin user password has been changed"
-$host.UI.RawUI.foregroundcolor = "white"
+    makeOutDir
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nChanges Admin password"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Importing ActiveDirectory module"
+    Import-Module ActiveDirectory
+    Write-Host "Extracting the domain name"
+    $domain = wmic computersystem get domain | Select-Object -skip 1
+    $domain = "$domain".Trim()
+    $domaina = "$domain".Trim() -replace '.\b\w+', ''
+    $domainb = "$domain".trim() -replace '^\w+\.', ''
+    Write-Host "Changing the admin password"
+    $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb"
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $securePassword = Read-Host "`nEnter a new admin password" -AsSecureString
+    Set-ADAccountPassword -Identity $admin -Reset -NewPassword $securePassword
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Encrypting and exporting"
+    $encrypted = ConvertFrom-SecureString -SecureString $securePassword
+    $admin = "$admin".Trim() -replace '[CN=]{3}|[\,].*',''
+    Out-File -FilePath "$env:userprofile\desktop\Script_Output\admin_binddn_passwds.txt" -Append -InputObject $admin, $encrypted, ""
+    if(Test-Path -LiteralPath $env:userprofile\appdata\local\securePasswords.xml){
+        $hashtable = Import-Clixml $env:userprofile\appdata\local\securePasswords.xml
+    }else{$hashtable = @{}}
+    $hashTable[$admin] = $encrypted
+    $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "admin user password has been changed"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
     
 # --------- set the binddn password ---------
 function changePBinddn{
-makeOutDir
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nChanges binddn password"
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Importing ActiveDirectory module"
-Import-Module ActiveDirectory
-Write-Host "Extracting the domain name"
-$domain = wmic computersystem get domain | Select-Object -skip 1
-$domain = "$domain".Trim()
-$domaina = "$domain".Trim() -replace '.\b\w+', ''
-$domainb = "$domain".trim() -replace '^\w+\.', ''
-Write-Host "Changing binddn password"
-$binddn = "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
-$host.UI.RawUI.foregroundcolor = "magenta"
-$securePassword = Read-Host "`nEnter a new binddn password" -AsSecureString
-Set-ADAccountPassword -Identity $binddn -Reset -NewPassword $securePassword
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Encrypting and exporting"
-$encrypted = ConvertFrom-SecureString -SecureString $securePassword
-$binddn = "$binddn".Trim() -replace '[CN=]{3}|[\,].*',''
-Out-File -FilePath "$env:userprofile\desktop\Script_Output\admin_binddn_passwds.txt" -Append -InputObject $binddn, $encrypted, ""
-Write-Host "desktop\Script_Output\admin_binddn_passwds.txt has changes log"
-if(Test-Path -LiteralPath $env:userprofile\appdata\local\securePasswords.xml){
-$hashtable = Import-Clixml $env:userprofile\appdata\local\securePasswords.xml
-}else{
-$hashtable = @{}
-}
-$hashTable[$binddn] = $encrypted
-$hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "binddn user password has been changed"
-$host.UI.RawUI.foregroundcolor = "white"
+    makeOutDir
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nChanges binddn password"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Importing ActiveDirectory module"
+    Import-Module ActiveDirectory
+    Write-Host "Extracting the domain name"
+    $domain = wmic computersystem get domain | Select-Object -skip 1
+    $domain = "$domain".Trim()
+    $domaina = "$domain".Trim() -replace '.\b\w+', ''
+    $domainb = "$domain".trim() -replace '^\w+\.', ''
+    Write-Host "Changing binddn password"
+    $binddn = "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $securePassword = Read-Host "`nEnter a new binddn password" -AsSecureString
+    Set-ADAccountPassword -Identity $binddn -Reset -NewPassword $securePassword
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Encrypting and exporting"
+    $encrypted = ConvertFrom-SecureString -SecureString $securePassword
+    $binddn = "$binddn".Trim() -replace '[CN=]{3}|[\,].*',''
+    Out-File -FilePath "$env:userprofile\desktop\Script_Output\admin_binddn_passwds.txt" -Append -InputObject $binddn, $encrypted, ""
+    Write-Host "desktop\Script_Output\admin_binddn_passwds.txt has changes log"
+    if(Test-Path -LiteralPath $env:userprofile\appdata\local\securePasswords.xml){
+        $hashtable = Import-Clixml $env:userprofile\appdata\local\securePasswords.xml
+    }else{$hashtable = @{}}
+    $hashTable[$binddn] = $encrypted
+    $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "binddn user password has been changed"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
     
 # --------- enable LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12 ---------
 function setPassPol{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nEnabling LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12"
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Importing ActiveDirectory module"
-Import-Module ActiveDirectory
-Write-Host "Extracting domain name"
-$domain = wmic computersystem get domain | Select-Object -skip 1
-$domain = "$domain".Trim()
-Set-ADDefaultDomainPasswordPolicy -Identity $domain -LockoutDuration 00:40:00 -LockoutObservationWindow 00:20:00 -ComplexityEnabled $True -MaxPasswordAge 10.00:00:00 -MinPasswordLength 12
-Write-Host "Password policies enabled"
-$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nEnabling LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Importing ActiveDirectory module"
+    Import-Module ActiveDirectory
+    Write-Host "Extracting domain name"
+    $domain = wmic computersystem get domain | Select-Object -skip 1
+    $domain = "$domain".Trim()
+    Set-ADDefaultDomainPasswordPolicy -Identity $domain -LockoutDuration 00:40:00 -LockoutObservationWindow 00:20:00 -ComplexityEnabled $True -MaxPasswordAge 10.00:00:00 -MinPasswordLength 12
+    Write-Host "Password policies enabled"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 #endregion Passwords
 
@@ -294,6 +308,7 @@ function morePIDInfo{
     $host.UI.RawUI.foregroundcolor = "darkgray"
     Get-WMIObject Win32_Process -Filter "processid = '$aPID'" | Select-Object *
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- enter service name for more info ---------
 function serviceInfo{
@@ -305,13 +320,14 @@ function serviceInfo{
     $host.UI.RawUI.foregroundcolor = "darkgray"
     cmd /c sc qdescription $service
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- prompt for a KB to download ---------
 function pickAKB{
     Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nThere are "$applicable_KBs.count" that might install below. KB2489256, KB2503658, and KB2769369 installed on lab"
+    Write-Host "`nThere are" $applicable_KBs.count "that might install below. KB2489256, KB2503658, and KB2769369 installed on lab"
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -323,6 +339,7 @@ function pickAKB{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "$KB downloaded to `"Script_Output`""
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- Configure NTP ---------
 function configNTP{
@@ -343,6 +360,7 @@ function configNTP{
     reg query HKLM\System\CurrentControlSet\Services\W32Time\Parameters | Out-File -Append $env:USERPROFILE\desktop\Script_Output\NTP_status.txt
     #cmd /c "net stop w32time && net start w32time"
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- NTP Stripchart ---------
 function NTPStripchart{
@@ -352,6 +370,7 @@ function NTPStripchart{
     $target_ip = Read-Host 'What is the target ip address? '
     w32tm /stripchart /computer:$target_ip
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- read a password ---------
 function readPasswords{
@@ -368,6 +387,7 @@ function readPasswords{
     $host.UI.RawUI.foregroundcolor = "darkgray"
     Write-Host "The $username password is: $UnsecurePassword`n"
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 #endregion User Query
 
@@ -393,11 +413,14 @@ function uniqueUserPols{
         foreach ($Group in $Groups){Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group -Confirm:$false}
         }
         catch [System.SystemException] {
+            $host.UI.RawUI.foregroundcolor = "red"
             Write-Host "An error occurred:"
             Write-Host $_
+            break
         }
     Write-Host "All members removed from Schema Admins group"
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
     }
     # --------- disable guest account ---------
     function disableGuest{
@@ -407,6 +430,7 @@ function uniqueUserPols{
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Guest account disabled"
         $host.UI.RawUI.foregroundcolor = "white"
+        cmd /c pause
     }
 #endregion User Edits
 
@@ -481,6 +505,7 @@ function GPTool{
     $main_form.ShowDialog()
     Write-Host "Ending GP tool"
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 
 # --------- sets script extensions to open notepad ---------
@@ -496,6 +521,7 @@ function setAssToTxt{
     cmd /c assoc .wsf=txtfile
     cmd /c assoc .wsh=txtfile
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 
 #region Enumeration
@@ -521,6 +547,7 @@ function formatNetstat{
     $netstat_lsn | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt
     Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt`" has LISTENING netstat"
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 
 # --------- create list of running services file on desktop ---------
@@ -533,22 +560,23 @@ function runningServices{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "`"$env:USERPROFILE\desktop\Script_Output\running_services.txt`" has list of running services"
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 
 # --------- enumerate HotFix updates ---------
 function hotFixCheck{
     makeOutDir
-    $host.UI.RawUI.foregroundcolor = "cyan"
+    $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nComparing systeminfo HotFix list against HotFix master-list"
-    
     #manual page
     #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
     #Windows Server 2008 R2 32-bit (6.1)
     #$R2_32_bit_KBs = @{}
     
     #compare systeminfo to KB hashtable master list
+    $host.UI.RawUI.foregroundcolor = "cyan"
     $system_info = systeminfo
-    
+    $host.UI.RawUI.foregroundcolor = "darkgray"    
     if(($system_info | Out-String).Contains("x64-based PC")){
         if(($system_info | Out-String).Contains("R2")){
             #Windows Server 2008 R2 64-bit (6.1)
@@ -603,12 +631,12 @@ function hotFixCheck{
     }
 
     #export applicable list and provide output to console
+    $host.UI.RawUI.foregroundcolor = "cyan"
     $auto_download_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
-    $host.UI.RawUI.foregroundcolor = "cyan"  
     Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
 
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $all = Read-Host "`nWould you like to downlad all "$auto_download_KBs.count" potentially applicable HotFixes now? (y, n)"
+    $all = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "potentially applicable HotFixes now? (y, n)"
     if ($all -eq 'y'){
         #download all
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -629,6 +657,7 @@ function hotFixCheck{
         pickAKB
     }  
     $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 
 # --------- SMB status ---------
@@ -644,13 +673,14 @@ Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "`"$env:USERPROFILE\desktop\Script_Output\SMB_status.txt`" has SBM1 status"
 $host.UI.RawUI.foregroundcolor = "white"
+cmd /c pause
 }
 
 # --------- provide script output to the console ---------
 function readOutput{
 #output netstat -abno
 $host.UI.RawUI.foregroundcolor = "green"
-Write-Host "Reading script results to console:`n"
+Write-Host "`nReading script output to console:`n"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "#netstat Output:"
 if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\netstat_est.txt)){
@@ -694,7 +724,7 @@ Get-Content $env:USERPROFILE\desktop\Script_Output\might_install.txt
 Start-Sleep -s 3
 #NTP status
 $host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "#Network Time Protocol (NTP) Status"
+Write-Host "`n#Network Time Protocol (NTP) Status (w32tm /query /status)"
 $host.UI.RawUI.foregroundcolor = "darkgray"
 w32tm /query /status
 
@@ -720,6 +750,7 @@ Write-Host "run SMBStatus"
 Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
 }
 $host.UI.RawUI.foregroundcolor = "white"
+cmd /c pause
 }
 
 # --------- run enumeration functions ---------
@@ -730,7 +761,9 @@ function enumerate{
     firewallStatus
     runningServices
     hotFixCheck
+    SMBStatus
     readOutput
+    cmd /c pause
 }
 #endregion Enumeration
 
@@ -765,6 +798,7 @@ $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAll hardening functions are finished. Restart computer?"
 $host.UI.RawUI.foregroundcolor = "white"
 restart-computer -Confirm
+cmd /c pause
 }
 
 # --------- provide list of available functions ---------
