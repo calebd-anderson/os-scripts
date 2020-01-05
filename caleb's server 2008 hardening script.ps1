@@ -87,7 +87,7 @@ function disableTeredo{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nDisabling Teredo"
 $host.UI.RawUI.foregroundcolor = "cyan"
-Start-Process cmd /c, 'echo > script.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & script.vbs & cmd'
+Start-Process cmd /k, 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs'
 Write-Host "`Teredo disabled"
 $host.UI.RawUI.foregroundcolor = "white"
 }
