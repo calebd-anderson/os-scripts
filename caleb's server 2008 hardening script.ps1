@@ -536,57 +536,94 @@ function runningServices{
 
 # --------- enumerate HotFix updates ---------
 function hotFixCheck{
-makeOutDir
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nComparing systeminfo HotFix list to master KB list"
-$critical_KBs = @{
-KB4012213 = "http://support.microsoft.com/kb/4012213";
-KB2393802 = "http://bit.ly/2kodsxw";
-KB3006226 = "http://bit.ly/2jLUmzu";
-KB3000869 = "http://bit.ly/2kxFGZk";
-KB3000061 = "http://bit.ly/2k4FRHV";
-KB2503658 = "http://bit.ly/2l15YDR";
-KB2489256 = "http://bit.ly/2kqhe9I";
-KB2984972 = "http://bit.ly/2l6dBFP";
-KB3126593 = "http://bit.ly/2jN0x6n";
-KB2982378 = "https://tinyurl.com/ybwt8q85";
-KB4012598 = "https://tinyurl.com/madwjzd";
-KB3042553 = "https://tinyurl.com/ybwt8q85";
-KB2562485 = "https://tinyurl.com/ycal67la";
-KB2588516 = "https://tinyurl.com/yaahtmdz";
-KB2705219 = "https://tinyurl.com/yc8vom2k";
-KB2769369 = "https://tinyurl.com/ydfh87vs";
-KB2849470 = "https://tinyurl.com/y8nhqapa";
-KB3100465 = "https://tinyurl.com/ybs3f2o4";
-KB975517 = "https://tinyurl.com/y744jt2m";
-KB3011780 = "http://www.catalog.update.microsoft.com/home.aspx -> MS14-068";
-KB3000483 = "http://www.catalog.update.microsoft.com/home.aspx -> MS15-011" 
-}
+    makeOutDir
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "`nComparing systeminfo HotFix list against known KB data"
+    
+    #manual page
+    #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
+    #Windows Server 2008 R2 32-bit (6.1)
+    #$R2_32_bit_KBs = @{}
+    
+    #compare systeminfo to KB hashtable master list
+    $system_info = systeminfo
+    
+    if(($system_info | Out-String).Contains("x64-based PC")){
+        if(($system_info | Out-String).Contains("R2")){
+            #Windows Server 2008 R2 64-bit (6.1)
+            $auto_download_KBs = @{    
+                KB975517 = "https://bit.ly/2rArzrt"
+                KB2393802 = "http://bit.ly/2kodsxw"
+                KB3006226 = "http://bit.ly/2jLUmzu"
+                KB3000869 = "http://bit.ly/2kxFGZk"
+                KB3000061 = "http://bit.ly/2k4FRHV"
+                KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
+                KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
+                KB2984972 = "http://bit.ly/2l6dBFP"
+                KB3126593 = "http://bit.ly/2jN0x6n"
+                KB2982378 = "https://bit.ly/39o5fTa"
+                KB3042553 = "https://bit.ly/2ZxS11p"
+                KB2562485 = "https://bit.ly/39oDXMc"
+                KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
+                KB3100465 = "https://bit.ly/2F2usVm"
+                KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu"
+                KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu"
+                KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu"
+                }
+        }
+        else{
+            #Windows Server 2008 64-bit (6.0)
+            $auto_download_KBs = @{
+                KB2588516 = "https://bit.ly/37oIwEN"
+                KB2705219 = "https://bit.ly/2ZxEGGm"
+                KB2849470 = "https://bit.ly/2MG0fQ6"
+                KB3011780 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2014/10/windows6.0-kb3011780-x64_c6135e518ffd1b053f1244a3f17d4c352c569c5b.msu"
+                KB4012598 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/02/windows6.0-kb4012598-x64_6a186ba2b2b98b2144b50f88baf33a5fa53b5d76.msu"
+                } 
+        }
+    }
+    else{
+        #Windows Server 2008 32-bit (6.0)
+        $auto_download_KBs = @{
+            KB4012598 = "https://bit.ly/2Q3Qjlk"
+            KB3011780 = "https://bit.ly/2ZzTRPF"
+            }
+    }
 
-#compare systeminfo to KB hashtable master list
-$host.UI.RawUI.foregroundcolor = "white"
-$kb_info = systeminfo
-$kb_list = Foreach ($KB in $critical_KBs.GetEnumerator()){($KB.Name)}
-$installed = $kb_info | findstr "$kb_list"
+    #removes installed from $auto_download_KBs and removes junk from systeminfo KB name
+    $kb_list = Foreach ($KB in $auto_download_KBs.GetEnumerator()){$KB.Name}
+    $installed = $system_info | findstr "$kb_list"
+    if ($null -ne $installed){
+        $installed = $installed.Trim() -replace '\[[0-9]\w\]\:\s+',''
+        $installed | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} | ForEach-Object {$auto_download_KBs.Remove($c)}
+    }
 
-#output list of KBs that could be installed
-$KB_count = 0
-if ($null -ne $installed){
-$installed = $installed.Trim() -replace '\[[0-9]\w\]\:\s+',''
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Creating list of hotfix KBs not in the systeminfo list"
-$installed | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} | ForEach-Object {$KB_count++; $critical_KBs.Remove($c)}
-}
+    #export applicable list and provide output to console
+    $auto_download_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host $auto_download_KBs.count "KB(s) in the master list did not appeare to be installed and will be downloaded"    
+    Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    $auto_download_KBs
 
-#provide info on results to user
-$critical_KBs | Out-File $env:USERPROFILE\desktop\Script_Output\might_install.txt
-$critical_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "`n$KB_count KB(s) in the master list matched the systeminfo HotFix list"
-Write-Host "`"$env:USERPROFILE\desktop\Script_Output\might_install.txt`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
-$host.UI.RawUI.foregroundcolor = "darkgray"
-Get-Content $env:USERPROFILE\desktop\Script_Output\might_install.txt
-$host.UI.RawUI.foregroundcolor = "white"
+    $all = Read-Host "Would you like to downlad all "$auto_download_KBs.count" possible KBs?"
+    if ($all -eq 'y'){
+        #download all
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        Write-Host "Importing BitsTransfer module"
+        Import-Module BitsTransfer
+        foreach ($key in $auto_download_KBs.GetEnumerator()) {
+            "Downloading $($key.Name) from $($key.Value)"
+            $KB = $($key.Name)
+            $url = $auto_download_KBs.$KB
+            $output = "$env:userprofile\desktop\Script_Output\$KB.msu"
+            Start-BitsTransfer -Source $url -Destination $output
+        }
+    }
+    else{Write-Host "KBs that installed on lab were KB2503658, KB2489256, KB2489256"
+    pickAKB    
+    }  
+    $host.UI.RawUI.foregroundcolor = "white"
 }
 
 # --------- SMB status ---------
