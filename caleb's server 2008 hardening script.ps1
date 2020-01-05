@@ -97,10 +97,13 @@ function disableAdminShares{
     Write-Host "`nDisabling administrative shares via registry"
     $host.UI.RawUI.foregroundcolor = "cyan"
     REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /v AutoShareServer /t REG_DWORD /d 0
-    Write-Host "Stopping and starting server. Are you sure?"
-    $host.UI.RawUI.foregroundcolor = "white"
-    cmd /c "net stop server && net start server"
-    cmd /c "net start Netlogon && net start dfs"
+    Write-Host "Stopping and starting server"
+    #cmd /c "net stop server && net start server"
+    #cmd /c "net start Netlogon && net start dfs"
+    Stop-Service server -Force
+    Start-Service dfs
+    Start-Service netlogon
+    Start-Service server
 } 
 # --------- disable cached credentials via registry ---------
 function disableCacheCreds{
@@ -123,15 +126,14 @@ function disableSMB1{
 # --------- disable RDP ---------
 function disableRDP{
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nCloses RDP"
+    Write-Host "`nDisabling RDP"
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Opening sysdm.cpl"
+    Write-Host "Opening System Properties dialog box. Remove all Remote Desktop Users"
     sysdm.cpl
     Write-Host "Stopping RDP Service"
-    $host.UI.RawUI.foregroundcolor = "white"
-    net stop "remote desktop services"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Disabling RDP via registry"
+    #net stop "remote desktop services"
+    Stop-Service "Remote Desktop Services"
+    Write-Host "Removing RDP via registry"
     Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" –Value 1 –Force
     Write-Host "RDP disabled"
     $host.UI.RawUI.foregroundcolor = "white"
@@ -165,7 +167,7 @@ function changeP{
     $users = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $OU
     $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb"
     #$binddn =  "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
-    $host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
     #to-do: fix when auto pass not meet complex required
     New-Variable -Name hashTable -Visibility Public -Value @{}
     foreach ($user in $users) 
@@ -177,7 +179,6 @@ function changeP{
         Write-Host "Skipping binddn"
         }
         else{
-        $host.UI.RawUI.foregroundcolor = "white"
         $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
         Write-Host "Changing the password of $user"
         Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
@@ -191,7 +192,7 @@ function changeP{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "`"$env:USERPROFILE\desktop\Script_Output\user_passwds_list.txt`" has list of users and passwords"
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
-    Write-Host "`"securePasswords.xml`" created in %localappdata%"
+    Write-Host "`"%localappdata%\securePasswords.xml`" has AD users .xml hashtable"
     $host.UI.RawUI.foregroundcolor = "white"
 }
     
@@ -266,10 +267,10 @@ Write-Host "binddn user password has been changed"
 $host.UI.RawUI.foregroundcolor = "white"
 }
     
-# --------- enable passwd complexity and length 12 ---------
+# --------- enable LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12 ---------
 function setPassPol{
 $host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nEnabling password complexity, length 12 etc. policy"
+Write-Host "`nEnabling LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Importing ActiveDirectory module"
 Import-Module ActiveDirectory
@@ -310,7 +311,7 @@ function pickAKB{
     Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nThere are "$applicable_KBs.count" that might install below. Try KB2489256, KB2503658, and KB2769369 first"
+    Write-Host "`nThere are "$applicable_KBs.count" that might install below. KB2489256, KB2503658, and KB2769369 installed on lab"
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -538,7 +539,7 @@ function runningServices{
 function hotFixCheck{
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "`nComparing systeminfo HotFix list against known KB data"
+    Write-Host "`nComparing systeminfo HotFix list against HotFix master-list"
     
     #manual page
     #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
@@ -551,6 +552,7 @@ function hotFixCheck{
     if(($system_info | Out-String).Contains("x64-based PC")){
         if(($system_info | Out-String).Contains("R2")){
             #Windows Server 2008 R2 64-bit (6.1)
+            Write-Host "The system is 64-bit 6.1"
             $auto_download_KBs = @{    
                 KB975517 = "https://bit.ly/2rArzrt"
                 KB2393802 = "http://bit.ly/2kodsxw"
@@ -573,6 +575,7 @@ function hotFixCheck{
         }
         else{
             #Windows Server 2008 64-bit (6.0)
+            Write-Host "The system is 64-bit 6.0"
             $auto_download_KBs = @{
                 KB2588516 = "https://bit.ly/37oIwEN"
                 KB2705219 = "https://bit.ly/2ZxEGGm"
@@ -584,6 +587,7 @@ function hotFixCheck{
     }
     else{
         #Windows Server 2008 32-bit (6.0)
+        Write-Host "The system is 32-bit 6.0"
         $auto_download_KBs = @{
             KB4012598 = "https://bit.ly/2Q3Qjlk"
             KB3011780 = "https://bit.ly/2ZzTRPF"
@@ -600,15 +604,17 @@ function hotFixCheck{
 
     #export applicable list and provide output to console
     $auto_download_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host $auto_download_KBs.count "KB(s) in the master list did not appeare to be installed and will be downloaded"    
+    $host.UI.RawUI.foregroundcolor = "cyan"  
     Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    $auto_download_KBs
 
-    $all = Read-Host "Would you like to downlad all "$auto_download_KBs.count" possibly applicable KBs now (y, n)?"
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $all = Read-Host "`nWould you like to downlad all "$auto_download_KBs.count" potentially applicable HotFixes now? (y, n)"
     if ($all -eq 'y'){
         #download all
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded. Try installing KB2489256, KB2503658, and KB2769369 first"
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        $auto_download_KBs
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Importing BitsTransfer module"
         Import-Module BitsTransfer
@@ -620,7 +626,7 @@ function hotFixCheck{
             Start-BitsTransfer -Source $url -Destination $output
         }
     }else{
-    pickAKB
+        pickAKB
     }  
     $host.UI.RawUI.foregroundcolor = "white"
 }
@@ -748,6 +754,7 @@ changePAdmin
 changePBinddn
 setPassPol
 setAssToTxt
+downloadTools
 GPTool
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nOpening Task Scheduler"
