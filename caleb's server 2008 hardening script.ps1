@@ -311,7 +311,7 @@ function pickAKB{
     Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "Here are the KBs to choose from. Try these first: KB2489256, KB2503658, KB2769369" 
+    Write-Host "`nThere are " $applicable_KBs.count " that might install below. Try these first: KB2489256, KB2503658, KB2769369"
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -592,9 +592,9 @@ function hotFixCheck{
 
     #removes installed from $auto_download_KBs and removes junk from systeminfo KB name
     $kb_list = Foreach ($KB in $auto_download_KBs.GetEnumerator()){$KB.Name}
-    $installed = $system_info | findstr "$kb_list"
+    $installed = $system_info | Select-String $kb_list
     if ($null -ne $installed){
-        $installed = $installed.Trim() -replace '\[[0-9]\w\]\:\s+',''
+        $installed = $installed -replace '(?m)^\s{27,}\[[0-9]\w\]\:\s',''
         $installed | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} | ForEach-Object {$auto_download_KBs.Remove($c)}
     }
 
@@ -606,7 +606,7 @@ function hotFixCheck{
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $auto_download_KBs
 
-    $all = Read-Host "Would you like to downlad all "$auto_download_KBs.count" possible KBs?"
+    $all = Read-Host "Would you like to downlad all "$auto_download_KBs.count" possibly applicable KBs now (y, n)?"
     if ($all -eq 'y'){
         #download all
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -619,9 +619,8 @@ function hotFixCheck{
             $output = "$env:userprofile\desktop\Script_Output\$KB.msu"
             Start-BitsTransfer -Source $url -Destination $output
         }
-    }
-    else{Write-Host "KBs that installed on lab were KB2503658, KB2489256, KB2489256"
-    pickAKB    
+    }else{
+    pickAKB
     }  
     $host.UI.RawUI.foregroundcolor = "white"
 }
