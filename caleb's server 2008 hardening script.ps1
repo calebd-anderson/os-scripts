@@ -36,12 +36,17 @@ function downloadTools{
        Write-Host "Importing BitsTransfer module"
        Import-Module BitsTransfer
        foreach ($key in $downloads.GetEnumerator()) {
-           "Downloading $($key.Name) from $($key.Value)"
-           $filename = $($key.Name)
-           $url = $downloads.$filename
-           $filename = $filename -replace '_(?!.*_)', '.'
-           $output = "$env:userprofile\desktop\Script_Output\$filename"
-           Start-BitsTransfer -Source $url -Destination $output
+            "Downloading $($key.Name) from $($key.Value)"
+            $filename = $($key.Name)
+            $url = $downloads.$filename
+            $filename = $filename -replace '_(?!.*_)', '.'
+            $output = "$env:userprofile\desktop\Script_Output\$filename"           
+            try{Start-BitsTransfer -Source $url -Destination $output}
+            catch{
+                $host.UI.RawUI.foregroundcolor = "red"
+                Write-Host "An error occurred:"
+                Write-Host $_
+            }
        }
     Write-Host "All the relevant tools have been downloaded"
     $host.UI.RawUI.foregroundcolor = "white"
@@ -112,6 +117,9 @@ function disableAdminShares{
     Start-Service dfs
     Start-Service netlogon
     Start-Service server
+    Write-Host "Admin share disabled `"AutoShareServer    REG_DWORD    0x0`""
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 } 
@@ -121,6 +129,9 @@ $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nDisabling cached credentials via registry"
 $host.UI.RawUI.foregroundcolor = "cyan"
 REG ADD HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential /t REG_DWORD /d 0
+Write-Host "cached credentials disabled `"UseLogonCredential    REG_DWORD    0x0`""
+$host.UI.RawUI.foregroundcolor = "darkgray"
+reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
 }
@@ -143,12 +154,14 @@ function disableRDP{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Opening System Properties dialog box. Remove all Remote Desktop Users"
     sysdm.cpl
-    Write-Host "Stopping RDP Service"
+    Write-Host "Stopping RDP Service; also UserMode Port Redirector"
     #net stop "remote desktop services"
-    Stop-Service "Remote Desktop Services"
+    Stop-Service "Remote Desktop Services" -Force
     Write-Host "Removing RDP via registry"
     Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" –Value 1 –Force
     Write-Host "RDP disabled"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    reg query "HKLM\System\CurrentControlSet\Control\Terminal Server"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -161,21 +174,20 @@ function changeP{
     ##Make sure $OU is accurate
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "Changing all DC user passwords"
+    Write-Host "`nChanging all DC user passwords"
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Extracting the domain name"
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
     $domaina = "$domain".Trim() -replace '.\b\w+', ''
     $domainb = "$domain".trim() -replace '^\w+\.', ''
-    # Author Kyle Henson
-    Write-Host "`nImporting AD module"
+    Write-Host "Importing AD module"
     Import-Module ActiveDirectory
     Write-Host "Disabling reversible encryption"
     Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
     #Write-Host "Forcing GP update"
     #gpupdate
-    Write-Host "Changing All Passwords except admin and binddn"
+    Write-Host "Changing All Passwords except admin and binddn`n"
     $list = "0123456789!@#$".ToCharArray()
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
     $users = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $OU
@@ -204,7 +216,7 @@ function changeP{
         }
     }
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\user_passwds_list.txt`" has list of users and passwords"
+    Write-Host "`n`"$env:USERPROFILE\desktop\Script_Output\user_passwds_list.txt`" has list of users and passwords"
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
     Write-Host "`"%localappdata%\securePasswords.xml`" has AD users .xml hashtable"
     $host.UI.RawUI.foregroundcolor = "white"
@@ -327,7 +339,7 @@ function pickAKB{
     Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nThere are" $applicable_KBs.count "that might install below. KB2489256, KB2503658, and KB2769369 installed on lab"
+    Write-Host "`nThere are" $applicable_KBs.count " hotfixes that might install below. KB2489256, KB2503658, and KB2769369 installed on lab"
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -335,9 +347,11 @@ function pickAKB{
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\$KB.msu"
     try{Start-BitsTransfer -Source $url -Destination $output}
-    catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host $KB "Is not an available KB`n"; break; $host.UI.RawUI.foregroundcolor = "white"}
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "$KB downloaded to `"Script_Output`""
+    catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host $KB "Is not an available KB`n"; $host.UI.RawUI.foregroundcolor = "white"}
+    #if($null -eq $Error[0]){
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        Write-Host "$KB downloaded to `"Script_Output`""
+    #}
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -416,10 +430,12 @@ function uniqueUserPols{
             $host.UI.RawUI.foregroundcolor = "red"
             Write-Host "An error occurred:"
             Write-Host $_
-            break
+            #continue
         }
-    Write-Host "All members removed from Schema Admins group"
-    $host.UI.RawUI.foregroundcolor = "white"
+    #if ($null -eq $Error[1]){
+        Write-Host "All members removed from Schema Admins group"
+        $host.UI.RawUI.foregroundcolor = "white"
+    #}
     cmd /c pause
     }
     # --------- disable guest account ---------
@@ -654,7 +670,10 @@ function hotFixCheck{
             Start-BitsTransfer -Source $url -Destination $output
         }
     }else{
-        pickAKB
+        $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list of potentially applicable KBs? (y, n)"
+        if ($pick -eq 'y'){
+            pickAKB
+        }
     }  
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
@@ -763,7 +782,6 @@ function enumerate{
     hotFixCheck
     SMBStatus
     readOutput
-    cmd /c pause
 }
 #endregion Enumeration
 
@@ -794,11 +812,12 @@ Write-Host "`nOpening Task Scheduler"
 taskschd.msc
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Manually examine scheduled tasks"
+$host.UI.RawUI.foregroundcolor = "white"
+cmd /c pause
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAll hardening functions are finished. Restart computer?"
 $host.UI.RawUI.foregroundcolor = "white"
 restart-computer -Confirm
-cmd /c pause
 }
 
 # --------- provide list of available functions ---------
