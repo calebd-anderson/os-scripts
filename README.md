@@ -15,3 +15,5 @@ Start-BitsTransfer -Source "https://bit.ly/2ZQIlzd" -Destination "$env:userprofi
 
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine</br>
 Get-ExecutionPolicy -List
+
+Ensure Encoding is ANSI
