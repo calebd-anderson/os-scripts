@@ -310,7 +310,7 @@ function pickAKB{
     Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nThere are " $applicable_KBs.count " that might install below. Try KB2489256, KB2503658, and KB2769369 first"
+    Write-Host "`nThere are "$applicable_KBs.count" that might install below. Try KB2489256, KB2503658, and KB2769369 first"
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
