@@ -294,7 +294,6 @@ function morePIDInfo{
     Get-WMIObject Win32_Process -Filter "processid = '$aPID'" | Select-Object *
     $host.UI.RawUI.foregroundcolor = "white"
 }
-
 # --------- enter service name for more info ---------
 function serviceInfo{
     $host.UI.RawUI.foregroundcolor = "green"
@@ -311,7 +310,7 @@ function pickAKB{
     Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nThere are " $applicable_KBs.count " that might install below. Try these first: KB2489256, KB2503658, KB2769369"
+    Write-Host "`nThere are " $applicable_KBs.count " that might install below. Try KB2489256, KB2503658, and KB2769369 first"
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -319,8 +318,8 @@ function pickAKB{
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\$KB.msu"
     try{Start-BitsTransfer -Source $url -Destination $output}
-    catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host "Not a valid entry"}
-    #$host.UI.RawUI.foregroundcolor = "cyan"
+    catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host $KB "Is not an available KB";break}
+    $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "$KB downloaded to `"Script_Output`""
     $host.UI.RawUI.foregroundcolor = "white"
 }
