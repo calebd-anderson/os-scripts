@@ -87,7 +87,7 @@ function disableTeredo{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nDisabling Teredo"
 $host.UI.RawUI.foregroundcolor = "cyan"
-cmd /c 'echo > script.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & script.vbs & cmd'
+cmd /c 'echo > script.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}" & script.vbs & cmd'
 $host.UI.RawUI.foregroundcolor = "white"
 }
 # --------- disable administrative shares via registry ---------
