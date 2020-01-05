@@ -700,6 +700,7 @@ enumerate
 turnOnFirewall
 firewallRules
 uniqueUserPols
+disableTeredo
 disableSMB1
 disableRDP
 disableAdminShares
@@ -708,7 +709,6 @@ disableCacheCreds
 changeP
 changePAdmin
 changePBinddn
-disableTeredo
 setPassPol
 setAssToTxt
 GPTool
