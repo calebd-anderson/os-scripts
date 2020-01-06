@@ -77,6 +77,8 @@ function firewallRules{
     netsh advfirewall firewall add rule name="Block VNC In" protocol=TCP dir=in localport=5800 action=block
     Write-Host "Block FTP In"
     netsh advfirewall firewall add rule name="Block VNC In" protocol=TCP dir=in localport=20 action=block
+    Write-Host "Allow DNS In"
+    netsh advfirewall firewall add rule name="Allow DNS In" protocol=UDP dir=in localport=53 action=allow
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -158,14 +160,26 @@ function disableRDP{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Opening System Properties dialog box. Remove all Remote Desktop Users"
     sysdm.cpl
-    Write-Host "Stopping RDP Service; also UserMode Port Redirector"
+    Write-Host "Stopping RDP Service, also UserMode Port Redirector; and disabling"
     #net stop "remote desktop services"
     Stop-Service "Remote Desktop Services" -Force
+    Set-Service "Remote Desktop Services" -StartupType Disabled
     Write-Host "Removing RDP via registry"
     Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" –Value 1 –Force
     Write-Host "RDP disabled"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query "HKLM\System\CurrentControlSet\Control\Terminal Server"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
+}
+function disablePrintSpooler{
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nStopping Print Spooler Service; and disabling"    
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Stopping WMI Service too"    
+    Stop-Service winmgmt -Force
+    Stop-Service spooler -Force
+    Set-Service spooler -StartupType Disabled
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -814,6 +828,7 @@ disableTeredo
 disableSMB1
 disableRDP
 disableAdminShares
+disablePrintSpooler
 disableGuest
 disableCacheCreds
 changeP
@@ -860,12 +875,13 @@ readPasswords
 readOutput (provide function output to console)
 avail (display this screen)
 ------- Invasive: -------
-harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, disableSMB1, disableRDP, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
+harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, disableSMB1, disableRDP, disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
 setAssToTxt (script file type open with notepad)
 GPTool (opens GP info tool)
 disableGuest (disables Guest account)
 disableRDP (disables RDP via regedit)
 disableAdminShares (disables Admin share via regedit)
+disablePrintSpooler (disables print spooler service)
 disableTeredo  (disables teredo)
 turnOnFirewall (turns on firewall)
 firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
@@ -886,3 +902,5 @@ avail
 
 #$HOST.UI.RawUI.ReadKey(“NoEcho,IncludeKeyDown”) | OUT-NULL
 #$HOST.UI.RawUI.Flushinputbuffer()
+
+#cmd /c
