@@ -903,4 +903,4 @@ avail
 #$HOST.UI.RawUI.ReadKey(“NoEcho,IncludeKeyDown”) | OUT-NULL
 #$HOST.UI.RawUI.Flushinputbuffer()
 
-#cmd /c
+#cmd /c pause
