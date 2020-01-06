@@ -101,6 +101,10 @@ Write-Host "`nDisabling Teredo"
 $host.UI.RawUI.foregroundcolor = "cyan"
 Start-Process cmd /k, 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs'
 Write-Host "`Teredo disabled"
+netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+Write-Host "`"$env:USERPROFILE\desktop\Script_Output\teredo_state`" has teredo status"
+$host.UI.RawUI.foregroundcolor = "darkgray"
+Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
 }
@@ -768,6 +772,18 @@ Write-Host "run SMBStatus"
 }else{
 Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
 }
+
+Start-Sleep -s 3
+#Teredo status
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "#Teredo Status (teredo_state.txt)"
+$host.UI.RawUI.foregroundcolor = "darkgray"
+if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\teredo_state.txt)){
+    Write-Host "run disableTeredo"
+}else{
+    Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+}
+
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
 }
