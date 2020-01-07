@@ -23,7 +23,6 @@ Write-Host "`n`"Script_Output`" already exists"
 }
 $host.UI.RawUI.foregroundcolor = "white"
 }
-
 # --------- downloads relevant tools ---------
 function downloadTools{
     makeOutDir
@@ -33,13 +32,15 @@ function downloadTools{
     Malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
     firefox_installer_exe = "https://mzl.la/35e3KDv"
     Sysinternals_suit_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
-    MicrosoftEasyFix20141_mini_diagcab = "https://download.microsoft.com/download/E/2/D/E2D7C992-7549-4EEE-857E-7976931BAF25/MicrosoftEasyFix20141.mini.diagcab"
-    mbsacli_2_1_1 = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=19892&6B49FDFB-8E5B-4B07-BC31-15695C5A2143=1"
-    PsLoggedOn = "https://download.sysinternals.com/files/PSTools.zip"
-    fciv = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe"
-    autoruns = "https://download.sysinternals.com/files/Autoruns.zip"
-    nmap = "https://nmap.org/dist/nmap-7.80-setup.exe"
-    npcap = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
+    #MicrosoftEasyFix20141_mini_diagcab = "https://download.microsoft.com/download/E/2/D/E2D7C992-7549-4EEE-857E-7976931BAF25/MicrosoftEasyFix20141.mini.diagcab"
+    mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi"
+    PsLoggedOn_zip = "https://download.sysinternals.com/files/PSTools.zip"
+    fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe"
+    autoruns_zip = "https://download.sysinternals.com/files/Autoruns.zip"
+    nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
+    npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
+    notepadplusplus_exe = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.Installer.exe"
+    SP1_KB976932_exe = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe" # *SP1 (.exe)
     }
     $host.UI.RawUI.foregroundcolor = "cyan"
        Write-Host "Importing BitsTransfer module"
@@ -61,7 +62,6 @@ function downloadTools{
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
-
 # --------- group policy tool ---------
 function GPTool{
     $host.UI.RawUI.foregroundcolor = "green"
@@ -139,7 +139,6 @@ function GPTool{
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
-
 #region Firewall
 # --------- turn firewall on ---------
 function turnOnFirewall{
@@ -150,7 +149,6 @@ function turnOnFirewall{
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
-
 # --------- firewall rules ---------
 function firewallRules{
     $host.UI.RawUI.foregroundcolor = "green"
@@ -172,7 +170,6 @@ function firewallRules{
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
-
 # --------- firewall status ---------
 function firewallStatus{
     $host.UI.RawUI.foregroundcolor = "green"
@@ -180,6 +177,15 @@ function firewallStatus{
     $host.UI.RawUI.foregroundcolor = "cyan"
     netsh firewall show config | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_status.txt
     Write-Host "`"$env:USERPROFILE\desktop\Script_Output\firewall_status.txt`" has fireawll status"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
+}
+# --------- displays common ports file ---------
+function ports{
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nDisplaying common ports file"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    more %SystemRoot%\System32\Drivers\etc\services
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -214,9 +220,9 @@ function disableAdminShares{
     Start-Service dfs
     Start-Service netlogon
     Start-Service server
-    Write-Host "Admin share disabled `"AutoShareServer    REG_DWORD    0x0`""
+    Write-Host "Admin share disabled"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\
+    reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 } 
@@ -469,6 +475,11 @@ function pickAKB{
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "$KB downloaded to `"Script_Output`""
     #}
+    $install = Read-Host "Would you like to install that KB now? (y, n)"
+    if($install -eq 'y'){ 
+        Write-Host "Installing $KB"
+        Start-Process wusa -ArgumentList ($KB, '/quiet', '/norestart') -Wait 
+    }
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -482,9 +493,9 @@ function configNTP{
     $host.UI.RawUI.foregroundcolor = "white"
     ipconfig
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $local_ip = Read-Host "`nEnter the local ip address? "
+    $time_source = Read-Host "`nEnter an authoritative time source `"time.cloudflare.com`" https://bit.ly/2QxHkcA?"
     $host.UI.RawUI.foregroundcolor = "white"
-    w32tm /config /update /manualpeerlist:"$local_ip" /syncfromflags:MANUAL
+    w32tm /config /update /manualpeerlist:"$time_source" /syncfromflags:MANUAL
     w32tm /query /status | Out-File $env:USERPROFILE\desktop\Script_Output\NTP_status.txt
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "`"$env:USERPROFILE\desktop\Script_Output\NTP_status.txt`" has NTP status"
@@ -669,46 +680,54 @@ function hotFixCheck{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nComparing systeminfo HotFix list against HotFix master-list"
     #manual page
-    #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
-    #Windows Server 2008 R2 32-bit (6.1)
-    #$R2_32_bit_KBs = @{}
-    
+    #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}   
+      
     #compare systeminfo to KB hashtable master list
     $host.UI.RawUI.foregroundcolor = "cyan"
     $system_info = systeminfo
     $host.UI.RawUI.foregroundcolor = "darkgray"    
     if(($system_info | Out-String).Contains("x64-based PC")){
         if(($system_info | Out-String).Contains("R2")){
-            #Windows Server 2008 R2 64-bit (6.1)
-            Write-Host "The system is 64-bit 6.1"
-            $auto_download_KBs = @{    
-                KB975517 = "https://bit.ly/2rArzrt"
-                KB2393802 = "http://bit.ly/2kodsxw"
-                KB3006226 = "http://bit.ly/2jLUmzu"
-                KB3000869 = "http://bit.ly/2kxFGZk"
-                KB3000061 = "http://bit.ly/2k4FRHV"
+            if(($system_info | Out-String).Contains("Service Pack 1")){ #Windows Server 2008 R2 64-bit (6.1) SP1
+                Write-Host "The system is 64-bit 6.1 and SP1 is installed"
+                $auto_download_KBs = @{
+                    KB975517 = "https://bit.ly/2rArzrt" # after SP1
+                    KB2393802 = "http://bit.ly/2kodsxw" # after SP1
+                    KB3006226 = "http://bit.ly/2jLUmzu" # after SP1
+                    KB3000869 = "http://bit.ly/2kxFGZk" # after SP1
+                    KB3000061 = "http://bit.ly/2k4FRHV" # after SP1
+                    KB2984972 = "http://bit.ly/2l6dBFP" # after SP1
+                    KB3126593 = "http://bit.ly/2jN0x6n" # after SP1
+                    KB2982378 = "https://bit.ly/39o5fTa" # after SP1
+                    KB3042553 = "https://download.microsoft.com/download/9/6/0/96092B3C-20B0-4D15-9C0A-AD71EC2FEC1E/Windows6.1-KB3042553-x64.msu" # after SP1
+                    KB2562485 = "https://download.microsoft.com/download/8/F/6/8F6409C8-CA14-411D-B9EE-71D063FA6912/Windows6.1-KB2562485-x64.msu" # after SP1
+                    KB3100465 = "https://bit.ly/2F2usVm" # after SP1
+                    KB3019978 = "https://download.microsoft.com/download/A/9/2/A9261883-EDDB-4282-9028-25D3A73BFAA8/Windows6.1-KB3019978-x64.msu" # after SP1
+                    KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu" # after SP1
+                    KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu" # after SP1
+                    KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1
+                    KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu" # after SP1
+                    KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu" # after SP1
+                    KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu" # after SP1
+                    KB2871997 = "https://download.microsoft.com/download/E/E/6/EE61BDFF-E2EA-41A9-AC03-CEBC88972337/Windows6.1-KB2871997-v2-x64.msu" # after SP1
+                    KB2931356 = "https://download.microsoft.com/download/8/C/2/8C2D99DA-306D-4CC0-88C7-DCFD81820CCE/Windows6.1-KB2931356-x64.msu" # after SP1
+                    KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
+                    KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
+                    KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
+                    KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1
+                }
+            }
+            else{ #Windows Server 2008 R2 64-bit (6.1) pre-SP1
+            Write-Host "The system is 64-bit 6.1 and pre-SP1"
+            $auto_download_KBs = @{
                 KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                 KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
-                KB2984972 = "http://bit.ly/2l6dBFP"
-                KB3126593 = "http://bit.ly/2jN0x6n"
-                KB2982378 = "https://bit.ly/39o5fTa"
-                KB3042553 = "https://bit.ly/2ZxS11p"
-                KB2562485 = "https://bit.ly/39oDXMc"
                 KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                KB3100465 = "https://bit.ly/2F2usVm"
-                KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu"
-                KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu"
-                KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu"
-                KB2871997 = "https://download.microsoft.com/download/E/E/6/EE61BDFF-E2EA-41A9-AC03-CEBC88972337/Windows6.1-KB2871997-v2-x64.msu"
-                KB976932 = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=5842&6B49FDFB-8E5B-4B07-BC31-15695C5A2143=1"
-                KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu"
-                KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu"
-                KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu"
-                KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu"
+                KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1
                 }
+            }
         }
-        else{
-            #Windows Server 2008 64-bit (6.0)
+        else{ #Windows Server 2008 64-bit (6.0)
             Write-Host "The system is 64-bit 6.0"
             $auto_download_KBs = @{
                 KB2588516 = "https://bit.ly/37oIwEN"
@@ -717,17 +736,23 @@ function hotFixCheck{
                 KB3011780 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2014/10/windows6.0-kb3011780-x64_c6135e518ffd1b053f1244a3f17d4c352c569c5b.msu"
                 KB4012598 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/02/windows6.0-kb4012598-x64_6a186ba2b2b98b2144b50f88baf33a5fa53b5d76.msu"
                 KB958644 = "https://download.microsoft.com/download/0/f/4/0f425c69-4a1f-4654-b4f8-476a5b1bae1d/Windows6.0-KB958644-x64.msu"
-                } 
+            } 
         }
     }
-    else{
-        #Windows Server 2008 32-bit (6.0)
-        Write-Host "The system is 32-bit 6.0"
+    elseif(($system_info | Out-String).Contains("R2")){ #Windows Server 2008 R2 32-bit (6.1)
+        Write-Host "The system is 32-bit 6.1 pre-SP1"
         $auto_download_KBs = @{
+        KB2931356 = "https://download.microsoft.com/download/8/C/2/8C2D99DA-306D-4CC0-88C7-DCFD81820CCE/Windows6.1-KB2931356-x86.msu"
+        }
+    }
+    else{ #Windows Server 2008 32-bit (6.0)
+        Write-Host "The system is 32-bit 6.0"
+        $auto_download_KBs = @{            
+            KB975517 = "https://bit.ly/2rArzrt"
             KB4012598 = "https://bit.ly/2Q3Qjlk"
             KB3011780 = "https://bit.ly/2ZzTRPF"
             KB958644 = "https://download.microsoft.com/download/4/9/8/498e39f6-9f49-4ca5-99dd-761456da0012/Windows6.0-KB958644-x86.msu"
-            }
+        }
     }
 
     #removes installed from $auto_download_KBs and removes junk from systeminfo KB name
@@ -743,14 +768,13 @@ function hotFixCheck{
     $auto_download_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
     Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
 
+    #download and install logic
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $all = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "potentially applicable HotFixes now? (y, n)"
+    $all = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "applicable HotFixes now? (y, n)"
     if ($all -eq 'y'){
         #download all
         $host.UI.RawUI.foregroundcolor = "cyan"
-        Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded. Try installing KB2489256, KB2503658, and KB2769369 first. KB976932 is SP1"
-        Write-Host "Uninstalled - KB2922229 and KB2984976"
-        Write-Host "Installed - KB3071756 and KB3060716 "
+        Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded and installed. Try KB3172605 last"
         $host.UI.RawUI.foregroundcolor = "darkgray"
         $auto_download_KBs
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -763,8 +787,18 @@ function hotFixCheck{
             $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
             Start-BitsTransfer -Source $url -Destination $output
         }
-    }else{
-        $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list of potentially applicable KBs? (y, n)"
+        #install loop
+        $host.UI.RawUI.foregroundcolor = "magenta"
+        $files = Get-ChildItem "$env:userprofile\desktop\Script_Output\updates"
+        $apply = Read-Host "`nWould you like to quietly install all" $files.count "downloaded HotFixes now? (y, n)"
+        if ($apply -eq 'y'){
+            foreach ($f in $files){ 
+                Write-Host "Installing $f"
+                Start-Process wusa -ArgumentList ($f.FullName, '/quiet', '/norestart') -Wait
+            }
+        }
+    } else {
+        $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list to download? (y, n)"
         if ($pick -eq 'y'){
             pickAKB
         }
@@ -943,6 +977,7 @@ Write-Host "
 ------- Noninvasive: -------
 makeOutDir (makes script output directory on desktop)
 enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck, readOutput)
+ports (displays common ports file)
 downloadTools (download relevant tools)
 hotFixCheck (checks list of HotFix KBs against systeminfo)
 pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to Script_Output)
