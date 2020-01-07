@@ -34,13 +34,14 @@ function downloadTools{
     Sysinternals_suit_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
     #MicrosoftEasyFix20141_mini_diagcab = "https://download.microsoft.com/download/E/2/D/E2D7C992-7549-4EEE-857E-7976931BAF25/MicrosoftEasyFix20141.mini.diagcab"
     mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi"
-    PsLoggedOn_zip = "https://download.sysinternals.com/files/PSTools.zip"
+    #PsLoggedOn_zip = "https://download.sysinternals.com/files/PSTools.zip"
     fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe"
-    autoruns_zip = "https://download.sysinternals.com/files/Autoruns.zip"
+    #autoruns_zip = "https://download.sysinternals.com/files/Autoruns.zip"
     nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
     npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
     notepadplusplus_exe = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.Installer.exe"
     SP1_KB976932_exe = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe" # *SP1 (.exe)
+    gmer_zip = "http://www2.gmer.net/gmer.zip"
     }
     $host.UI.RawUI.foregroundcolor = "cyan"
        Write-Host "Importing BitsTransfer module"
@@ -58,7 +59,10 @@ function downloadTools{
                 Write-Host $_
             }
        }
-    Write-Host "All the relevant tools have been downloaded"
+    Write-Host "All relevant tools downloaded"
+    Write-Host "Unzip all tools to `"C:\Tools`""
+    Write-Host "Adding path variable"
+    setx /M path "%path%;C:\tools"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
