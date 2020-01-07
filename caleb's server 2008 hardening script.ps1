@@ -38,6 +38,8 @@ function downloadTools{
     PsLoggedOn = "https://download.sysinternals.com/files/PSTools.zip"
     fciv = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe"
     autoruns = "https://download.sysinternals.com/files/Autoruns.zip"
+    nmap = "https://nmap.org/dist/nmap-7.80-setup.exe"
+    npcap = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
     }
     $host.UI.RawUI.foregroundcolor = "cyan"
        Write-Host "Importing BitsTransfer module"
