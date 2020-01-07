@@ -14,6 +14,8 @@ if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output)){
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "Creating the output directory `"Script_Output`" on the desktop`n"
 New-Item -Path "$env:USERPROFILE\desktop\Script_Output" -ItemType Directory | Out-Null
+New-Item -Path "$env:USERPROFILE\desktop\Script_Output\tools" -ItemType Directory | Out-Null
+New-Item -Path "$env:USERPROFILE\desktop\Script_Output\updates" -ItemType Directory | Out-Null
 }
 else{
 $host.UI.RawUI.foregroundcolor = "darkgray"
@@ -41,7 +43,7 @@ function downloadTools{
             $filename = $($key.Name)
             $url = $downloads.$filename
             $filename = $filename -replace '_(?!.*_)', '.'
-            $output = "$env:userprofile\desktop\Script_Output\$filename"           
+            $output = "$env:USERPROFILE\desktop\Script_Output\tools\$filename"           
             try{Start-BitsTransfer -Source $url -Destination $output}
             catch{
                 $host.UI.RawUI.foregroundcolor = "red"
@@ -50,6 +52,84 @@ function downloadTools{
             }
        }
     Write-Host "All the relevant tools have been downloaded"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
+}
+
+# --------- group policy tool ---------
+function GPTool{
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "Opening GP Tool"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Click each drop box item and make the change displayed"
+    #WPF AD GUI script
+    Add-Type -assembly System.Windows.Forms
+    $main_form = New-Object System.Windows.Forms.Form
+    $main_form.Text ='Set GPO Tool'
+    $main_form.Width = 600
+    $main_form.Height = 100
+    $main_form.AutoSize = $true
+    $Label = New-Object System.Windows.Forms.Label
+    $Label.Text = "GPO Object "
+    $Label.Location  = New-Object System.Drawing.Point(0,10)
+    $Label.AutoSize = $true
+    $main_form.Controls.Add($Label)
+    $ComboBox = New-Object System.Windows.Forms.ComboBox
+    $ComboBox.Width = 300
+    
+    #hashtable Name:Value
+    $GPO_EDITS = @{
+    PS_Script_Execution = "Comp Config\Policies\Administrative Templates\Windows Components\Windows PowerShell\ -> `"Turn on script execution`""
+    Kerberos_Encryption = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Config encrypt types (...) Kerberos\ `"AES256`""
+    LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`""
+    LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"?Refuse All`""
+    Win32_Conficker = "Comp Config\Policies\Administrative Templates\Windows Components\Autoplay Policies -> Turn off Autoplay\ `"ENABLE`""
+    Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)`nUser Config\Windows Settings\Scripts (Startup/Shutdown)"
+    Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE ???`""
+    Passwd_Policy = "Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
+    Add_Comp_Pol = "Computer Configuration\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`""
+    Deny_User_Rights = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignments\ -> `"MANY w/ Deny`""
+    Restricted_Groups = "Computer Configuration\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
+    Harden_UNC = "Computer Configuration / Administrative Templates / Network / Network Provider -> Hardened UNC Paths"
+    Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
+    RDP = "Computer Configuration – Administrative Templates – Windows Components – Remote Desktop Services – Remote Desktop Session Host – Connections.
+    Allow users to connect remotely using Remote Desktop Services (enable or disable)"
+    }
+    
+    Foreach ($GPO in $GPO_EDITS.GetEnumerator()){$ComboBox.Items.Add($($GPO.Name)) | Out-Null}
+    $ComboBox.Location = New-Object System.Drawing.Point(70,10)
+    $main_form.Controls.Add($ComboBox)
+    $Label2 = New-Object System.Windows.Forms.Label
+    $Label2.Text = "Location:"
+    $Label2.Location  = New-Object System.Drawing.Point(0,40)
+    $Label2.AutoSize = $true
+    $main_form.Controls.Add($Label2)
+    $Label3 = New-Object System.Windows.Forms.Label
+    $Label3.Text = ""
+    $Label3.Location = New-Object System.Drawing.Point(50,40)
+    $Label3.AutoSize = $true
+    $main_form.Controls.Add($Label3)
+    $Button = New-Object System.Windows.Forms.Button
+    $Button.Location = New-Object System.Drawing.Size(400,10)
+    $Button.Size = New-Object System.Drawing.Size(120,23)
+    $Button.Text = "Check"
+    $main_form.Controls.Add($Button)
+    $ComboBox.Add_SelectedIndexChanged({$Label3.Text = $GPO_EDITS[$ComboBox.selectedItem]})
+    #$Button.Add_Click({$Label3.Text = $GPO_EDITS[$ComboBox.selectedItem]})
+    $Button2 = New-Object System.Windows.Forms.Button
+    $Button2.Location = New-Object System.Drawing.Size(530,10)
+    $Button2.Size = New-Object System.Drawing.Size(120,23)
+    $Button2.Text = "Open gpmc.msc"
+    $main_form.Controls.Add($Button2)
+    $Button2.Add_Click({gpmc.msc})
+    $Button3 = New-Object System.Windows.Forms.Button
+    $Button3.Location = New-Object System.Drawing.Size(660,10)
+    $Button3.Size = New-Object System.Drawing.Size(120,23)
+    $Button3.Text = "Open secpol.msc"
+    $main_form.Controls.Add($Button3)
+    $Button3.Add_Click({secpol.msc})
+    $main_form.ShowDialog()
+    Write-Host "Ending GP tool"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -82,7 +162,7 @@ function firewallRules{
     netsh advfirewall firewall add rule name="ICMP block incoming V4 echo request" protocol="icmpv4:any,any" dir=in action=block
     netsh advfirewall firewall add rule name="ICMP block incoming V6 echo request" protocol="icmpv6:any,any" dir=in action=block
     Write-Host "Allowing DNS port 53 in"
-    netsh advfirewall firewall add rule name="Allow DNS In" protocol=UDP dir=in localport=53 action=allow
+    netsh advfirewall firewall add rule name="Allow DNS port 53 in" protocol=UDP dir=in localport=53 action=allow
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -254,8 +334,7 @@ function changeP{
     Write-Host "`"%localappdata%\securePasswords.xml`" has AD users .xml hashtable"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
-}
-    
+}    
 # --------- set the admin password ---------
 function changePAdmin{
     makeOutDir
@@ -289,8 +368,7 @@ function changePAdmin{
     Write-Host "admin user password has been changed"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
-}
-    
+}    
 # --------- set the binddn password ---------
 function changePBinddn{
     makeOutDir
@@ -324,8 +402,7 @@ function changePBinddn{
     Write-Host "binddn user password has been changed"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
-}
-    
+}    
 # --------- enable LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12 ---------
 function setPassPol{
     $host.UI.RawUI.foregroundcolor = "green"
@@ -471,97 +548,22 @@ function uniqueUserPols{
         $host.UI.RawUI.foregroundcolor = "white"
     #}
     cmd /c pause
-    }
+}
     # --------- disable guest account ---------
-    function disableGuest{
-        $host.UI.RawUI.foregroundcolor = "green"
-        Write-Host "`nDisabling guest account"        
-        $host.UI.RawUI.foregroundcolor = "cyan"
-        #Import-Module ActiveDirectory
-        #Disable-ADAccount -Identity Guest
-        net user guest /active:no
-        Write-Host "Guest account disabled"
-        $host.UI.RawUI.foregroundcolor = "white"
-        cmd /c pause
-    }
-#endregion User Edits
-
-# --------- group policy tool ---------
-function GPTool{
+function disableGuest{
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "Opening GP Tool"
+    Write-Host "`nDisabling guest account"        
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Click each drop box item and make the change displayed"
-    #WPF AD GUI script
-    Add-Type -assembly System.Windows.Forms
-    $main_form = New-Object System.Windows.Forms.Form
-    $main_form.Text ='Set GPO Tool'
-    $main_form.Width = 600
-    $main_form.Height = 100
-    $main_form.AutoSize = $true
-    $Label = New-Object System.Windows.Forms.Label
-    $Label.Text = "GPO Object "
-    $Label.Location  = New-Object System.Drawing.Point(0,10)
-    $Label.AutoSize = $true
-    $main_form.Controls.Add($Label)
-    $ComboBox = New-Object System.Windows.Forms.ComboBox
-    $ComboBox.Width = 300
-    
-    #hashtable Name:Value
-    $GPO_EDITS = @{
-    PS_Script_Execution = "Comp Config\Policies\Administrative Templates\Windows Components\Windows PowerShell\ -> `"Turn on script execution`""
-    Kerberos_Encryption = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Config encrypt types (...) Kerberos\ `"AES256`""
-    LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`""
-    LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"?Refuse All`""
-    Win32_Conficker = "Comp Config\Policies\Administrative Templates\Windows Components\Autoplay Policies -> Turn off Autoplay\ `"ENABLE`""
-    Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)`nUser Config\Windows Settings\Scripts (Startup/Shutdown)"
-    Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE ???`""
-    Passwd_Policy = "Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
-    Add_Comp_Pol = "Computer Configuration\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`""
-    Deny_User_Rights = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignments\ -> `"MANY w/ Deny`""
-    Restricted_Groups = "Computer Configuration\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
-    Harden_UNC = "Computer Configuration / Administrative Templates / Network / Network Provider -> Hardened UNC Paths"
-    Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
-    }
-    
-    Foreach ($GPO in $GPO_EDITS.GetEnumerator()){$ComboBox.Items.Add($($GPO.Name)) | Out-Null}
-    $ComboBox.Location = New-Object System.Drawing.Point(70,10)
-    $main_form.Controls.Add($ComboBox)
-    $Label2 = New-Object System.Windows.Forms.Label
-    $Label2.Text = "Location:"
-    $Label2.Location  = New-Object System.Drawing.Point(0,40)
-    $Label2.AutoSize = $true
-    $main_form.Controls.Add($Label2)
-    $Label3 = New-Object System.Windows.Forms.Label
-    $Label3.Text = ""
-    $Label3.Location = New-Object System.Drawing.Point(50,40)
-    $Label3.AutoSize = $true
-    $main_form.Controls.Add($Label3)
-    $Button = New-Object System.Windows.Forms.Button
-    $Button.Location = New-Object System.Drawing.Size(400,10)
-    $Button.Size = New-Object System.Drawing.Size(120,23)
-    $Button.Text = "Check"
-    $main_form.Controls.Add($Button)
-    $ComboBox.Add_SelectedIndexChanged({$Label3.Text = $GPO_EDITS[$ComboBox.selectedItem]})
-    #$Button.Add_Click({$Label3.Text = $GPO_EDITS[$ComboBox.selectedItem]})
-    $Button2 = New-Object System.Windows.Forms.Button
-    $Button2.Location = New-Object System.Drawing.Size(530,10)
-    $Button2.Size = New-Object System.Drawing.Size(120,23)
-    $Button2.Text = "Open gpmc.msc"
-    $main_form.Controls.Add($Button2)
-    $Button2.Add_Click({gpmc.msc})
-    $Button3 = New-Object System.Windows.Forms.Button
-    $Button3.Location = New-Object System.Drawing.Size(660,10)
-    $Button3.Size = New-Object System.Drawing.Size(120,23)
-    $Button3.Text = "Open secpol.msc"
-    $main_form.Controls.Add($Button3)
-    $Button3.Add_Click({secpol.msc})
-    $main_form.ShowDialog()
-    Write-Host "Ending GP tool"
+    #Import-Module ActiveDirectory
+    #Disable-ADAccount -Identity Guest
+    net user guest /active:no
+    Write-Host "Guest account disabled"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
+#endregion User Edits
 
+#region File System
 # --------- sets script extensions to open notepad ---------
 function setAssToTxt{
     $host.UI.RawUI.foregroundcolor = "green"
@@ -577,8 +579,46 @@ function setAssToTxt{
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
+# --------- makes a backup ---------
+function makeADBackup {
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nMaking a backup of the system"
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $location = Read-Host "Type a drive and path to backup to"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    wbadmin start systemstatebackup -backuptarget:$location
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
+}
+#endregion File System
 
 #region Enumeration
+# --------- order directory by date changed ---------
+function dateChanged {
+$host.UI.RawUI.foregroundcolor = "green"
+Write-Host "`nProvide files by date changed"
+$host.UI.RawUI.foregroundcolor = "darkgray"
+cmd /c dir /O-D /P %SystemRoot%\System32 
+cmd /c dir /O-D /P "%appdata%"
+$host.UI.RawUI.foregroundcolor = "white"
+cmd /c pause
+}
+# --------- startup enumeration --------- 
+function enumStartup {
+    makeOutDir
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nCreating list of startup tasks"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt
+    reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+    reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+    reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+    reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
+}
 # --------- format netstat -abno --------- 
 function formatNetstat{
     makeOutDir
@@ -654,6 +694,11 @@ function hotFixCheck{
                 KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu"
                 KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu"
                 KB2871997 = "https://download.microsoft.com/download/E/E/6/EE61BDFF-E2EA-41A9-AC03-CEBC88972337/Windows6.1-KB2871997-v2-x64.msu"
+                KB976932 = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=5842&6B49FDFB-8E5B-4B07-BC31-15695C5A2143=1"
+                KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu"
+                KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu"
+                KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu"
+                KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu"
                 }
         }
         else{
@@ -665,6 +710,7 @@ function hotFixCheck{
                 KB2849470 = "https://bit.ly/2MG0fQ6"
                 KB3011780 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2014/10/windows6.0-kb3011780-x64_c6135e518ffd1b053f1244a3f17d4c352c569c5b.msu"
                 KB4012598 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/02/windows6.0-kb4012598-x64_6a186ba2b2b98b2144b50f88baf33a5fa53b5d76.msu"
+                KB958644 = "https://download.microsoft.com/download/0/f/4/0f425c69-4a1f-4654-b4f8-476a5b1bae1d/Windows6.0-KB958644-x64.msu"
                 } 
         }
     }
@@ -674,6 +720,7 @@ function hotFixCheck{
         $auto_download_KBs = @{
             KB4012598 = "https://bit.ly/2Q3Qjlk"
             KB3011780 = "https://bit.ly/2ZzTRPF"
+            KB958644 = "https://download.microsoft.com/download/4/9/8/498e39f6-9f49-4ca5-99dd-761456da0012/Windows6.0-KB958644-x86.msu"
             }
     }
 
@@ -695,7 +742,9 @@ function hotFixCheck{
     if ($all -eq 'y'){
         #download all
         $host.UI.RawUI.foregroundcolor = "cyan"
-        Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded. Try installing KB2489256, KB2503658, and KB2769369 first"
+        Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded. Try installing KB2489256, KB2503658, and KB2769369 first. KB976932 is SP1"
+        Write-Host "Uninstalled - KB2922229 and KB2984976"
+        Write-Host "Installed - KB3071756 and KB3060716 "
         $host.UI.RawUI.foregroundcolor = "darkgray"
         $auto_download_KBs
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -705,7 +754,7 @@ function hotFixCheck{
             "Downloading $($key.Name) from $($key.Value)"
             $KB = $($key.Name)
             $url = $auto_download_KBs.$KB
-            $output = "$env:userprofile\desktop\Script_Output\$KB.msu"
+            $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
             Start-BitsTransfer -Source $url -Destination $output
         }
     }else{
@@ -836,13 +885,14 @@ function enumerate{
     formatNetstat
     firewallStatus
     runningServices
+    enumStartup
     hotFixCheck
     SMBStatus
     readOutput
 }
 #endregion Enumeration
 
-# --------- run all critical functions ---------
+# --------- run all hardening functions ---------
 function harden{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "Hardening"
@@ -864,7 +914,6 @@ changePBinddn
 setPassPol
 setAssToTxt
 downloadTools
-GPTool
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nOpening Task Scheduler"
 taskschd.msc
@@ -872,6 +921,7 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Manually examine scheduled tasks"
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
+GPTool
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAll hardening functions are finished. Restart computer?"
 $host.UI.RawUI.foregroundcolor = "white"
@@ -886,11 +936,12 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "
 ------- Noninvasive: -------
 makeOutDir (makes script output directory on desktop)
-enumerate (formatNetstat, firewallStatus, runningServices, hotFixCheck, readOutput)
+enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck, readOutput)
 downloadTools (download relevant tools)
 hotFixCheck (checks list of HotFix KBs against systeminfo)
 pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to Script_Output)
 autoDownloadKB (#incomplete)
+enumStartup
 firewallStatus
 SMBStatus (returns SMB registry info)
 formatNetstat (format netstat -abno)
@@ -904,6 +955,7 @@ avail (display this screen)
 ------- Invasive: -------
 harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, disableSMB1, disableRDP, disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
 setAssToTxt (script file type open with notepad)
+makeADBackup
 GPTool (opens GP info tool)
 disableGuest (disables Guest account)
 disableRDP (disables RDP via regedit)
