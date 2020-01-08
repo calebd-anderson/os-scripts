@@ -231,17 +231,48 @@ function disableAdminShares{
     cmd /c pause
 } 
 # --------- disable cached credentials via registry ---------
-function disableCacheCreds{
+function miscRegedits{
 $host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nDisabling cached credentials (mimikatz) via registry"
+Write-Host "`nMiscilanious settings via registry (mimikatz)"
 $host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "Disabling cached creds"
 REG ADD HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential /t REG_DWORD /d 0
-reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /v TokenLeakDetectDelaySecs /t REG_DWORD /d 30
-Write-Host "cached credentials disabled `"UseLogonCredential    REG_DWORD    0x0`""
-Write-Host "Clear credentials of logged off users after 30 seconds `" TokenLeakDetectDelaySecs    REG_DWORD    0x1e`""
 $host.UI.RawUI.foregroundcolor = "darkgray"
-reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest
-reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa
+reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /f UseLogonCredential
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "Enabling clear password cache after 30 sec."
+reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /v TokenLeakDetectDelaySecs /t REG_DWORD /d 30
+$host.UI.RawUI.foregroundcolor = "darkgray"
+reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /f TokenLeakDetectDelaySecs
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "restrict to NTLMv2"
+reg add HKLM\System\CurrentControlSet\Control\Lsa\ /v lmcompatibilitylevel /t REG_DWORD /d 5 /f
+$host.UI.RawUI.foregroundcolor = "darkgray"
+reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /f lmcompatibilitylevel
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "restrict anonymous access"
+reg add HKLM\System\CurrentControlSet\Control\Lsa\ /v restrictanonymous /t REG_DWORD /d 1 /f
+$host.UI.RawUI.foregroundcolor = "darkgray"
+reg query HKLM\System\CurrentControlSet\Control\Lsa\ /f restrictanonymous
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "Disallow anonymous enumeration of SAM accounts and shares"
+reg add HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v restrictanonymoussam /t REG_DWORD /d 1 /f
+$host.UI.RawUI.foregroundcolor = "darkgray"
+reg query HKLM\SYSTEM\CurrentControlSet\Control\Lsa /f restrictanonymoussam
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "disable IE password cache"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v DisablePasswordCaching /t REG_DWORD /d 1 /f
+$host.UI.RawUI.foregroundcolor = "darkgray"
+reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /f DisablePasswordCaching
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "disableing run once"
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
+$host.UI.RawUI.foregroundcolor = "darkgray"
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
+$host.UI.RawUI.foregroundcolor = "cyan"
+Write-Host "Finished with reg edits"
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
 }
@@ -316,6 +347,8 @@ function changeP{
     Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
     #Write-Host "Forcing GP update"
     #gpupdate
+    Write-Host "Removing creation of hashes used in pass the hash attack"
+    reg add HKLM\System\CurrentControlSet\Control\Lsa /f /v NoLMHash /t REG_DWORD /d 1
     Write-Host "Changing All Passwords except admin and binddn`n"
     $list = "0123456789!@#$".ToCharArray()
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
@@ -949,6 +982,7 @@ disableTeredo
 disableSMB1
 disableRDP
 disableAdminShares
+miscRegedits
 disablePrintSpooler
 disableGuest
 disableCacheCreds
@@ -998,13 +1032,14 @@ readPasswords
 readOutput (provide function output to console)
 avail (display this screen)
 ------- Invasive: -------
-harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, disableSMB1, disableRDP, disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
+harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRegedits, disableSMB1, disableRDP, disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
 setAssToTxt (script file type open with notepad)
 makeADBackup
 GPTool (opens GP info tool)
 disableGuest (disables Guest account)
 disableRDP (disables RDP via regedit)
 disableAdminShares (disables Admin share via regedit)
+miscRegedits (many mimikatz cache edits)
 disablePrintSpooler (disables print spooler service)
 disableTeredo  (disables teredo)
 turnOnFirewall (turns on firewall)
