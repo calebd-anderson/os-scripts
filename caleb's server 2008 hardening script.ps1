@@ -65,13 +65,13 @@ function downloadTools{
         }
     Write-Host "All relevant tools downloaded"
     Write-Host "Unzip all tools to `"C:\Tools`""
-    Write-Host "Adding path variable"
-    setx /M path "%path%;C:\tools"
-    } else {Write-Host "`"downloadTools`" to download tools"}
+    Write-Host "Adding C:\tools to machine path variable"
+    cmd /c setx /m path "%path%;C:\tools"
+    }
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $yes = Read-Host "Would you like to download SP1 R2 X64? (y, n)"
+    $yes = Read-Host "Would you like to download SP1 R2 X64 now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "cyan"
-    if ($yes = 'y'){
+    if ($yes -eq 'y'){
         $url = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe"
         $output = "$env:USERPROFILE\desktop\Script_Output\updates\windows6.1-KB976932-X64.exe"
         Write-Host "Importing BitsTransfer module"
@@ -231,6 +231,8 @@ cmd /c pause
 function disableAdminShares{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nDisabling administrative shares via registry"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    REG query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
     $host.UI.RawUI.foregroundcolor = "cyan"
     REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /v AutoShareServer /t REG_DWORD /d 0
     Write-Host "Stopping and starting server"
@@ -352,25 +354,32 @@ function changeP{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nChanging all DC user passwords"
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Extracting the domain name"
+    Write-Host "Disabling creation of hashes (used in pass the hash attack)"
+    reg add HKLM\System\CurrentControlSet\Control\Lsa /f /v NoLMHash /t REG_DWORD /d 1
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    reg query HKLM\System\CurrentControlSet\Control\Lsa /f NoLMHash
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Parsing the domain name"
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
     $domaina = "$domain".Trim() -replace '.\b\w+', ''
     $domainb = "$domain".trim() -replace '^\w+\.', ''
-    Write-Host "Importing AD module"
-    Import-Module ActiveDirectory
     Write-Host "Disabling reversible encryption"
     Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    Write-Host "Read?"
+    cmd /c pause
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Importing AD module"
+    Import-Module ActiveDirectory
     #Write-Host "Forcing GP update"
-    #gpupdate
-    Write-Host "Disabling creation of hashes (used in pass the hash attack)"
-    reg add HKLM\System\CurrentControlSet\Control\Lsa /f /v NoLMHash /t REG_DWORD /d 1
+    #gpupdate /force
     Write-Host "Changing All Passwords except admin and binddn`n"
     $list = "0123456789!@#$".ToCharArray()
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
     $users = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $OU
     $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb"
-    #$binddn =  "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
+    #$binddn = "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     #to-do: fix when auto pass not meet complex required
     New-Variable -Name hashTable -Visibility Public -Value @{}
@@ -822,8 +831,8 @@ function hotFixCheck{
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $auto_download_KBs
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $all = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "applicable HotFixes now? (y, n)"    
-    if ($all -eq 'y'){
+    $yes = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "applicable HotFixes now? (y, n)"    
+    if ($yes -eq 'y'){
         #download all
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded and installed"
@@ -842,9 +851,9 @@ function hotFixCheck{
         #install loop
         $host.UI.RawUI.foregroundcolor = "magenta"
         $files = Get-ChildItem "$env:userprofile\desktop\Script_Output\updates"
-        $apply = Read-Host "`nWould you like to quietly install all" $files.count "downloaded HotFixes now? (y, n)"
+        $yes = Read-Host "`nWould you like to quietly install all" $files.count "downloaded HotFixes now? (y, n)"
         $host.UI.RawUI.foregroundcolor = "cyan"
-        if ($apply -eq 'y'){
+        if ($yes -eq 'y'){
             foreach ($f in $files){ 
                 Write-Host "Installing $f"
                 Start-Process wusa -ArgumentList ($f.FullName, '/quiet', '/norestart') -Wait
@@ -915,12 +924,14 @@ Start-Sleep -s 3
 #updates to install
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "#Please attempt to install these KBs (might_install.txt):"
-$host.UI.RawUI.foregroundcolor = "darkgray"
-if(-not (Test-Path "$env:USERPROFILE\desktop\Script_Output\might_install.txt")){
-Write-host "criticalUpdateCheck not run or 0 HotFixes installed"
+if(-not (Test-Path "$env:userprofile\appdata\local\might_install.xml")){
+Write-host "run hotFixCheck"
 }
 else{
-Get-Content $env:USERPROFILE\desktop\Script_Output\might_install.txt
+    $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
+    $applicable_KBs | Out-File "$env:USERPROFILE\desktop\Script_Output\might_install.txt"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    Get-Content $env:USERPROFILE\desktop\Script_Output\might_install.txt
 }
 
 Start-Sleep -s 3
@@ -1002,7 +1013,6 @@ disableAdminShares
 miscRegedits
 disablePrintSpooler
 disableGuest
-#disableCacheCreds
 changeP
 changePAdmin
 changePBinddn
@@ -1017,6 +1027,12 @@ Write-Host "Manually examine scheduled tasks"
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
 GPTool
+$host.UI.RawUI.foregroundcolor = "magenta"
+$time = Read-Host "Timestamp Script_Output? (y, n)"
+if($time -eq 'y'){
+    $time = Get-Date -format 'yyyy.MM.dd-HH.mm.ss'
+    Rename-Item $env:userprofile\desktop\Script_Output $env:userprofile\desktop\Script_Output_$time
+}
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAll hardening functions are finished. Restart computer?"
 $host.UI.RawUI.foregroundcolor = "white"
@@ -1049,7 +1065,8 @@ readPasswords
 readOutput (provide function output to console)
 avail (display this screen)
 ------- Invasive: -------
-harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRegedits, disableSMB1, disableRDP, disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
+harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRegedits, disableSMB1, disableRDP,
+disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
 setAssToTxt (script file type open with notepad)
 makeADBackup
 GPTool (opens GP info tool)
