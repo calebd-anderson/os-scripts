@@ -375,9 +375,11 @@ function changeP{
     $domainb = "$domain".trim() -replace '^\w+\.', ''
     Write-Host "Disabling reversible encryption"
     Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
-    #$host.UI.RawUI.foregroundcolor = "magenta"
+    $host.UI.RawUI.foregroundcolor = "magenta"
     #Write-Host "Ready to change all user passwords?"
     #cmd /c pause
+    Write-Host "Press any key to start changing all AD user passwords . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer()
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Importing AD module"
     Import-Module ActiveDirectory
