@@ -347,7 +347,7 @@ function disablePrintSpooler{
 
 #region Passwords
 # --------- Main password changer ---------
-#disable reverse encryption policy then change all DC user passwords except admin and binddn 
+#disable reverse encryption policy then change all DC user passwords except admin and binddn
 function changeP{
     ##Make sure $OU is accurate
     makeOutDir
@@ -366,9 +366,9 @@ function changeP{
     $domainb = "$domain".trim() -replace '^\w+\.', ''
     Write-Host "Disabling reversible encryption"
     Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
-    $host.UI.RawUI.foregroundcolor = "magenta"
-    Write-Host "Read?"
-    cmd /c pause
+    #$host.UI.RawUI.foregroundcolor = "magenta"
+    #Write-Host "Ready to change all user passwords?"
+    #cmd /c pause
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Importing AD module"
     Import-Module ActiveDirectory
@@ -617,15 +617,17 @@ function uniqueUserPols{
         }
         catch [System.SystemException] {
             $host.UI.RawUI.foregroundcolor = "red"
-            Write-Host "An error occurred:"
+            Write-Host "An error occurred: Schema Admins group is already empty"
             Write-Host $_
+            $host.UI.RawUI.foregroundcolor = "white"
+            cmd /c pause
             return
         }
         Write-Host "All members removed from Schema Admins group"
         $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
-    # --------- disable guest account ---------
+# --------- disable guest account ---------
 function disableGuest{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nDisabling guest account"        
