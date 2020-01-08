@@ -542,7 +542,7 @@ function pickAKB{
     $KB = Read-Host "Enter the full KB you would like to download?"
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
-    try{$host.UI.RawUI.foregroundcolor = "cyan"; "Downloading $KB from" + $applicable_KBs.$KB; Start-BitsTransfer -Source $url -Destination $output}
+    try{$host.UI.RawUI.foregroundcolor = "cyan"; "Downloading $KB from " + $applicable_KBs.$KB; Start-BitsTransfer -Source $url -Destination $output}
     catch{$host.UI.RawUI.foregroundcolor = "red"; Write-Host $KB "Is not an available KB`n"; $host.UI.RawUI.foregroundcolor = "white"; return}
     Write-Host "$KB downloaded to `"Script_Output`""
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -551,6 +551,7 @@ function pickAKB{
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Installing $KB"
         Start-Process wusa -ArgumentList ("$env:userprofile\desktop\Script_Output\updates\$KB.msu", '/quiet', '/norestart') -Wait
+        $host.UI.RawUI.foregroundcolor = "white"
         Restart-Computer -Confirm
     }
     $host.UI.RawUI.foregroundcolor = "white"
@@ -796,7 +797,7 @@ function hotFixCheck{
                 KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                 KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
                 KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work
+                #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work
                 }
             }
         }
@@ -1057,6 +1058,7 @@ $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "
 ------- Noninvasive: -------
 makeOutDir (makes script output directory on desktop)
+timeStamp (timestamp Script_Output)
 enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck, readOutput)
 ports (displays common ports file)
 downloadTools (download relevant tools)
