@@ -43,10 +43,13 @@ function downloadTools{
     SP1_KB976932_exe = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe" # *SP1 (.exe)
     gmer_zip = "http://www2.gmer.net/gmer.zip"
     }
-    $host.UI.RawUI.foregroundcolor = "cyan"
-       Write-Host "Importing BitsTransfer module"
-       Import-Module BitsTransfer
-       foreach ($key in $downloads.GetEnumerator()) {
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $yes = Read-Host "Would you like to download all" $downloads.count "tools now? (y, n)"
+    if ($yes -eq 'y'){
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        Write-Host "Importing BitsTransfer module"
+        Import-Module BitsTransfer
+        foreach ($key in $downloads.GetEnumerator()) {
             "Downloading $($key.Name) from $($key.Value)"
             $filename = $($key.Name)
             $url = $downloads.$filename
@@ -58,7 +61,8 @@ function downloadTools{
                 Write-Host "An error occurred:"
                 Write-Host $_
             }
-       }
+        }
+    }
     Write-Host "All relevant tools downloaded"
     Write-Host "Unzip all tools to `"C:\Tools`""
     Write-Host "Adding path variable"
