@@ -540,9 +540,8 @@ function pickAKB{
     $KB = Read-Host "Enter the full KB you would like to download?"
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
-    try{"Downloading $KB from $applicable_KBs.$KB"; Start-BitsTransfer -Source $url -Destination $output}
+    try{$host.UI.RawUI.foregroundcolor = "cyan"; "Downloading $KB from" + $applicable_KBs.$KB; Start-BitsTransfer -Source $url -Destination $output}
     catch{$host.UI.RawUI.foregroundcolor = "red"; Write-Host $KB "Is not an available KB`n"; $host.UI.RawUI.foregroundcolor = "white"; return}
-    $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "$KB downloaded to `"Script_Output`""
     $host.UI.RawUI.foregroundcolor = "magenta"
     $install = Read-Host "Would you like to install that KB now? (y, n)"
