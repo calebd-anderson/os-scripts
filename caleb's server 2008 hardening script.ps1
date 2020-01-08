@@ -42,10 +42,10 @@ function downloadTools{
     #nppp_exe = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.bin.x64.zip"
     gmer_zip = "http://www2.gmer.net/gmer.zip"    
     }
-    $host.UI.RawUI.foregroundcolor = "magenta"
-    $yes = Read-Host "Would you like to download all" $downloads.count "tools now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $downloads
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $yes = Read-Host "Would you like to download all" $downloads.count "tools now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "cyan"
     if ($yes -eq 'y'){
         Write-Host "Importing BitsTransfer module"
@@ -515,7 +515,7 @@ function pickAKB{
     Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nThere are" $applicable_KBs.count " hotfixes that might install below. KB2489256, KB2503658, and KB2769369 installed on lab"
+    Write-Host "`nThere are" $applicable_KBs.count "available hotfixes below. KB2489256, KB2503658, and KB2769369 installed in lab"
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -523,13 +523,12 @@ function pickAKB{
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
     try{Start-BitsTransfer -Source $url -Destination $output}
-    catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host $KB "Is not an available KB`n"; $host.UI.RawUI.foregroundcolor = "white"}
-    #if($null -eq $Error[0]){
-        $host.UI.RawUI.foregroundcolor = "cyan"
-        Write-Host "$KB downloaded to `"Script_Output`""
-    #}
+    catch{$host.UI.RawUI.foregroundcolor = "red"; Write-Host $KB "Is not an available KB`n"; $host.UI.RawUI.foregroundcolor = "white"; return}
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "$KB downloaded to `"Script_Output`""
     $install = Read-Host "Would you like to install that KB now? (y, n)"
-    if($install -eq 'y'){ 
+    if($install -eq 'y'){
+        $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Installing $KB"
         Start-Process wusa -ArgumentList ($KB, '/quiet', '/norestart') -Wait 
     }
@@ -611,12 +610,10 @@ function uniqueUserPols{
             $host.UI.RawUI.foregroundcolor = "red"
             Write-Host "An error occurred:"
             Write-Host $_
-            #continue
+            return
         }
-    #if ($null -eq $Error[0]){
         Write-Host "All members removed from Schema Admins group"
         $host.UI.RawUI.foregroundcolor = "white"
-    #}
     cmd /c pause
 }
     # --------- disable guest account ---------
@@ -822,10 +819,10 @@ function hotFixCheck{
     Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
 
     #download and install logic
-    $host.UI.RawUI.foregroundcolor = "magenta"
-    $all = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "applicable HotFixes now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $auto_download_KBs
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $all = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "applicable HotFixes now? (y, n)"    
     if ($all -eq 'y'){
         #download all
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -854,6 +851,7 @@ function hotFixCheck{
             }
         }
     } else {
+        $host.UI.RawUI.foregroundcolor = "magenta"
         $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list to download? (y, n)"
         if ($pick -eq 'y'){
             pickAKB
