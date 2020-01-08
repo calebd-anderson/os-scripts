@@ -40,15 +40,16 @@ function downloadTools{
     nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
     npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
     #nppp_exe = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.bin.x64.zip"
-    SP1_KB976932_exe = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe" # *SP1 (.exe)
-    gmer_zip = "http://www2.gmer.net/gmer.zip"
+    gmer_zip = "http://www2.gmer.net/gmer.zip"    
     }
     $host.UI.RawUI.foregroundcolor = "magenta"
     $yes = Read-Host "Would you like to download all" $downloads.count "tools now? (y, n)"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    $downloads
+    $host.UI.RawUI.foregroundcolor = "cyan"
     if ($yes -eq 'y'){
-        $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Importing BitsTransfer module"
-        Import-Module BitsTransfer
+        Import-Module BitsTransfer        
         foreach ($key in $downloads.GetEnumerator()) {
             "Downloading $($key.Name) from $($key.Value)"
             $filename = $($key.Name)
@@ -62,11 +63,22 @@ function downloadTools{
                 Write-Host $_
             }
         }
-    }
     Write-Host "All relevant tools downloaded"
     Write-Host "Unzip all tools to `"C:\Tools`""
     Write-Host "Adding path variable"
     setx /M path "%path%;C:\tools"
+    } else {Write-Host "`"downloadTools`" to download tools"}
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $yes = Read-Host "Would you like to download SP1 R2 X64? (y, n)"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    if ($yes = 'y'){
+        $url = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe"
+        $output = "$env:USERPROFILE\desktop\Script_Output\updates\windows6.1-KB976932-X64.exe"
+        Write-Host "Importing BitsTransfer module"
+        Import-Module BitsTransfer
+        Start-BitsTransfer -Source $url -Destination $output
+        Write-Host "windows6.1-KB976932-X64.exe downloaded to Script_Output\updates"
+    }
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -312,7 +324,7 @@ function disableRDP{
     Set-Service "UmRdpService" -StartupType Disabled
     Write-Host "Removing RDP via registry"
     Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" –Value 1 –Force
-    Write-Host "RDP disabled `"fDenyTSConnections    REG_DWORD    0x1`""
+    Write-Host "RDP disabled"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query "HKLM\System\CurrentControlSet\Control\Terminal Server" /f fDenyTSConnections
     $host.UI.RawUI.foregroundcolor = "white"
@@ -721,8 +733,8 @@ function hotFixCheck{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nComparing systeminfo HotFix list against HotFix master-list"
     #manual page
-    #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}   
-      
+    #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}    
+
     #compare systeminfo to KB hashtable master list
     $host.UI.RawUI.foregroundcolor = "cyan"
     $system_info = systeminfo
@@ -812,10 +824,12 @@ function hotFixCheck{
     #download and install logic
     $host.UI.RawUI.foregroundcolor = "magenta"
     $all = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "applicable HotFixes now? (y, n)"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    $auto_download_KBs
     if ($all -eq 'y'){
         #download all
         $host.UI.RawUI.foregroundcolor = "cyan"
-        Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded and installed. Try KB3172605 last"
+        Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded and installed"
         $host.UI.RawUI.foregroundcolor = "darkgray"
         $auto_download_KBs
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -832,6 +846,7 @@ function hotFixCheck{
         $host.UI.RawUI.foregroundcolor = "magenta"
         $files = Get-ChildItem "$env:userprofile\desktop\Script_Output\updates"
         $apply = Read-Host "`nWould you like to quietly install all" $files.count "downloaded HotFixes now? (y, n)"
+        $host.UI.RawUI.foregroundcolor = "cyan"
         if ($apply -eq 'y'){
             foreach ($f in $files){ 
                 Write-Host "Installing $f"
