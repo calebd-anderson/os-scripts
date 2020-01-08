@@ -39,7 +39,7 @@ function downloadTools{
     #autoruns_zip = "https://download.sysinternals.com/files/Autoruns.zip"
     nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
     npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
-    notepadplusplus_exe = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.Installer.exe"
+    #nppp_exe = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.bin.x64.zip"
     SP1_KB976932_exe = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe" # *SP1 (.exe)
     gmer_zip = "http://www2.gmer.net/gmer.zip"
     }
@@ -269,8 +269,8 @@ Write-Host "disableing run once"
 reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
 reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
 $host.UI.RawUI.foregroundcolor = "darkgray"
-reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
-reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
+reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "Finished with reg edits"
 $host.UI.RawUI.foregroundcolor = "white"
@@ -310,7 +310,7 @@ function disableRDP{
     Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" –Value 1 –Force
     Write-Host "RDP disabled `"fDenyTSConnections    REG_DWORD    0x1`""
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    reg query "HKLM\System\CurrentControlSet\Control\Terminal Server"
+    reg query "HKLM\System\CurrentControlSet\Control\Terminal Server" /f fDenyTSConnections
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -347,7 +347,7 @@ function changeP{
     Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
     #Write-Host "Forcing GP update"
     #gpupdate
-    Write-Host "Removing creation of hashes used in pass the hash attack"
+    Write-Host "Disabling creation of hashes (used in pass the hash attack)"
     reg add HKLM\System\CurrentControlSet\Control\Lsa /f /v NoLMHash /t REG_DWORD /d 1
     Write-Host "Changing All Passwords except admin and binddn`n"
     $list = "0123456789!@#$".ToCharArray()
@@ -505,7 +505,7 @@ function pickAKB{
     $host.UI.RawUI.foregroundcolor = "magenta"
     $KB = Read-Host "Enter the full KB you would like to install?"
     $url = $applicable_KBs.$KB
-    $output = "$env:userprofile\desktop\Script_Output\$KB.msu"
+    $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
     try{Start-BitsTransfer -Source $url -Destination $output}
     catch{$host.UI.RawUI.foregroundcolor = "cyan"; Write-Host $KB "Is not an available KB`n"; $host.UI.RawUI.foregroundcolor = "white"}
     #if($null -eq $Error[0]){
@@ -985,7 +985,7 @@ disableAdminShares
 miscRegedits
 disablePrintSpooler
 disableGuest
-disableCacheCreds
+#disableCacheCreds
 changeP
 changePAdmin
 changePBinddn
