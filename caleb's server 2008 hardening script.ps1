@@ -159,6 +159,15 @@ function GPTool{
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
+
+function timeStamp {
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $time = Read-Host "Timestamp Script_Output? (y, n)"
+    if($time -eq 'y'){
+        $time = Get-Date -format 'yyyy.MM.dd-HH.mm.ss'
+        Rename-Item $env:userprofile\desktop\Script_Output $env:userprofile\desktop\Script_Output_$time
+    }
+}
 #region Firewall
 # --------- turn firewall on ---------
 function turnOnFirewall{
@@ -528,18 +537,20 @@ function pickAKB{
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $KB = Read-Host "Enter the full KB you would like to install?"
+    $KB = Read-Host "Enter the full KB you would like to download?"
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
-    try{Start-BitsTransfer -Source $url -Destination $output}
+    try{"Downloading $KB from $applicable_KBs.$KB"; Start-BitsTransfer -Source $url -Destination $output}
     catch{$host.UI.RawUI.foregroundcolor = "red"; Write-Host $KB "Is not an available KB`n"; $host.UI.RawUI.foregroundcolor = "white"; return}
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "$KB downloaded to `"Script_Output`""
+    $host.UI.RawUI.foregroundcolor = "magenta"
     $install = Read-Host "Would you like to install that KB now? (y, n)"
     if($install -eq 'y'){
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Installing $KB"
-        Start-Process wusa -ArgumentList ($KB, '/quiet', '/norestart') -Wait 
+        Start-Process wusa -ArgumentList ("$env:userprofile\desktop\Script_Output\updates\$KB.msu", '/quiet', '/norestart') -Wait
+        Restart-Computer -Confirm
     }
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
@@ -784,7 +795,7 @@ function hotFixCheck{
                 KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                 KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
                 KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1
+                KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work
                 }
             }
         }
@@ -968,7 +979,7 @@ Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
 Start-Sleep -s 3
 #Teredo status
 $host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "#Teredo Status (teredo_state.txt)"
+Write-Host "`n#Teredo Status (teredo_state.txt)"
 $host.UI.RawUI.foregroundcolor = "darkgray"
 if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\teredo_state.txt)){
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -1029,12 +1040,8 @@ Write-Host "Manually examine scheduled tasks"
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
 GPTool
-$host.UI.RawUI.foregroundcolor = "magenta"
-$time = Read-Host "Timestamp Script_Output? (y, n)"
-if($time -eq 'y'){
-    $time = Get-Date -format 'yyyy.MM.dd-HH.mm.ss'
-    Rename-Item $env:userprofile\desktop\Script_Output $env:userprofile\desktop\Script_Output_$time
-}
+#timestamp
+timeStamp
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAll hardening functions are finished. Restart computer?"
 $host.UI.RawUI.foregroundcolor = "white"
