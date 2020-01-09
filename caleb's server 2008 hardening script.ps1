@@ -183,19 +183,20 @@ function firewallRules{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nCreating firewall rules:"
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Blocking RDP port 3389 in"
+    Write-Host "Blocking RDP port 3389 IN"
     netsh advfirewall firewall add rule name="Block RDP port 3389 in" protocol=TCP dir=in localport=3389 action=block
-    Write-Host "Blocking VNC port 5900 in"
+    Write-Host "Blocking VNC port 5900 IN"
     netsh advfirewall firewall add rule name="Block VNC port 5900 in" protocol=TCP dir=in localport=5900 action=block
-    Write-Host "Blocking VNC Java port 5800 in"
+    Write-Host "Blocking VNC Java port 5800 IN"
     netsh advfirewall firewall add rule name="Block VNC Java port 5800 in" protocol=TCP dir=in localport=5800 action=block
-    Write-Host "Blocking FTP port 20 in"
+    Write-Host "Blocking FTP port 20 IN"
     netsh advfirewall firewall add rule name="Block FTP port 20 in" protocol=TCP dir=in localport=20 action=block
-    Write-Host "Blocking all ICMP protcol V4, and 6 (ping) in"
+    Write-Host "Blocking all ICMP protcol V4, and 6 (ping) IN"
     netsh advfirewall firewall add rule name="ICMP block incoming V4 echo request" protocol="icmpv4:any,any" dir=in action=block
     netsh advfirewall firewall add rule name="ICMP block incoming V6 echo request" protocol="icmpv6:any,any" dir=in action=block
-    Write-Host "Allowing DNS port 53 in"
+    Write-Host "Allowing DNS port 53 IN and (OUT?)"
     netsh advfirewall firewall add rule name="Allow DNS port 53 in" protocol=UDP dir=in localport=53 action=allow
+    #netsh advfirewall firewall add rule name="Allow DNS port 53 out" protocol=UDP dir=out localport=53 action=allow
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -214,7 +215,7 @@ function ports{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nDisplaying common ports file"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    more %SystemRoot%\System32\Drivers\etc\services
+    cmd /c more %SystemRoot%\System32\Drivers\etc\services
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
