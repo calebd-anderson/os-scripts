@@ -105,21 +105,24 @@ function GPTool{
     
     #hashtable Name:Value
     $GPO_EDITS = @{
-    PS_Script_Execution = "Comp Config\Policies\Administrative Templates\Windows Components\Windows PowerShell\ -> `"Turn on script execution`""
+    PS_Script_Execution = "Comp Config\Policies\Administrative Templates\Windows Components\Windows PowerShell\ -> `"Turn on script execution`"
+    User Config - Policies - Admin Templates - Windows Components - Windows Powershell - Turn on Script Execution `"Disabled`""
     Kerberos_Encryption = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Config encrypt types (...) Kerberos\ `"AES256`""
-    LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`""
-    LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"?Refuse All`""
+    X_LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`""
+    X_LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"?Refuse All`""
     Win32_Conficker = "Comp Config\Policies\Administrative Templates\Windows Components\Autoplay Policies -> Turn off Autoplay\ `"ENABLE`""
     Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)`nUser Config\Windows Settings\Scripts (Startup/Shutdown)"
-    Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE ???`""
-    Passwd_Policy = "Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
+    Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE ???`""
+    X_Passwd_Policy = "Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
     Add_Comp_Pol = "Computer Configuration\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`""
     Deny_User_Rights = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignments\ -> `"MANY w/ Deny`""
     Restricted_Groups = "Computer Configuration\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
     Harden_UNC = "Computer Configuration / Administrative Templates / Network / Network Provider -> Hardened UNC Paths"
-    Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
+    X_Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
     RDP = "Computer Configuration – Administrative Templates – Windows Components – Remote Desktop Services – Remote Desktop Session Host – Connections.
     Allow users to connect remotely using Remote Desktop Services (enable or disable)"
+    Block_APP = "User Config - Policies - Admin Templates - System - Don't run specified Windows applications `"Enable`" powershell.exe
+    Comp Config - Policies - Sec Settings - App Control Policies - AppLocker - Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
     }
     
     Foreach ($GPO in $GPO_EDITS.GetEnumerator()){$ComboBox.Items.Add($($GPO.Name)) | Out-Null}
@@ -159,7 +162,7 @@ function GPTool{
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
-
+# --------- timestamp Script_Output ---------
 function timeStamp {
     $host.UI.RawUI.foregroundcolor = "magenta"
     $time = Read-Host "Timestamp Script_Output? (y, n)"
@@ -364,6 +367,8 @@ function changeP{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nChanging all DC user passwords"
     $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Importing AD module"
+    Import-Module ActiveDirectory
     Write-Host "Disabling creation of hashes (used in pass the hash attack)"
     reg add HKLM\System\CurrentControlSet\Control\Lsa /f /v NoLMHash /t REG_DWORD /d 1
     $host.UI.RawUI.foregroundcolor = "darkgray"
@@ -381,11 +386,9 @@ function changeP{
     #cmd /c pause
     Write-Host "Press any key to start changing all AD user passwords . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Importing AD module"
-    Import-Module ActiveDirectory
     #Write-Host "Forcing GP update"
     #gpupdate /force
+    $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Changing All Passwords except admin and binddn`n"
     $list = "0123456789!@#$".ToCharArray()
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
@@ -657,7 +660,7 @@ function disableGuest{
 
 #region File System
 # --------- sets script extensions to open notepad ---------
-function setAssToTxt{
+function scriptToTxt{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nAssociating script extensions to open with notepad"
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -670,6 +673,20 @@ function setAssToTxt{
     cmd /c assoc .wsh=txtfile
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
+}
+function undoScriptToTxt {
+$host.UI.RawUI.foregroundcolor = "green"
+Write-Host "`nAssociating script extensions to default"
+$host.UI.RawUI.foregroundcolor = "cyan"
+cmd /c assoc .bat=batfile
+cmd /c assoc .js=JSFile
+cmd /c assoc .jse=JSEFile
+cmd /c assoc .vbe=VBEFile
+cmd /c assoc .vbs=VBSFile
+cmd /c assoc .wsf=WSFFile
+cmd /c assoc .wsh=WSHFile
+$host.UI.RawUI.foregroundcolor = "white"
+cmd /c pause
 }
 # --------- makes a backup ---------
 function makeADBackup {
@@ -690,8 +707,8 @@ function dateChanged {
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nProvide files by date changed"
 $host.UI.RawUI.foregroundcolor = "darkgray"
-cmd /c dir /O-D /P %SystemRoot%\System32 
-cmd /c dir /O-D /P "%appdata%"
+cmd /c dir /O-D /P %SystemRoot%\System32 | more
+cmd /c dir /O-D /P "%appdata%" | more
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
 }
@@ -1033,7 +1050,7 @@ changeP
 changePAdmin
 changePBinddn
 setPassPol
-setAssToTxt
+scriptToTxt
 downloadTools
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nOpening Task Scheduler"
@@ -1067,6 +1084,7 @@ hotFixCheck (checks list of HotFix KBs against systeminfo)
 pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to Script_Output)
 autoDownloadKB (#incomplete)
 enumStartup
+dateChanged
 firewallStatus
 SMBStatus (returns SMB registry info)
 formatNetstat (format netstat -abno)
