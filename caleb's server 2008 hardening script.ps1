@@ -29,8 +29,8 @@ function downloadTools{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nDownloading relevant tools"
     $downloads = @{
-    Malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
-    firefox_installer_exe = "https://mzl.la/35e3KDv"
+    #malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
+    #firefox_installer_exe = "https://mzl.la/35e3KDv"
     Sysinternals_suit_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
     #MicrosoftEasyFix20141_mini_diagcab = "https://download.microsoft.com/download/E/2/D/E2D7C992-7549-4EEE-857E-7976931BAF25/MicrosoftEasyFix20141.mini.diagcab"
     mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi"
@@ -43,6 +43,17 @@ function downloadTools{
     gmer_zip = "http://www2.gmer.net/gmer.zip"
     #atom_exe = "https://atom.io/download/windows_x64"
     sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe"
+    bccrypto_zip = "https://www.bouncycastle.org/csharp/download/bccrypto-csharp-1.8.5-bin.zip"
+    new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip"
+    encryption_examples_zip = "https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87/file/108341/2/EncryptionExamples.zip"
+    protectedData_zip = "https://gallery.technet.microsoft.com/scriptcenter/Share-encrypted-data-2f91fd3f/file/129591/1/ProtectedData.zip"
+    PSBouncyCastle_psm1 = "https://raw.githubusercontent.com/rlipscombe/PSBouncyCastle/master/PSBouncyCastle.psm1"
+    file_crypt_psm1 = "https://gallery.technet.microsoft.com/EncryptDecrypt-files-use-65e7ae5d/file/165403/14/FileCryptography.psm1"
+    EMET_msi = "https://download.microsoft.com/download/F/3/6/F366901C-F3CB-4A94-B377-5611740B8B19/EMET%20Setup.msi"
+    dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
+    WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip"
+    NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
+    #SAMRi10_zip = "https://gallery.technet.microsoft.com/SAMRi10-Hardening-Remote-48d94b5b/file/165593/1/SAMRi10.zip" # prevent unprivileged local admin collection (this fix already exists in Windows 10 1607 and above)
     }
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $downloads
@@ -133,7 +144,7 @@ function GPTool{
     Restricted_Groups = "Computer Configuration\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
     Harden_UNC = "Computer Configuration / Administrative Templates / Network / Network Provider -> Hardened UNC Paths"
     X_Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
-    RDP = "Computer Configuration – Administrative Templates – Windows Components – Remote Desktop Services – Remote Desktop Session Host – Connections.
+    X_RDP = "Computer Configuration – Administrative Templates – Windows Components – Remote Desktop Services – Remote Desktop Session Host – Connections.
     Allow users to connect remotely using Remote Desktop Services (enable or disable)"
     Block_APP = "User Config - Policies - Admin Templates - System - Don't run specified Windows applications `"Enable`" powershell.exe
     Comp Config - Policies - Sec Settings - App Control Policies - AppLocker - Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
@@ -821,6 +832,7 @@ function hotFixCheck{
                     KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
                     KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
                     KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1
+                    KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
                 }
             }
             else{ #Windows Server 2008 R2 64-bit (6.1) pre-SP1
