@@ -40,7 +40,9 @@ function downloadTools{
     nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
     npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
     #nppp_exe = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.bin.x64.zip"
-    gmer_zip = "http://www2.gmer.net/gmer.zip"    
+    gmer_zip = "http://www2.gmer.net/gmer.zip"
+    #atom_exe = "https://atom.io/download/windows_x64"
+    sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe"
     }
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $downloads
@@ -63,10 +65,22 @@ function downloadTools{
                 Write-Host $_
             }
         }
-    Write-Host "All relevant tools downloaded"
-    Write-Host "Unzip all tools to `"C:\Tools`""
-    Write-Host "Adding C:\tools to machine path variable"
-    cmd /c setx /m path "%path%;C:\tools"
+        Write-Host "All relevant tools downloaded"
+        Write-Host "Unzip all tools to `"C:\Tools`""
+        $host.UI.RawUI.foregroundcolor = "magenta"
+        $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
+        if ($yes -eq 'y'){
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            cmd /c setx /m path "%path%;C:\tools"
+        }
+        $host.UI.RawUI.foregroundcolor = "magenta"
+        $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
+        if ($yes -eq 'y'){
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            $yes = Read-Host "Installing Sublime Text and adding context menue"
+            cmd /c %userprofile%\desktop\Script_Output\tools\sublime.exe /verysilent
+            REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
+        }
     }
     $host.UI.RawUI.foregroundcolor = "magenta"
     $yes = Read-Host "Would you like to download SP1 R2 X64 now? (y, n)"
