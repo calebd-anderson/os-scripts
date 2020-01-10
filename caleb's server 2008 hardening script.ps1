@@ -54,6 +54,7 @@ function downloadTools{
     WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip"
     NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
     #SAMRi10_zip = "https://gallery.technet.microsoft.com/SAMRi10-Hardening-Remote-48d94b5b/file/165593/1/SAMRi10.zip" # prevent unprivileged local admin collection (this fix already exists in Windows 10 1607 and above)
+    Seven_ZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
     }
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $downloads
@@ -88,21 +89,47 @@ function downloadTools{
         $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
         if ($yes -eq 'y'){
             $host.UI.RawUI.foregroundcolor = "cyan"
-            $yes = Read-Host "Installing Sublime Text and adding context menue"
+            Write-Host "Installing Sublime Text and adding context menue"
             cmd /c %userprofile%\desktop\Script_Output\tools\sublime.exe /verysilent
             REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
-        }
+        }        
     }
+    #move up in previous scope
+    $host.UI.RawUI.foregroundcolor = "magenta"
+        $yes = Read-Host "Would you like to install dotNet4.5, 7-Zip then Windows Managemnt Framework 5.1 now? (y, n)"
+        if ($yes -eq 'y'){
+            $BuildVersion = [System.Environment]::OSVersion.Version
+            if($BuildVersion.Minor -le '0'){
+                Write-Warning "dotNet_4.5, and WMF 5.1 is not supported on BuildVersion: {0}" -f $BuildVersion.ToString()
+                return
+            }
+            else{
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                Read-Host "Installing WMF 5.1"
+                #& "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
+                cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
+                cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\Seven_ZIP.exe /S
+                set PATH=%PATH%;"C:\Program Files\7-Zip"
+                7z e "C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip" -o"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1"
+                & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
+            }
+        }
     $host.UI.RawUI.foregroundcolor = "magenta"
     $yes = Read-Host "Would you like to download SP1 R2 X64 now? (y, n)"
-    $host.UI.RawUI.foregroundcolor = "cyan"
     if ($yes -eq 'y'){
         $url = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe"
-        $output = "$env:USERPROFILE\desktop\Script_Output\updates\windows6.1-KB976932-X64.exe"
+        $output = "$env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe"        
+        $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Importing BitsTransfer module"
         Import-Module BitsTransfer
         Start-BitsTransfer -Source $url -Destination $output
-        Write-Host "windows6.1-KB976932-X64.exe downloaded to Script_Output\updates"
+        Write-Host "windows6.1-KB976932-X64.exe downloaded to Script_Output\tools"
+        $host.UI.RawUI.foregroundcolor = "magenta"
+        $yes = Read-Host "Would you like to install SP1 now? (y, n)"
+        if ($yes -eq 'y'){
+            #$host.UI.RawUI.foregroundcolor = "cyan"
+            cmd /c C:\Users\Administrator\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe /unattend /norestart
+        }
     }
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
