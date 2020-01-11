@@ -28,6 +28,9 @@ function downloadTools{
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nDownloading relevant tools"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Importing BitsTransfer"
+    Import-Module BitsTransfer
     $BuildVersion = [System.Environment]::OSVersion.Version
     #if($BuildVersion.Revision -eq '0'){
         $downloads = @{
@@ -50,7 +53,7 @@ function downloadTools{
             dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
             WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip" #Windows Managment Framework 5.1 (PS 5.1)
             #NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
-            sevenZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
+            seven_ZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
         }
     #}
     $host.UI.RawUI.foregroundcolor = "darkgray"
@@ -60,8 +63,6 @@ function downloadTools{
     $yes = Read-Host "Would you like to download all" $downloads.count "tools now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "cyan"
     if ($yes -eq 'y'){
-        Write-Host "Importing BitsTransfer module"
-        Import-Module BitsTransfer
         #download all tools loop
         foreach ($key in $downloads.GetEnumerator()) {
             "Downloading $($key.Name) from $($key.Value)"
@@ -108,7 +109,13 @@ function downloadTools{
     function install7Zip {
         $host.UI.RawUI.foregroundcolor = "cyan" 
         if(!(Test-Path -LiteralPath $env:userprofile\desktop\Script_Output\tools\seven_ZIP.exe)){
-            Write-Host "7-Zip has not been downloaded yet"
+            Write-Host "7-Zip has not been downloaded yet." -NoNewline
+            Write-Host -ForegroundColor Magenta " Would you like to download it now? (y, n): " -NoNewline
+            $yes = Read-Host
+            if($yes -eq 'y')
+            {
+                Start-BitsTransfer -Source "https://www.7-zip.org/a/7z1900-x64.exe" -Destination "$env:USERPROFILE\desktop\Script_Output\tools\seven_ZIP.exe"
+            }
         }
         elseif(! (Test-Path -LiteralPath "C:\Program Files\7-Zip")){
             $host.UI.RawUI.foregroundcolor = "magenta"
@@ -150,7 +157,7 @@ function downloadTools{
                     }
                 }
             } else{Write-Host "Sysinternals is already installed to C:\Tools"}
-        }else{Write-Host "Nothing is installed to programatically extract Sysinternals.zip"}
+        }else{Write-Host "Nothing is installed to programatically extract .zip files"}
     }
     #install dotNet_4.5
     function installDotNet{
