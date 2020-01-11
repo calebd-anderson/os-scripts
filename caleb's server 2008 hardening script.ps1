@@ -31,7 +31,7 @@ function downloadTools{
     $downloads = @{
     #malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
     #firefox_installer_exe = "https://mzl.la/35e3KDv"
-    Sysinternals_suit_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
+    Sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
     #MicrosoftEasyFix20141_mini_diagcab = "https://download.microsoft.com/download/E/2/D/E2D7C992-7549-4EEE-857E-7976931BAF25/MicrosoftEasyFix20141.mini.diagcab"
     mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi"
     #PsLoggedOn_zip = "https://download.sysinternals.com/files/PSTools.zip"
@@ -58,12 +58,14 @@ function downloadTools{
     }
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $downloads
+    #download all?
     $host.UI.RawUI.foregroundcolor = "magenta"
     $yes = Read-Host "Would you like to download all" $downloads.count "tools now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "cyan"
     if ($yes -eq 'y'){
         Write-Host "Importing BitsTransfer module"
-        Import-Module BitsTransfer        
+        Import-Module BitsTransfer
+        #download all tools loop
         foreach ($key in $downloads.GetEnumerator()) {
             "Downloading $($key.Name) from $($key.Value)"
             $filename = $($key.Name)
@@ -78,13 +80,6 @@ function downloadTools{
             }
         }
         Write-Host "All relevant tools downloaded"
-        Write-Host "Unzip all tools to `"C:\Tools`""
-        $host.UI.RawUI.foregroundcolor = "magenta"
-        $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
-        if ($yes -eq 'y'){
-            $host.UI.RawUI.foregroundcolor = "cyan"
-            cmd /c setx /m path "%path%;C:\tools"
-        }
         $host.UI.RawUI.foregroundcolor = "magenta"
         $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
         if ($yes -eq 'y'){
@@ -94,26 +89,42 @@ function downloadTools{
             REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
         }        
     }
-    #move up in previous scope
-    $host.UI.RawUI.foregroundcolor = "magenta"
+    #install WMF 5.1? if SP1
+    $BuildVersion = [System.Environment]::OSVersion.Version
+    if($host.Version.Major -lt 5){
+        $host.UI.RawUI.foregroundcolor = "magenta"
         $yes = Read-Host "Would you like to install dotNet4.5, 7-Zip then Windows Managemnt Framework 5.1 now? (y, n)"
         if ($yes -eq 'y'){
-            $BuildVersion = [System.Environment]::OSVersion.Version
-            if($BuildVersion.Minor -le '0'){
+            if($BuildVersion.Revision -eq '0'){
                 Write-Warning "dotNet_4.5, and WMF 5.1 is not supported on BuildVersion: {0}" -f $BuildVersion.ToString()
                 return
             }
-            else{
-                $host.UI.RawUI.foregroundcolor = "cyan"
-                Read-Host "Installing WMF 5.1"
-                #& "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
-                cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
-                cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\Seven_ZIP.exe /S
-                set PATH=%PATH%;"C:\Program Files\7-Zip"
-                7z e "C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip" -o"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1"
-                & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            Read-Host "Installing WMF 5.1"
+            #& "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
+            cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
+            cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\Seven_ZIP.exe /S
+            set PATH=%PATH%;"C:\Program Files\7-Zip"
+            7z e "C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip" -o"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1"
+            & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
+        }
+        else{
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "Would you like to extract `"Sysinternals.zip`" to C:\Tools now? (y, n)"
+            if ($yes -eq 'y'){
+                Expand-Archive -LiteralPath "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip" -DestinationPath "C:\Tools" -Force
+                # add machine variable?
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
+                if ($yes -eq 'y'){
+                    $host.UI.RawUI.foregroundcolor = "cyan"
+                    cmd /c setx /m path "%path%;C:\tools"
+                }
             }
         }
+    }
+    #install SP1?
+    if($BuildVersion.Revision -eq '0'){
     $host.UI.RawUI.foregroundcolor = "magenta"
     $yes = Read-Host "Would you like to download SP1 R2 X64 now? (y, n)"
     if ($yes -eq 'y'){
@@ -131,6 +142,7 @@ function downloadTools{
             cmd /c C:\Users\Administrator\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe /unattend /norestart
         }
     }
+}
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
