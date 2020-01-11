@@ -126,30 +126,50 @@ function downloadTools{
     }
     #install Sysinternals
     function installSysinternals {
-        if(!(Test-Path -Path "C:\Tools")) {
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "Would you like to extract `"Sysinternals.zip`" to C:\Tools now? (y, n)"
-            $host.UI.RawUI.foregroundcolor = "cyan"
-            if ($yes -eq 'y'){
-                if($host.Version.Major -lt 5 -and (Test-Path -Path "C:\Program Files\7-Zip")){
-                    Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
-                    $env:Path += ";C:\Program Files\7-Zip"
-                    cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
-                }
-                else{
-                    Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
-                    Expand-Archive -LiteralPath $env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip -DestinationPath "C:\Tools" -Force
-                }
-                # add machine variable?
+        if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\seven_zip.exe"){
+            if(!(Test-Path -Path "C:\Tools")) {
                 $host.UI.RawUI.foregroundcolor = "magenta"
-                $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
+                $yes = Read-Host "Would you like to extract `"Sysinternals.zip`" to `"C:\Tools now?`" (y, n)"
+                $host.UI.RawUI.foregroundcolor = "cyan"
                 if ($yes -eq 'y'){
-                    $host.UI.RawUI.foregroundcolor = "cyan"
-                    cmd /c "setx /m path `"%path%;C:\tools`""
+                    if($host.Version.Major -lt 5 -and (Test-Path -Path "C:\Program Files\7-Zip")){
+                        Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
+                        $env:Path += ";C:\Program Files\7-Zip"
+                        cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
+                    }
+                    else{
+                        Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
+                        Expand-Archive -LiteralPath $env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip -DestinationPath "C:\Tools" -Force
+                    }
+                    # add machine variable?
+                    $host.UI.RawUI.foregroundcolor = "magenta"
+                    $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
+                    if ($yes -eq 'y'){
+                        $host.UI.RawUI.foregroundcolor = "cyan"
+                        cmd /c "setx /m path `"%path%;C:\tools`""
+                    }
                 }
+            } else{Write-Host "Sysinternals is already installed to C:\Tools"}
+        }else{Write-Host "Nothing is installed to programatically extract Sysinternals.zip"}
+    }
+    #install dotNet_4.5
+    function installDotNet{
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        if(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\dotNet_4_5.exe"){
+        Write-Host "Installing dotNet_4.5"
+        cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
+        }else{Write-Host "dotNet_4.5 has not been downloaded yet"}
+    }
+    #install WMF_5.1
+    function installWMF{
+        if(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\WMF_5_1.zip"){
+            Write-Host "Unzipping WMF_5_1.zipto tools\WMF_5_1"
+            cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip`" -o`"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1`""
+            if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"){
+                & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
             }
-        } else{Write-Host "Sysinternals is already installed to C:\Tools"}
-    }    
+        }else{Write-Host "WMF_5.1 has not been downloaded yet"}
+    }
     if($BuildVersion.Revision -eq '0'){
         if(! (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe)){
             $host.UI.RawUI.foregroundcolor = "magenta"
@@ -161,7 +181,7 @@ function downloadTools{
                 Write-Host "Importing BitsTransfer module"
                 Import-Module BitsTransfer
                 Start-BitsTransfer -Source $url -Destination $output
-                Write-Host "windows6.1-KB976932-X64.exe downloaded to Script_Output\tools"
+                Write-Host "`"windows6.1-KB976932-X64.exe`" downloaded to Script_Output\tools"
                 installSP1
             }
         }
@@ -170,22 +190,14 @@ function downloadTools{
         installSysinternals
         installSublime
     }
-    #install WMF 5.1? if SP1
+    #install WMF 5.1? if SP1 and WMF not already installed
     elseif($host.Version.Major -lt 5){
         $host.UI.RawUI.foregroundcolor = "magenta"
-        $yes = Read-Host "Would you like to install dotNet4.5, 7-Zip then Windows Managemnt Framework 5.1 now? (y, n)"
+        $yes = Read-Host "Would you like to install Windows Managemnt Framework 5.1 now? (y, n)"
         if ($yes -eq 'y'){
-            if($BuildVersion.Revision -eq '0'){
-                Write-Warning "dotNet_4.5, and WMF 5.1 is not supported on BuildVersion: {0}" -f $BuildVersion.ToString()
-                return
-            }
-            $host.UI.RawUI.foregroundcolor = "cyan"
-            Write-Host "Installing dotNet_4.5"
-            cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui            
+            installDotNet
             install7Zip
-            Write-Host "Unzipping WMF_5_1.zipto tools\WMF_5_1"
-            cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip`" -o`"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1`""
-            & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
+            installWMF
         }        
     }
     else{
