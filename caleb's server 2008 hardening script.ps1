@@ -88,10 +88,37 @@ function downloadTools{
             cmd /c %userprofile%\desktop\Script_Output\tools\sublime.exe /verysilent
             REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
         }        
+    }    
+    $BuildVersion = [System.Environment]::OSVersion.Version
+    #install SP1?
+    function installSP1{
+        $host.UI.RawUI.foregroundcolor = "magenta"
+        $yes = Read-Host "windows6.1-KB976932-X64 has been downloaded. Would you like to install SP1 now? (y, n)"
+        if ($yes -eq 'y'){
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            Write-Host "Installing SP1"
+            cmd /c C:\Users\Administrator\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe /unattend /norestart
+        }
+    }
+    if($BuildVersion.Revision -eq '0'){
+        if(! (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe)){
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "windows6.1-KB976932-X64 does not exist. Would you like to download SP1 R2 X64 now? (y, n)"
+            if ($yes -eq 'y'){
+                $url = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe"
+                $output = "$env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe"
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                Write-Host "Importing BitsTransfer module"
+                Import-Module BitsTransfer
+                Start-BitsTransfer -Source $url -Destination $output
+                Write-Host "windows6.1-KB976932-X64.exe downloaded to Script_Output\tools"
+                installSP1
+            }
+        }
+        else{installSP1}
     }
     #install WMF 5.1? if SP1
-    $BuildVersion = [System.Environment]::OSVersion.Version
-    if($host.Version.Major -lt 5){
+    elseif($host.Version.Major -lt 5){        
         $host.UI.RawUI.foregroundcolor = "magenta"
         $yes = Read-Host "Would you like to install dotNet4.5, 7-Zip then Windows Managemnt Framework 5.1 now? (y, n)"
         if ($yes -eq 'y'){
@@ -104,45 +131,25 @@ function downloadTools{
             #& "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
             cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
             cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\Seven_ZIP.exe /S
-            set PATH=%PATH%;"C:\Program Files\7-Zip"
-            7z e "C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip" -o"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1"
+            Set-Variable PATH=%PATH%;"C:\Program Files\7-Zip"
+            cmd /c "7z e "C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip" -o"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1""
             & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
-        }
-        else{
+        }        
+    }
+    else{
+        $host.UI.RawUI.foregroundcolor = "magenta"
+        $yes = Read-Host "Would you like to extract `"Sysinternals.zip`" to C:\Tools now? (y, n)"
+        if ($yes -eq 'y'){
+            Expand-Archive -LiteralPath "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip" -DestinationPath "C:\Tools" -Force
+            # add machine variable?
             $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "Would you like to extract `"Sysinternals.zip`" to C:\Tools now? (y, n)"
+            $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
             if ($yes -eq 'y'){
-                Expand-Archive -LiteralPath "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip" -DestinationPath "C:\Tools" -Force
-                # add machine variable?
-                $host.UI.RawUI.foregroundcolor = "magenta"
-                $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
-                if ($yes -eq 'y'){
-                    $host.UI.RawUI.foregroundcolor = "cyan"
-                    cmd /c setx /m path "%path%;C:\tools"
-                }
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                cmd /c setx /m path "%path%;C:\tools"
             }
         }
-    }
-    #install SP1?
-    if($BuildVersion.Revision -eq '0'){
-    $host.UI.RawUI.foregroundcolor = "magenta"
-    $yes = Read-Host "Would you like to download SP1 R2 X64 now? (y, n)"
-    if ($yes -eq 'y'){
-        $url = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe"
-        $output = "$env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe"        
-        $host.UI.RawUI.foregroundcolor = "cyan"
-        Write-Host "Importing BitsTransfer module"
-        Import-Module BitsTransfer
-        Start-BitsTransfer -Source $url -Destination $output
-        Write-Host "windows6.1-KB976932-X64.exe downloaded to Script_Output\tools"
-        $host.UI.RawUI.foregroundcolor = "magenta"
-        $yes = Read-Host "Would you like to install SP1 now? (y, n)"
-        if ($yes -eq 'y'){
-            #$host.UI.RawUI.foregroundcolor = "cyan"
-            cmd /c C:\Users\Administrator\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe /unattend /norestart
-        }
-    }
-}
+    }        
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -187,7 +194,7 @@ function GPTool{
     Allow users to connect remotely using Remote Desktop Services (enable or disable)"
     Block_APP = "User Config - Policies - Admin Templates - System - Don't run specified Windows applications `"Enable`" powershell.exe
     Comp Config - Policies - Sec Settings - App Control Policies - AppLocker - Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
-    }
+    }    
     
     Foreach ($GPO in $GPO_EDITS.GetEnumerator()){$ComboBox.Items.Add($($GPO.Name)) | Out-Null}
     $ComboBox.Location = New-Object System.Drawing.Point(70,10)
