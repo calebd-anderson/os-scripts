@@ -11,27 +11,23 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # --------- create output directory on desktop ---------
 function makeOutDir{
 if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output)){
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "Creating the output directory `"Script_Output`" on the desktop`n"
+Write-Host -ForegroundColor Green "Creating the output directory `"Script_Output`" on the desktop`n"
 New-Item -Path "$env:USERPROFILE\desktop\Script_Output" -ItemType Directory | Out-Null
 New-Item -Path "$env:USERPROFILE\desktop\Script_Output\tools" -ItemType Directory | Out-Null
 New-Item -Path "$env:USERPROFILE\desktop\Script_Output\updates" -ItemType Directory | Out-Null
 }
 else{
-$host.UI.RawUI.foregroundcolor = "darkgray"
-Write-Host "`n`"Script_Output`" already exists"
+Write-Host -ForegroundColor DarkGray "`n`"Script_Output`" already exists"
 }
 $host.UI.RawUI.foregroundcolor = "white"
 }
 # --------- downloads relevant tools ---------
 function downloadTools{
     makeOutDir
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nDownloading relevant tools"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Importing BitsTransfer"
+    Write-Host -ForegroundColor Green "`nDownloading relevant tools"
+    Write-Host -ForegroundColor Cyan "Importing BitsTransfer"
     Import-Module BitsTransfer
-    $BuildVersion = [System.Environment]::OSVersion.Version
+    
     #if($BuildVersion.Revision -eq '0'){
         $downloads = @{
             malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
@@ -78,22 +74,25 @@ function downloadTools{
             }
         }
         Write-Host "All relevant tools downloaded"
-    }    
+    }
+    $BuildVersion = [System.Environment]::OSVersion.Version
     #install sublime text editor?
     function installSublime{
-        $host.UI.RawUI.foregroundcolor = "magenta"
-        $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
-        if ($yes -eq 'y'){
-            if(Test-Path -Path "C:\Program Files\Sublime Text 3"){
-                Write-Host "Sublime is already installed"
-            } 
-            else{
-                $host.UI.RawUI.foregroundcolor = "cyan"
-                Write-Host "Installing Sublime Text and adding context menue"
-                cmd /c %userprofile%\desktop\Script_Output\tools\sublime.exe /verysilent
-                REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
+        if(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\sublime.exe"){
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
+            if ($yes -eq 'y'){
+                if(Test-Path -Path "C:\Program Files\Sublime Text 3"){
+                    Write-Host "Sublime is already installed"
+                } 
+                else{
+                    $host.UI.RawUI.foregroundcolor = "cyan"
+                    Write-Host "Installing Sublime Text and adding context menue"
+                    cmd /c %userprofile%\desktop\Script_Output\tools\sublime.exe /verysilent
+                    REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
+                }
             }
-        }
+        }else{Write-Host -ForegroundColor Cyan "Sublime has not been downloaded yet"}
     }
     #install SP1?
     function installSP1{
@@ -133,31 +132,41 @@ function downloadTools{
     }
     #install Sysinternals
     function installSysinternals {
-        if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\seven_zip.exe"){
-            if(!(Test-Path -Path "C:\Tools")) {
-                $host.UI.RawUI.foregroundcolor = "magenta"
-                $yes = Read-Host "Would you like to extract `"Sysinternals.zip`" to `"C:\Tools now?`" (y, n)"
-                $host.UI.RawUI.foregroundcolor = "cyan"
-                if ($yes -eq 'y'){
-                    if($host.Version.Major -lt 5 -and (Test-Path -Path "C:\Program Files\7-Zip")){
-                        Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
-                        $env:Path += ";C:\Program Files\7-Zip"
-                        cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
-                    }
-                    else{
-                        Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
-                        Expand-Archive -LiteralPath $env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip -DestinationPath "C:\Tools" -Force
-                    }
-                    # add machine variable?
-                    $host.UI.RawUI.foregroundcolor = "magenta"
-                    $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
-                    if ($yes -eq 'y'){
-                        $host.UI.RawUI.foregroundcolor = "cyan"
-                        cmd /c "setx /m path `"%path%;C:\tools`""
-                    }
+        #extract with 7-zip
+        if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\Sysinternals.zip"){
+            if(($host.Version.Major -lt 5) -and !(Test-Path -Path "C:\Tools")){
+                if(Test-Path -LiteralPath "C:\Program Files\7-Zip"){
+                Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
+                $env:Path += ";C:\Program Files\7-Zip"
+                cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
                 }
-            } else{Write-Host "Sysinternals is already installed to C:\Tools"}
-        }else{Write-Host "Nothing is installed to programatically extract .zip files"}
+                else{
+                    Write-Host "Nothing is installed to programatically extract Sysinternals.zip"-NoNewline
+                    Write-Host -ForegroundColor Magenta " Would you like to install it now? (y, n): " -NoNewline
+                    $yes = Read-Host
+                    if($yes = 'y'){install7Zip}
+                }
+            #extract with PS
+            }elseif(!(Test-Path -Path "C:\Tools")) {
+                Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
+                Expand-Archive -LiteralPath $env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip -DestinationPath "C:\Tools" -Force
+            }else{Write-Host "Sysinternals is already installed to C:\Tools"}
+            # add machine variable?
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
+            if ($yes -eq 'y'){
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                cmd /c "setx /m path `"%path%;C:\tools`""
+            } 
+        }else{
+            Write-Host "Sysinternals has not been downloaded yet. " -NoNewline
+            Write-Host -ForegroundColor magenta "Would you like to download it now? (y, n): " -NoNewline
+            $yes = Read-Host
+            if($yes -eq 'y'){
+                Write-Host "Downloading `"Sysinternals`""
+                Start-BitsTransfer -Source "https://download.sysinternals.com/files/SysinternalsSuite.zip" -Destination "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip"
+            }
+        }
     }
     #install dotNet_4.5
     function installDotNet{
