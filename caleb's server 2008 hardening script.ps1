@@ -28,34 +28,31 @@ function downloadTools{
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nDownloading relevant tools"
-    $downloads = @{
-    #malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
-    #firefox_installer_exe = "https://mzl.la/35e3KDv"
-    Sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
-    #MicrosoftEasyFix20141_mini_diagcab = "https://download.microsoft.com/download/E/2/D/E2D7C992-7549-4EEE-857E-7976931BAF25/MicrosoftEasyFix20141.mini.diagcab"
-    mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi"
-    #PsLoggedOn_zip = "https://download.sysinternals.com/files/PSTools.zip"
-    fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe"
-    #autoruns_zip = "https://download.sysinternals.com/files/Autoruns.zip"
-    nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
-    npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
-    #nppp_exe = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.bin.x64.zip"
-    gmer_zip = "http://www2.gmer.net/gmer.zip"
-    #atom_exe = "https://atom.io/download/windows_x64"
-    sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe"
-    bccrypto_zip = "https://www.bouncycastle.org/csharp/download/bccrypto-csharp-1.8.5-bin.zip"
-    new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip"
-    encryption_examples_zip = "https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87/file/108341/2/EncryptionExamples.zip"
-    protectedData_zip = "https://gallery.technet.microsoft.com/scriptcenter/Share-encrypted-data-2f91fd3f/file/129591/1/ProtectedData.zip"
-    PSBouncyCastle_psm1 = "https://raw.githubusercontent.com/rlipscombe/PSBouncyCastle/master/PSBouncyCastle.psm1"
-    file_crypt_psm1 = "https://gallery.technet.microsoft.com/EncryptDecrypt-files-use-65e7ae5d/file/165403/14/FileCryptography.psm1"
-    EMET_msi = "https://download.microsoft.com/download/F/3/6/F366901C-F3CB-4A94-B377-5611740B8B19/EMET%20Setup.msi"
-    dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
-    WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip"
-    NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
-    #SAMRi10_zip = "https://gallery.technet.microsoft.com/SAMRi10-Hardening-Remote-48d94b5b/file/165593/1/SAMRi10.zip" # prevent unprivileged local admin collection (this fix already exists in Windows 10 1607 and above)
-    Seven_ZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
-    }
+    $BuildVersion = [System.Environment]::OSVersion.Version
+    #if($BuildVersion.Revision -eq '0'){
+        $downloads = @{
+            malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
+            firefox_installer_exe = "https://mzl.la/35e3KDv"
+            Sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
+            mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi" #baseline security analyzer
+            fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe" #hash tool
+            nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
+            npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
+            gmer_zip = "http://www2.gmer.net/gmer.zip" #malware tool
+            sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe" #text editor
+            #bccrypto_zip = "https://www.bouncycastle.org/csharp/download/bccrypto-csharp-1.8.5-bin.zip"
+            new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip" #kerberos reset ps script
+            #encryption_examples_zip = "https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87/file/108341/2/EncryptionExamples.zip"
+            #protectedData_zip = "https://gallery.technet.microsoft.com/scriptcenter/Share-encrypted-data-2f91fd3f/file/129591/1/ProtectedData.zip"
+            #PSBouncyCastle_psm1 = "https://raw.githubusercontent.com/rlipscombe/PSBouncyCastle/master/PSBouncyCastle.psm1"
+            #file_crypt_psm1 = "https://gallery.technet.microsoft.com/EncryptDecrypt-files-use-65e7ae5d/file/165403/14/FileCryptography.psm1"
+            EMET_msi = "https://download.microsoft.com/download/F/3/6/F366901C-F3CB-4A94-B377-5611740B8B19/EMET%20Setup.msi" #Enhanced Mitigation Experience Toolkit 
+            dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
+            WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip" #Windows Managment Framework 5.1 (PS 5.1)
+            #NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
+            sevenZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
+        }
+    #}
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $downloads
     #download all?
@@ -80,16 +77,23 @@ function downloadTools{
             }
         }
         Write-Host "All relevant tools downloaded"
+    }    
+    #install sublime text editor?
+    function installSublime{
         $host.UI.RawUI.foregroundcolor = "magenta"
         $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
         if ($yes -eq 'y'){
-            $host.UI.RawUI.foregroundcolor = "cyan"
-            Write-Host "Installing Sublime Text and adding context menue"
-            cmd /c %userprofile%\desktop\Script_Output\tools\sublime.exe /verysilent
-            REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
-        }        
-    }    
-    $BuildVersion = [System.Environment]::OSVersion.Version
+            if(Test-Path -Path "C:\Program Files\Sublime Text 3"){
+                Write-Host "Sublime is already installed"
+            } 
+            else{
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                Write-Host "Installing Sublime Text and adding context menue"
+                cmd /c %userprofile%\desktop\Script_Output\tools\sublime.exe /verysilent
+                REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
+            }
+        }
+    }
     #install SP1?
     function installSP1{
         $host.UI.RawUI.foregroundcolor = "magenta"
@@ -100,6 +104,52 @@ function downloadTools{
             cmd /c C:\Users\Administrator\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe /unattend /norestart
         }
     }
+    #install 7-Zip
+    function install7Zip {
+        $host.UI.RawUI.foregroundcolor = "cyan" 
+        if(!(Test-Path -LiteralPath $env:userprofile\desktop\Script_Output\tools\seven_ZIP.exe)){
+            Write-Host "7-Zip has not been downloaded yet"
+        }
+        elseif(! (Test-Path -LiteralPath "C:\Program Files\7-Zip")){
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "7-Zip is not installed, would you like to install it now? (y, n)"
+            if ($yes -eq 'y'){
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                Write-Host "Installing 7-Zip"
+                cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\seven_ZIP.exe /S
+                Write-Host "Setting 7-Zip machine path variable"
+                #Set-Variable "PATH=%PATH%;C:\Program Files\7-Zip"
+                setx PATH "$env:path;C:\Program Files\7-Zip"
+            }
+        }
+        else{Write-Host "7-Zip is already installed"}
+    }
+    #install Sysinternals
+    function installSysinternals {
+        if(!(Test-Path -Path "C:\Tools")) {
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "Would you like to extract `"Sysinternals.zip`" to C:\Tools now? (y, n)"
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            if ($yes -eq 'y'){
+                if($host.Version.Major -lt 5 -and (Test-Path -Path "C:\Program Files\7-Zip")){
+                    Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
+                    $env:Path += ";C:\Program Files\7-Zip"
+                    cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
+                }
+                else{
+                    Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
+                    Expand-Archive -LiteralPath $env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip -DestinationPath "C:\Tools" -Force
+                }
+                # add machine variable?
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
+                if ($yes -eq 'y'){
+                    $host.UI.RawUI.foregroundcolor = "cyan"
+                    cmd /c "setx /m path `"%path%;C:\tools`""
+                }
+            }
+        } else{Write-Host "Sysinternals is already installed to C:\Tools"}
+    }    
     if($BuildVersion.Revision -eq '0'){
         if(! (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe)){
             $host.UI.RawUI.foregroundcolor = "magenta"
@@ -116,9 +166,12 @@ function downloadTools{
             }
         }
         else{installSP1}
+        install7Zip
+        installSysinternals
+        installSublime
     }
     #install WMF 5.1? if SP1
-    elseif($host.Version.Major -lt 5){        
+    elseif($host.Version.Major -lt 5){
         $host.UI.RawUI.foregroundcolor = "magenta"
         $yes = Read-Host "Would you like to install dotNet4.5, 7-Zip then Windows Managemnt Framework 5.1 now? (y, n)"
         if ($yes -eq 'y'){
@@ -127,28 +180,18 @@ function downloadTools{
                 return
             }
             $host.UI.RawUI.foregroundcolor = "cyan"
-            Read-Host "Installing WMF 5.1"
-            #& "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
-            cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
-            cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\Seven_ZIP.exe /S
-            Set-Variable PATH=%PATH%;"C:\Program Files\7-Zip"
-            cmd /c "7z e "C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip" -o"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1""
+            Write-Host "Installing dotNet_4.5"
+            cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui            
+            install7Zip
+            Write-Host "Unzipping WMF_5_1.zipto tools\WMF_5_1"
+            cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip`" -o`"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1`""
             & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
         }        
     }
     else{
-        $host.UI.RawUI.foregroundcolor = "magenta"
-        $yes = Read-Host "Would you like to extract `"Sysinternals.zip`" to C:\Tools now? (y, n)"
-        if ($yes -eq 'y'){
-            Expand-Archive -LiteralPath "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip" -DestinationPath "C:\Tools" -Force
-            # add machine variable?
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
-            if ($yes -eq 'y'){
-                $host.UI.RawUI.foregroundcolor = "cyan"
-                cmd /c setx /m path "%path%;C:\tools"
-            }
-        }
+        install7Zip
+        installSysinternals
+        installSublime
     }        
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
