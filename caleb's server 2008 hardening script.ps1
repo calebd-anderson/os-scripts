@@ -617,6 +617,12 @@ function disablePrintSpooler{
 #endregion Disable Services
 
 #region Passwords
+# --------- Change AD Primary DC Mode ---------
+function changeDCMode { param ( )
+    Import-Module ActiveDirectory
+    $pdc = Get-ADDomainController -Discover -Service PrimaryDC
+    Set-ADDomainMode -Identity $pdc.Domain -Server $pdc.HostName[0] -DomainMode Windows2008R2Domain
+}
 # --------- Main password changer ---------
 #disable reverse encryption policy then change all DC user passwords except admin and binddn
 function changeP{
@@ -651,7 +657,7 @@ function changeP{
     $list = "0123456789!@#$".ToCharArray()
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
     $users = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $OU
-    $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb"
+    $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb" #fully qualified name
     #$binddn = "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     #to-do: fix when auto pass not meet complex required
@@ -663,6 +669,14 @@ function changeP{
         }
         elseif ($user -match 'binddn'){
         Write-Host "Skipping binddn"
+        }
+        elseif ($user -match 'krbtgt'){
+            $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
+            Write-Host -ForegroundColor Gray "Changing the password of $user"
+            Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
+            $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
+            Write-Host -ForegroundColor Gray "Changing the password of $user a second time"
+            Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
         }
         else{
         $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
@@ -685,10 +699,8 @@ function changeP{
 # --------- set the admin password ---------
 function changePAdmin{
     makeOutDir
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nChanges Admin password"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Importing ActiveDirectory module"
+    Write-Host -ForegroundColor Green "`nChanges Admin password"
+    Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
     Write-Host "Extracting the domain name"
     $domain = wmic computersystem get domain | Select-Object -skip 1
@@ -700,8 +712,8 @@ function changePAdmin{
     $host.UI.RawUI.foregroundcolor = "magenta"
     $securePassword = Read-Host "`nEnter a new admin password" -AsSecureString
     Set-ADAccountPassword -Identity $admin -Reset -NewPassword $securePassword
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Encrypting and exporting"
+    <# encrypt and export
+    Write-Host -ForegroundColor Cyan "Encrypting and exporting"
     $encrypted = ConvertFrom-SecureString -SecureString $securePassword
     $admin = "$admin".Trim() -replace '[CN=]{3}|[\,].*',''
     Out-File -FilePath "$env:userprofile\desktop\Script_Output\admin_binddn_passwds.txt" -Append -InputObject $admin, $encrypted, ""
@@ -711,8 +723,8 @@ function changePAdmin{
     }else{$hashtable = @{}}
     $hashTable[$admin] = $encrypted
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "admin user password has been changed"
+    #>
+    Write-Host -ForegroundColor Cyan "admin user password has been changed"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }    
@@ -1285,7 +1297,7 @@ function enumerate{
     enumStartup
     hotFixCheck
     SMBStatus
-    readOutput
+    #readOutput
 }
 #endregion Enumeration
 
@@ -1335,7 +1347,7 @@ Write-Host "
 ------- Noninvasive: -------
 makeOutDir (makes script output directory on desktop)
 timeStamp (timestamp Script_Output)
-enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck, readOutput)
+enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck)
 ports (displays common ports file)
 downloadTools (download relevant tools)
 hotFixCheck (checks list of HotFix KBs against systeminfo)
@@ -1361,6 +1373,7 @@ harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRege
 disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
 setAssToTxt (script file type open with notepad)
 makeADBackup
+changeDCMode (changes Domain Mode to Windows2008R2Domain)
 netCease (disable Net Session Enumeration | -Revert)
 GPTool (opens GP info tool)
 disableGuest (disables Guest account)
