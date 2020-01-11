@@ -133,7 +133,7 @@ function downloadTools{
     #install Sysinternals
     function installSysinternals {
         #extract with 7-zip
-        if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\Sysinternals.zip"){
+        if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip"){
             if(($host.Version.Major -lt 5) -and !(Test-Path -Path "C:\Tools")){
                 if(Test-Path -LiteralPath "C:\Program Files\7-Zip"){
                 Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
@@ -309,8 +309,14 @@ function timeStamp {
     $host.UI.RawUI.foregroundcolor = "magenta"
     $time = Read-Host "Timestamp Script_Output? (y, n)"
     if($time -eq 'y'){
+        try{
         $time = Get-Date -format 'yyyy.MM.dd-HH.mm.ss'
-        Rename-Item $env:userprofile\desktop\Script_Output $env:userprofile\desktop\Script_Output_$time
+        Rename-Item $env:userprofile\desktop\Script_Output $env:userprofile\desktop\Script_Output_$time -Force
+        }
+        catch{
+            Write-Error "An error occured: Make sure the Script_Output folder window is closed then run timeStamp again"
+            Write-Error $_
+        }
     }
 }
 #region Firewall
@@ -368,8 +374,7 @@ function ports{
 
 #region Disable Services
 # --------- netcease ---------
-function netCease 
-{
+function netCease {
     param([switch]$Revert) 
 
     function IsAdministrator
@@ -493,22 +498,22 @@ cmd /c pause
 }
 # --------- disable administrative shares via registry ---------
 function disableAdminShares{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nDisabling administrative shares via registry"
+    Write-Host -ForegroundColor Green "`nDisabling administrative shares via registry"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     REG query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
     $host.UI.RawUI.foregroundcolor = "cyan"
     REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /v AutoShareServer /t REG_DWORD /d 0
     #script kitty-ing
+    Write-Host "Running NetCease"
     netCease
     Write-Host "Restarting the `'Server`' service"
     #cmd /c "net stop server && net start server"
     #cmd /c "net start Netlogon && net start dfs"
-    Restart-Service server -Force
-    #Start-Service dfs
-    #Start-Service netlogon
-    #Start-Service server
-    Write-Host "Admin share disabled"
+    Stop-Service server -Force
+    Start-Service dfs
+    Start-Service netlogon
+    Start-Service server
+    Write-Host "Admin shares disabled"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
     $host.UI.RawUI.foregroundcolor = "white"
@@ -800,7 +805,7 @@ function pickAKB{
     $url = $applicable_KBs.$KB
     $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
     try{$host.UI.RawUI.foregroundcolor = "cyan"; "Downloading $KB from " + $applicable_KBs.$KB; Start-BitsTransfer -Source $url -Destination $output}
-    catch{$host.UI.RawUI.foregroundcolor = "red"; Write-Host $KB "Is not an available KB`n"; $host.UI.RawUI.foregroundcolor = "white"; return}
+    catch{Write-Error $KB "Is not an available KB`n"; return}
     Write-Host "$KB downloaded to `"Script_Output`""
     $host.UI.RawUI.foregroundcolor = "magenta"
     $install = Read-Host "Would you like to install that KB now? (y, n)"
@@ -886,9 +891,8 @@ function uniqueUserPols{
         foreach ($Group in $Groups){Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group -Confirm:$false}
         }
         catch [System.SystemException] {
-            $host.UI.RawUI.foregroundcolor = "red"
-            Write-Host "An error occurred: Schema Admins group is already empty"
-            Write-Host $_
+            Write-Host -ForegroundColor Red "An error occurred: Schema Admins group is already empty"
+            Write-Error $_
             $host.UI.RawUI.foregroundcolor = "white"
             cmd /c pause
             return
@@ -1145,6 +1149,7 @@ function hotFixCheck{
                 Write-Host "Installing $f"
                 Start-Process wusa -ArgumentList ($f.FullName, '/quiet', '/norestart') -Wait
             }
+            Write-Host "Finished installing updates."
         }
     } else {
         $host.UI.RawUI.foregroundcolor = "magenta"
@@ -1286,10 +1291,8 @@ function enumerate{
 
 # --------- run all hardening functions ---------
 function harden{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "Hardening"
+Write-Host -ForegroundColor Green "Hardening . . ."
 makeOutDir
-#netCease
 enumerate
 turnOnFirewall
 firewallRules
@@ -1297,7 +1300,7 @@ uniqueUserPols
 disableTeredo
 disableSMB1
 disableRDP
-disableAdminShares
+disableAdminShares #netcease
 miscRegedits
 disablePrintSpooler
 disableGuest
