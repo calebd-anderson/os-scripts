@@ -26,32 +26,30 @@ function downloadTools{
     makeOutDir
     Write-Host -ForegroundColor Green "`nDownloading relevant tools"
     Write-Host -ForegroundColor Cyan "Importing BitsTransfer"
-    Import-Module BitsTransfer
-    
-    #if($BuildVersion.Revision -eq '0'){
-        $downloads = @{
-            malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
-            firefox_installer_exe = "https://mzl.la/35e3KDv"
-            Sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
-            mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi" #baseline security analyzer
-            fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe" #hash tool
-            nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
-            npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
-            gmer_zip = "http://www2.gmer.net/gmer.zip" #malware tool
-            sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe" #text editor
-            #bccrypto_zip = "https://www.bouncycastle.org/csharp/download/bccrypto-csharp-1.8.5-bin.zip"
-            new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip" #kerberos reset ps script
-            #encryption_examples_zip = "https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87/file/108341/2/EncryptionExamples.zip"
-            #protectedData_zip = "https://gallery.technet.microsoft.com/scriptcenter/Share-encrypted-data-2f91fd3f/file/129591/1/ProtectedData.zip"
-            #PSBouncyCastle_psm1 = "https://raw.githubusercontent.com/rlipscombe/PSBouncyCastle/master/PSBouncyCastle.psm1"
-            #file_crypt_psm1 = "https://gallery.technet.microsoft.com/EncryptDecrypt-files-use-65e7ae5d/file/165403/14/FileCryptography.psm1"
-            EMET_msi = "https://download.microsoft.com/download/F/3/6/F366901C-F3CB-4A94-B377-5611740B8B19/EMET%20Setup.msi" #Enhanced Mitigation Experience Toolkit 
-            dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
-            WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip" #Windows Managment Framework 5.1 (PS 5.1)
-            #NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
-            seven_ZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
-        }
-    #}
+    Import-Module BitsTransfer    
+    #tools list
+    $downloads = @{
+        malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
+        firefox_installer_exe = "https://mzl.la/35e3KDv"
+        Sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
+        mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi" #baseline security analyzer
+        fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe" #hash tool
+        nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
+        npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
+        gmer_zip = "http://www2.gmer.net/gmer.zip" #malware tool
+        sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe" #text editor
+        #bccrypto_zip = "https://www.bouncycastle.org/csharp/download/bccrypto-csharp-1.8.5-bin.zip"
+        new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip" #kerberos reset ps script
+        #encryption_examples_zip = "https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87/file/108341/2/EncryptionExamples.zip"
+        #protectedData_zip = "https://gallery.technet.microsoft.com/scriptcenter/Share-encrypted-data-2f91fd3f/file/129591/1/ProtectedData.zip"
+        #PSBouncyCastle_psm1 = "https://raw.githubusercontent.com/rlipscombe/PSBouncyCastle/master/PSBouncyCastle.psm1"
+        #file_crypt_psm1 = "https://gallery.technet.microsoft.com/EncryptDecrypt-files-use-65e7ae5d/file/165403/14/FileCryptography.psm1"
+        EMET_msi = "https://download.microsoft.com/download/F/3/6/F366901C-F3CB-4A94-B377-5611740B8B19/EMET%20Setup.msi" #Enhanced Mitigation Experience Toolkit 
+        dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
+        WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip" #Windows Managment Framework 5.1 (PS 5.1)
+        #NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
+        seven_ZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
+    }
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $downloads
     #download all?
@@ -74,8 +72,7 @@ function downloadTools{
             }
         }
         Write-Host "All relevant tools downloaded"
-    }
-    $BuildVersion = [System.Environment]::OSVersion.Version
+    }    
     #install sublime text editor?
     function installSublime{
         if(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\sublime.exe"){
@@ -185,16 +182,28 @@ function downloadTools{
         }else{Write-Host "dotNet_4.5 has not been downloaded yet"}
     }
     #install WMF_5.1
-    function installWMF{
+    function installWMF{   
+        if(!(Test-Path -Path 'C:\Program Files\7-Zip')){
+            $yes = Read-Host "7-Zip is required to programatically install WMF 5.1. Would you like to install 7-Zip now? (y, n)"           
+            if($yes -eq 'y'){install7Zip}else{Write-Host "Nothing is available to programatically extract `"WMF_5_1.zip`""; return}
+        }elseif(!(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\WMF_5_1.zip")){
+            $yes = Read-Host "WMF_5.1 has not been downloaded yet. Would you like to download it now? (y, n)"
+            if($yes -eq 'y'){
+                $source = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip"
+                Write-Host "Downloading `"WMF_5_1.zip`"" from `"$source`"""
+                Start-BitsTransfer -Source $source -Destination = "$env:USERPROFILE\desktop\Script_Output\tools\WMF_5_1.zip"
+            }
+        }
         if(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\WMF_5_1.zip"){
-            Write-Host "Unzipping WMF_5_1.zipto tools\WMF_5_1"
+            Write-Host "Unzipping WMF_5_1.zip to tools\WMF_5_1"
             cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip`" -o`"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1`""
             if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"){
+                Write-Host "Invoking the script that comes with WMF_5_1.zip"
                 & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
             }
-        }else{Write-Host "WMF_5.1 has not been downloaded yet"}
+        }
     }
-
+    $BuildVersion = [System.Environment]::OSVersion.Version
     if($BuildVersion.Revision -eq '0'){
         if(! (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe)){
             $host.UI.RawUI.foregroundcolor = "magenta"
@@ -216,7 +225,7 @@ function downloadTools{
         installSublime
     }
     #install WMF 5.1? if SP1 and WMF not already installed
-    elseif($host.Version.Major -lt 5){
+    elseif($host.Version.Major -lt 3){
         $host.UI.RawUI.foregroundcolor = "magenta"
         $yes = Read-Host "Would you like to install Windows Managemnt Framework 5.1 now? (y, n)"
         if ($yes -eq 'y'){
