@@ -56,7 +56,7 @@ function downloadTools{
     $downloads
     #download all?
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $yes = Read-Host "Would you like to download all" $downloads.count "tools now? (y, n)"
+    $yes = Read-Host "Would you like to download all above" $downloads.count "tools now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "cyan"
     if ($yes -eq 'y'){
         #download all tools loop
@@ -107,15 +107,21 @@ function downloadTools{
     #install 7-Zip($host.Version.Major -lt 5)
     function install7Zip {
         $host.UI.RawUI.foregroundcolor = "cyan"
+        $path_to_exe = "$env:userprofile\desktop\Script_Output\tools\seven_ZIP.exe"
+        $path_to_installed = "C:\Program Files\7-Zip"
         if($host.Version.Major -lt 3){
-            if(!(Test-Path -LiteralPath $env:userprofile\desktop\Script_Output\tools\seven_ZIP.exe)){
+            if(!(Test-Path -LiteralPath $path_to_exe) -and !(Test-Path -Path $path_to_installed)){
                 Write-Host "7-Zip has not been downloaded yet." -NoNewline
                 Write-Host -ForegroundColor Magenta " Would you like to download it now? (y, n): " -NoNewline
                 $yes = Read-Host
                 if($yes -eq 'y'){
-                    Start-BitsTransfer -Source "https://www.7-zip.org/a/7z1900-x64.exe" -Destination "$env:USERPROFILE\desktop\Script_Output\tools\seven_ZIP.exe"
-                }
-            }elseif(!(Test-Path -LiteralPath "C:\Program Files\7-Zip")){
+                    $source = "https://www.7-zip.org/a/7z1900-x64.exe"
+                    $destination = "$env:USERPROFILE\desktop\Script_Output\tools\seven_ZIP.exe"
+                    Write-Host "Downloading seven_ZIP.exe from $source"
+                    Start-BitsTransfer -Source $source -Destination $destination
+                }else{return}
+            }
+            if(!(Test-Path -LiteralPath $path_to_installed) -and (Test-Path -LiteralPath $path_to_exe)){
                 $host.UI.RawUI.foregroundcolor = "magenta"
                 $yes = Read-Host "7-Zip has been downloaded but is not installed, would you like to install it now? (y, n)"
                 if ($yes -eq 'y'){
@@ -127,48 +133,48 @@ function downloadTools{
                     setx PATH "$env:path;C:\Program Files\7-Zip"
                 }
             }else{Write-Host "7-Zip is already installed"}
-        }else{Write-Host "7-Zip Is not required."}
+        }else{Write-Host "7-Zip Is not required. Use `"Expand-Archive`" CmdLet"}
     }
     #install Sysinternals
     function installSysinternals {
         #extract with 7-zip
-        if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip"){
-            if(($host.Version.Major -lt 3) -and !(Test-Path -Path "C:\Tools")){
-                $yes = Read-Host "Sysinternals is downloaded but not installed. Would you like to extract it to `"C:\Tools`" now? (y, n)"
+        if(!(Test-Path -Path "C:\Tools")) {
+            $sys_zip_path = "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip"
+            $7z_installed = "C:\Program Files\7-Zip"
+            if(!(Test-Path -Path $sys_zip_path)){
+                Write-Host "`"Sysinternals_suite.zip`" has not been downloaded yet. " -NoNewline
+                Write-Host -ForegroundColor magenta "Would you like to download it now? (y, n): " -NoNewline
+                $yes = Read-Host
                 if($yes -eq 'y'){
-                    if(Test-Path -LiteralPath "C:\Program Files\7-Zip"){
-                        Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
-                        $env:Path += ";C:\Program Files\7-Zip"
-                        cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
+                    $source = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
+                    Write-Host "Downloading `"Sysinternals_suite.zip`" from $source"
+                    Start-BitsTransfer -Source $source -Destination $sys_zip_path
+                } else{return}
+            }if(Test-Path -Path $sys_zip_path){
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $yes = Read-Host "Sysinternals_suite.zip is downloaded but not installed. Would you like to extract it to `"C:\Tools`" now? (y, n)"
+                if($yes -eq 'y'){
+                    #install7Zip               
+                    if($host.Version.Major -lt 3){
+                        if(!(Test-Path -Path $7z_installed)){
+                            $yes = Read-Host "7-Zip needs to be installed in order to programatically extract Sysinternals_sute.zip. Would you like to set that up now? (y, n)"
+                            if($yes -eq 'y'){install7Zip}else{Write-Host "Nothing is available to programatically extract Sysinternals_suite.zip"; return}
                         }
-                        else{
-                            Write-Host "Nothing exists to programatically extract Sysinternals.zip"-NoNewline
-                            Write-Host -ForegroundColor Magenta " Would you like to get 7-Zip now? (y, n): " -NoNewline
-                            $yes = Read-Host
-                            if($yes = 'y'){install7Zip}
-                        }
-                }                
-            #extract with PS
-            }elseif(!(Test-Path -Path "C:\Tools")) {
-                Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
-                Expand-Archive -LiteralPath $env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip -DestinationPath "C:\Tools" -Force
-            }else{Write-Host "Sysinternals is already installed to C:\Tools"}
-            # add machine variable?
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "Add C:\tools to machine path variable? (y, n)"
-            if ($yes -eq 'y'){
-                $host.UI.RawUI.foregroundcolor = "cyan"
-                cmd /c "setx /m path `"%path%;C:\tools`""
-            } 
-        }else{
-            Write-Host "Sysinternals has not been downloaded yet. " -NoNewline
-            Write-Host -ForegroundColor magenta "Would you like to download it now? (y, n): " -NoNewline
-            $yes = Read-Host
-            if($yes -eq 'y'){
-                Write-Host "Downloading `"Sysinternals`""
-                Start-BitsTransfer -Source "https://download.sysinternals.com/files/SysinternalsSuite.zip" -Destination "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip"
+                        if(Test-Path -Path $7z_installed){
+                            $host.UI.RawUI.foregroundcolor = "cyan"                          
+                            Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
+                            $env:Path += ";$7z_installed"
+                            cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
+                            Write-Host "Adding `"C:\Tools` to machine environment path variable"
+                            cmd /c "setx /m path `"%path%;C:\tools`""                            
+                        }else{Write-Host "Nothing is available to programatically extract Sysinternals_suite.zip"; return}
+                    }else{
+                        Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
+                        Expand-Archive -LiteralPath $sys_zip_path -DestinationPath "C:\Tools" -Force
+                    }
+                }
             }
-        }
+        }else{Write-Host "Sysinternals is already installed to `"C:\Tools`""}
     }
     #install dotNet_4.5
     function installDotNet{
@@ -188,6 +194,7 @@ function downloadTools{
             }
         }else{Write-Host "WMF_5.1 has not been downloaded yet"}
     }
+
     if($BuildVersion.Revision -eq '0'){
         if(! (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe)){
             $host.UI.RawUI.foregroundcolor = "magenta"
@@ -203,9 +210,9 @@ function downloadTools{
                 installSP1
             }
         }
-        else{installSP1}
-        install7Zip
+        else{installSP1}        
         installSysinternals
+        install7Zip
         installSublime
     }
     #install WMF 5.1? if SP1 and WMF not already installed
