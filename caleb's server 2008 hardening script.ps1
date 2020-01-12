@@ -104,48 +104,50 @@ function downloadTools{
             cmd /c C:\Users\Administrator\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe /unattend /norestart
         }
     }
-    #install 7-Zip
+    #install 7-Zip($host.Version.Major -lt 5)
     function install7Zip {
-        $host.UI.RawUI.foregroundcolor = "cyan" 
-        if(!(Test-Path -LiteralPath $env:userprofile\desktop\Script_Output\tools\seven_ZIP.exe)){
-            Write-Host "7-Zip has not been downloaded yet." -NoNewline
-            Write-Host -ForegroundColor Magenta " Would you like to download it now? (y, n): " -NoNewline
-            $yes = Read-Host
-            if($yes -eq 'y')
-            {
-                Start-BitsTransfer -Source "https://www.7-zip.org/a/7z1900-x64.exe" -Destination "$env:USERPROFILE\desktop\Script_Output\tools\seven_ZIP.exe"
-            }
-        }
-        elseif(! (Test-Path -LiteralPath "C:\Program Files\7-Zip")){
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "7-Zip is not installed, would you like to install it now? (y, n)"
-            if ($yes -eq 'y'){
-                $host.UI.RawUI.foregroundcolor = "cyan"
-                Write-Host "Installing 7-Zip"
-                cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\seven_ZIP.exe /S
-                Write-Host "Setting 7-Zip machine path variable"
-                #Set-Variable "PATH=%PATH%;C:\Program Files\7-Zip"
-                setx PATH "$env:path;C:\Program Files\7-Zip"
-            }
-        }
-        else{Write-Host "7-Zip is already installed"}
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        if($host.Version.Major -lt 3){
+            if(!(Test-Path -LiteralPath $env:userprofile\desktop\Script_Output\tools\seven_ZIP.exe)){
+                Write-Host "7-Zip has not been downloaded yet." -NoNewline
+                Write-Host -ForegroundColor Magenta " Would you like to download it now? (y, n): " -NoNewline
+                $yes = Read-Host
+                if($yes -eq 'y'){
+                    Start-BitsTransfer -Source "https://www.7-zip.org/a/7z1900-x64.exe" -Destination "$env:USERPROFILE\desktop\Script_Output\tools\seven_ZIP.exe"
+                }
+            }elseif(!(Test-Path -LiteralPath "C:\Program Files\7-Zip")){
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $yes = Read-Host "7-Zip has been downloaded but is not installed, would you like to install it now? (y, n)"
+                if ($yes -eq 'y'){
+                    $host.UI.RawUI.foregroundcolor = "cyan"
+                    Write-Host "Installing 7-Zip"
+                    cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\seven_ZIP.exe /S
+                    Write-Host "Setting 7-Zip machine path variable"
+                    #Set-Variable "PATH=%PATH%;C:\Program Files\7-Zip"
+                    setx PATH "$env:path;C:\Program Files\7-Zip"
+                }
+            }else{Write-Host "7-Zip is already installed"}
+        }else{Write-Host "7-Zip Is not required."}
     }
     #install Sysinternals
     function installSysinternals {
         #extract with 7-zip
         if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip"){
-            if(($host.Version.Major -lt 5) -and !(Test-Path -Path "C:\Tools")){
-                if(Test-Path -LiteralPath "C:\Program Files\7-Zip"){
-                Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
-                $env:Path += ";C:\Program Files\7-Zip"
-                cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
-                }
-                else{
-                    Write-Host "Nothing is installed to programatically extract Sysinternals.zip"-NoNewline
-                    Write-Host -ForegroundColor Magenta " Would you like to install it now? (y, n): " -NoNewline
-                    $yes = Read-Host
-                    if($yes = 'y'){install7Zip}
-                }
+            if(($host.Version.Major -lt 3) -and !(Test-Path -Path "C:\Tools")){
+                $yes = Read-Host "Sysinternals is downloaded but not installed. Would you like to extract it to `"C:\Tools`" now? (y, n)"
+                if($yes -eq 'y'){
+                    if(Test-Path -LiteralPath "C:\Program Files\7-Zip"){
+                        Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
+                        $env:Path += ";C:\Program Files\7-Zip"
+                        cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
+                        }
+                        else{
+                            Write-Host "Nothing exists to programatically extract Sysinternals.zip"-NoNewline
+                            Write-Host -ForegroundColor Magenta " Would you like to get 7-Zip now? (y, n): " -NoNewline
+                            $yes = Read-Host
+                            if($yes = 'y'){install7Zip}
+                        }
+                }                
             #extract with PS
             }elseif(!(Test-Path -Path "C:\Tools")) {
                 Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
