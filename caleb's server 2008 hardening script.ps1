@@ -27,7 +27,7 @@ function downloadTools{
     Write-Host -ForegroundColor Green "`nDownloading relevant tools"
     Write-Host -ForegroundColor Cyan "Importing BitsTransfer"
     Import-Module BitsTransfer    
-    #tools list
+    #master tools list
     $downloads = @{
         malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
         firefox_installer_exe = "https://mzl.la/35e3KDv"
@@ -50,6 +50,12 @@ function downloadTools{
         #NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
         seven_ZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
     }
+    #remove what has already been downloaded from database
+    $files = Get-ChildItem "$env:userprofile\downloads\tools"
+    try {$files = Foreach ($tool in $files.GetEnumerator()){$tool.Name}}
+    catch [System.Management.Automation.RuntimeException]{Write-host -ForegroundColor Cyan "The `"%userprofile%\downloads\tools`" folder is empty."}
+    $tool_list = $files -replace '\.', '_' #'(?m).{4}$','' - '_(?!.*_)', '.' 
+    foreach($tool in $tool_list){$downloads.Remove($tool)}
     $host.UI.RawUI.foregroundcolor = "darkgray"
     $downloads
     #download all?
@@ -57,12 +63,12 @@ function downloadTools{
     $yes = Read-Host "Would you like to download all above" $downloads.count "tools now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "cyan"
     if ($yes -eq 'y'){
-        #download all tools loop
+        #download loop
         foreach ($key in $downloads.GetEnumerator()) {
             "Downloading $($key.Name) from $($key.Value)"
             $filename = $($key.Name)
             $url = $downloads.$filename
-            $filename = $filename -replace '_(?!.*_)', '.'
+            $filename = $filename -replace '_(?!.*_)', '.' #Lookahead and Lookbehind Zero-Length Assertions
             $output = "$env:USERPROFILE\downloads\tools\$filename"           
             try{Start-BitsTransfer -Source $url -Destination $output}
             catch{
@@ -85,7 +91,7 @@ function downloadTools{
                 else{
                     $host.UI.RawUI.foregroundcolor = "cyan"
                     Write-Host "Installing Sublime Text and adding context menue"
-                    cmd /c %userprofile%\desktop\Script_Output\tools\sublime.exe /verysilent
+                    cmd /c %userprofile%\downloads\tools\sublime.exe /verysilent
                     REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
                 }
             }
@@ -101,7 +107,7 @@ function downloadTools{
             cmd /c C:\Users\Administrator\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe /unattend /norestart
         }
     }
-    #install 7-Zip($host.Version.Major -lt 5)
+    #install 7-Zip($host.Version.Major -lt 3)
     function install7Zip {
         $host.UI.RawUI.foregroundcolor = "cyan"
         $path_to_exe = "$env:userprofile\downloads\tools\seven_ZIP.exe"
@@ -119,12 +125,13 @@ function downloadTools{
                 }else{return}
             }
             if(!(Test-Path -LiteralPath $path_to_installed) -and (Test-Path -LiteralPath $path_to_exe)){
-                $host.UI.RawUI.foregroundcolor = "magenta"
-                $yes = Read-Host "7-Zip has been downloaded but is not installed, would you like to install it now? (y, n)"
+                Write-Host -ForegroundColor Cyan "7-Zip has been downloaded but is not installed. " -NoNewline
+                Write-Host -ForegroundColor Magenta "Would you like to install it now? (y, n): " -NoNewline
+                $yes = Read-Host 
                 if ($yes -eq 'y'){
                     $host.UI.RawUI.foregroundcolor = "cyan"
                     Write-Host "Installing 7-Zip"
-                    cmd /c C:\Users\Administrator\Desktop\Script_Output\tools\seven_ZIP.exe /S
+                    cmd /c C:\Users\Administrator\downloads\tools\seven_ZIP.exe /S
                     Write-Host "Setting 7-Zip machine path variable"
                     #Set-Variable "PATH=%PATH%;C:\Program Files\7-Zip"
                     setx PATH "$env:path;C:\Program Files\7-Zip"
@@ -148,22 +155,26 @@ function downloadTools{
                     Start-BitsTransfer -Source $source -Destination $sys_zip_path
                 } else{return}
             }if(Test-Path -Path $sys_zip_path){
-                $host.UI.RawUI.foregroundcolor = "magenta"
-                $yes = Read-Host "Sysinternals_suite.zip is downloaded but not installed. Would you like to extract it to `"C:\Tools`" now? (y, n)"
+                Write-Host -ForegroundColor Cyan "Sysinternals_suite.zip is downloaded but not installed. " -NoNewline
+                Write-Host -ForegroundColor Magenta "Would you like to extract it to `"C:\Tools`" now? (y, n): " -NoNewline
+                $yes = Read-Host
                 if($yes -eq 'y'){
                     #install7Zip               
                     if($host.Version.Major -lt 3){
                         if(!(Test-Path -Path $7z_installed)){
-                            $yes = Read-Host "7-Zip needs to be installed in order to programatically extract Sysinternals_sute.zip. Would you like to set that up now? (y, n)"
+                            Write-Host -ForegroundColor Cyan "7-Zip needs to be installed in order to programatically extract Sysinternals_sute.zip. " -NoNewline
+                            Write-Host -ForegroundColor Magenta "Would you like to set that up now? (y, n): " -NoNewline
+                            $yes = Read-Host
                             if($yes -eq 'y'){install7Zip}else{Write-Host "Nothing is available to programatically extract Sysinternals_suite.zip"; return}
                         }
                         if(Test-Path -Path $7z_installed){
                             $host.UI.RawUI.foregroundcolor = "cyan"                          
                             Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
                             $env:Path += ";$7z_installed"
-                            cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\Sysinternals_suite.zip`" -o`"C:\Tools`""
+                            cmd /c "7z e `"C:\Users\Administrator\downloads\tools\Sysinternals_suite.zip`" -o`"C:\Tools`"" | Out-Null
                             Write-Host "Adding `"C:\Tools` to machine environment path variable"
-                            cmd /c "setx /m path `"%path%;C:\tools`""                            
+                            $env:Path += ";C:\tools"
+                            cmd /c "setx /m path `"%path%;C:\tools`"" | Out-Null                          
                         }else{Write-Host "Nothing is available to programatically extract Sysinternals_suite.zip"; return}
                     }else{
                         Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
@@ -206,8 +217,9 @@ function downloadTools{
     $BuildVersion = [System.Environment]::OSVersion.Version
     if($BuildVersion.Revision -eq '0'){
         if(! (Test-Path -LiteralPath $env:USERPROFILE\downloads\tools\windows6.1-KB976932-X64.exe)){
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "windows6.1-KB976932-X64 does not exist. Would you like to download SP1 R2 X64 now? (y, n)"
+            Write-Host -ForegroundColor Cyan "windows6.1-KB976932-X64 does not exist. " -NoNewline
+            Write-Host -ForegroundColor Magenta "Would you like to download SP1 R2 X64 now? (y, n): " -NoNewline
+            $yes = Read-Host 
             if ($yes -eq 'y'){
                 $url = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe"
                 $output = "$env:USERPROFILE\downloads\tools\windows6.1-KB976932-X64.exe"
@@ -1065,7 +1077,7 @@ function hotFixCheck{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nComparing systeminfo HotFix list against HotFix master-list"
     #manual page
-    #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}    
+    #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
 
     #compare systeminfo to KB hashtable master list
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -1076,7 +1088,7 @@ function hotFixCheck{
             if(($system_info | Out-String).Contains("Service Pack 1")){ #Windows Server 2008 R2 64-bit (6.1) SP1
                 Write-Host "The system is 64-bit 6.1 and SP1 is installed"
                 $auto_download_KBs = @{
-                    #KB975517 = "https://bit.ly/2rArzrt" # after SP1 6.0 x86
+                    #KB975517 = "https://bit.ly/2rArzrt" # 6.0 x86
                     KB2393802 = "http://bit.ly/2kodsxw" # after SP1
                     KB3006226 = "http://bit.ly/2jLUmzu" # after SP1
                     KB3000869 = "http://bit.ly/2kxFGZk" # after SP1
@@ -1090,7 +1102,7 @@ function hotFixCheck{
                     KB3019978 = "https://download.microsoft.com/download/A/9/2/A9261883-EDDB-4282-9028-25D3A73BFAA8/Windows6.1-KB3019978-x64.msu" # after SP1
                     KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu" # after SP1
                     KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu" # after SP1
-                    #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 update readyness tool
+                    #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 (update readyness tool)
                     KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu" # after SP1
                     KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu" # after SP1
                     KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu" # after SP1
@@ -1099,8 +1111,8 @@ function hotFixCheck{
                     KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                     KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
                     KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                    #KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1
-                    KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
+                    #KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1 (not security or critical at all)
+                    #KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
                 }
             }
             else{ #Windows Server 2008 R2 64-bit (6.1) pre-SP1
@@ -1109,7 +1121,7 @@ function hotFixCheck{
                 KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                 KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
                 KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work
+                #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work (update readiness tool)
                 }
             }
         }
@@ -1155,19 +1167,24 @@ function hotFixCheck{
     Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
     #download and install logic
     if($auto_download_KBs.Count -gt 0){
+        #remove what has already been downloaded from database
+        $files = Get-ChildItem "$env:userprofile\downloads\updates"
+        $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
+        $kb_list = $files -replace '(?m).{4}$',''
+        foreach($kb in $kb_list){$auto_download_KBs.Remove($kb)}
         $host.UI.RawUI.foregroundcolor = "darkgray"
         $auto_download_KBs
         $host.UI.RawUI.foregroundcolor = "magenta"
-        $yes = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "above HotFixes applicable to your system now? (y, n)"    
+        $yes = Read-Host "`nWould you like to downlad the" $auto_download_KBs.count "above HotFixes applicable to your system now? (y, n)"    
         if ($yes -eq 'y'){
-            #download all
             $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Host "The following" $auto_download_KBs.count "hotfixes below will be downloaded."
             $host.UI.RawUI.foregroundcolor = "darkgray"
             $auto_download_KBs
             $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Host "Importing BitsTransfer module"
-            Import-Module BitsTransfer
+            Import-Module BitsTransfer            
+            #download loop
             foreach ($key in $auto_download_KBs.GetEnumerator()) {
                 "Downloading $($key.Name) from $($key.Value)"
                 $KB = $($key.Name)
