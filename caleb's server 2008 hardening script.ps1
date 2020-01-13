@@ -13,8 +13,8 @@ function makeOutDir{
 if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output)){
 Write-Host -ForegroundColor Green "Creating the output directory `"Script_Output`" on the desktop`n"
 New-Item -Path "$env:USERPROFILE\desktop\Script_Output" -ItemType Directory | Out-Null
-New-Item -Path "$env:USERPROFILE\desktop\Script_Output\tools" -ItemType Directory | Out-Null
-New-Item -Path "$env:USERPROFILE\desktop\Script_Output\updates" -ItemType Directory | Out-Null
+New-Item -Path "$env:USERPROFILE\downloads\tools" -ItemType Directory | Out-Null
+New-Item -Path "$env:USERPROFILE\downloads\updates" -ItemType Directory | Out-Null
 }
 else{
 Write-Host -ForegroundColor DarkGray "`n`"Script_Output`" already exists"
@@ -63,7 +63,7 @@ function downloadTools{
             $filename = $($key.Name)
             $url = $downloads.$filename
             $filename = $filename -replace '_(?!.*_)', '.'
-            $output = "$env:USERPROFILE\desktop\Script_Output\tools\$filename"           
+            $output = "$env:USERPROFILE\downloads\tools\$filename"           
             try{Start-BitsTransfer -Source $url -Destination $output}
             catch{
                 $host.UI.RawUI.foregroundcolor = "red"
@@ -75,7 +75,7 @@ function downloadTools{
     }    
     #install sublime text editor?
     function installSublime{
-        if(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\sublime.exe"){
+        if(Test-Path -Path "$env:USERPROFILE\downloads\tools\sublime.exe"){
             $host.UI.RawUI.foregroundcolor = "magenta"
             $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
             if ($yes -eq 'y'){
@@ -104,7 +104,7 @@ function downloadTools{
     #install 7-Zip($host.Version.Major -lt 5)
     function install7Zip {
         $host.UI.RawUI.foregroundcolor = "cyan"
-        $path_to_exe = "$env:userprofile\desktop\Script_Output\tools\seven_ZIP.exe"
+        $path_to_exe = "$env:userprofile\downloads\tools\seven_ZIP.exe"
         $path_to_installed = "C:\Program Files\7-Zip"
         if($host.Version.Major -lt 3){
             if(!(Test-Path -LiteralPath $path_to_exe) -and !(Test-Path -Path $path_to_installed)){
@@ -113,7 +113,7 @@ function downloadTools{
                 $yes = Read-Host
                 if($yes -eq 'y'){
                     $source = "https://www.7-zip.org/a/7z1900-x64.exe"
-                    $destination = "$env:USERPROFILE\desktop\Script_Output\tools\seven_ZIP.exe"
+                    $destination = "$env:USERPROFILE\downloads\tools\seven_ZIP.exe"
                     Write-Host "Downloading seven_ZIP.exe from $source"
                     Start-BitsTransfer -Source $source -Destination $destination
                 }else{return}
@@ -136,7 +136,7 @@ function downloadTools{
     function installSysinternals {
         #extract with 7-zip
         if(!(Test-Path -Path "C:\Tools")) {
-            $sys_zip_path = "$env:userprofile\desktop\Script_Output\tools\Sysinternals_suite.zip"
+            $sys_zip_path = "$env:userprofile\downloads\tools\Sysinternals_suite.zip"
             $7z_installed = "C:\Program Files\7-Zip"
             if(!(Test-Path -Path $sys_zip_path)){
                 Write-Host "`"Sysinternals_suite.zip`" has not been downloaded yet. " -NoNewline
@@ -176,7 +176,7 @@ function downloadTools{
     #install dotNet_4.5
     function installDotNet{
         $host.UI.RawUI.foregroundcolor = "cyan"
-        if(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\dotNet_4_5.exe"){
+        if(Test-Path -Path "$env:USERPROFILE\downloads\tools\dotNet_4_5.exe"){
         Write-Host "Installing dotNet_4.5"
         cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
         }else{Write-Host "dotNet_4.5 has not been downloaded yet"}
@@ -186,34 +186,35 @@ function downloadTools{
         if(!(Test-Path -Path 'C:\Program Files\7-Zip')){
             $yes = Read-Host "7-Zip is required to programatically install WMF 5.1. Would you like to install 7-Zip now? (y, n)"           
             if($yes -eq 'y'){install7Zip}else{Write-Host "Nothing is available to programatically extract `"WMF_5_1.zip`""; return}
-        }elseif(!(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\WMF_5_1.zip")){
+        }elseif(!(Test-Path -Path "$env:USERPROFILE\downloads\tools\WMF_5_1.zip")){
             $yes = Read-Host "WMF_5.1 has not been downloaded yet. Would you like to download it now? (y, n)"
             if($yes -eq 'y'){
                 $source = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip"
                 Write-Host "Downloading `"WMF_5_1.zip`"" from `"$source`"""
-                Start-BitsTransfer -Source $source -Destination = "$env:USERPROFILE\desktop\Script_Output\tools\WMF_5_1.zip"
+                Start-BitsTransfer -Source $source -Destination = "$env:USERPROFILE\downloads\tools\WMF_5_1.zip"
             }
         }
-        if(Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\tools\WMF_5_1.zip"){
+        if(Test-Path -Path "$env:USERPROFILE\downloads\tools\WMF_5_1.zip"){
             Write-Host "Unzipping WMF_5_1.zip to tools\WMF_5_1"
             cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip`" -o`"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1`""
-            if(Test-Path -Path "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"){
+            if(Test-Path -Path "$env:userprofile\downloads\tools\WMF_5_1\Install-WMF5.1.ps1"){
                 Write-Host "Invoking the script that comes with WMF_5_1.zip"
-                & "$env:userprofile\desktop\Script_Output\tools\WMF_5_1\Install-WMF5.1.ps1"
+                & "$env:userprofile\downloads\tools\WMF_5_1\Install-WMF5.1.ps1"
             }
         }
     }
     $BuildVersion = [System.Environment]::OSVersion.Version
     if($BuildVersion.Revision -eq '0'){
-        if(! (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe)){
+        if(! (Test-Path -LiteralPath $env:USERPROFILE\downloads\tools\windows6.1-KB976932-X64.exe)){
             $host.UI.RawUI.foregroundcolor = "magenta"
             $yes = Read-Host "windows6.1-KB976932-X64 does not exist. Would you like to download SP1 R2 X64 now? (y, n)"
             if ($yes -eq 'y'){
                 $url = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe"
-                $output = "$env:USERPROFILE\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe"
+                $output = "$env:USERPROFILE\downloads\tools\windows6.1-KB976932-X64.exe"
                 $host.UI.RawUI.foregroundcolor = "cyan"
                 Write-Host "Importing BitsTransfer module"
                 Import-Module BitsTransfer
+                Write-Host "Downloading `"windows6.1-KB976932-X64.exe`" from $url"
                 Start-BitsTransfer -Source $url -Destination $output
                 Write-Host "`"windows6.1-KB976932-X64.exe`" downloaded to Script_Output\tools"
                 installSP1
@@ -501,16 +502,21 @@ function netCease {
 
 # --------- Disable Teredo ---------
 function disableTeredo{
+makeOutDir
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nDisabling Teredo"
-$host.UI.RawUI.foregroundcolor = "cyan"
-netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
-Write-Host "`"$env:USERPROFILE\desktop\Script_Output\teredo_state`" has teredo status"
+cmd /c echo Before: > desktop\Script_Output\teredo_state.txt
+netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
+#$host.UI.RawUI.foregroundcolor = "darkgray"
+#Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+Start-Process cmd -ArgumentList ('/k', 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs') -Wait
+cmd /c echo After: >> desktop\Script_Output\teredo_state.txt
+netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
 $host.UI.RawUI.foregroundcolor = "darkgray"
 Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
-Start-Process cmd /k, 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs'
 $host.UI.RawUI.foregroundcolor = "cyan"
 Write-Host "`Teredo disabled"
+Write-Host "`"$env:USERPROFILE\desktop\Script_Output\teredo_state`" has teredo status"
 $host.UI.RawUI.foregroundcolor = "white"
 cmd /c pause
 }
@@ -833,16 +839,16 @@ function pickAKB{
     $host.UI.RawUI.foregroundcolor = "magenta"
     $KB = Read-Host "Enter the full KB you would like to download?"
     $url = $applicable_KBs.$KB
-    $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
+    $output = "$env:userprofile\downloads\updates\$KB.msu"
     try{$host.UI.RawUI.foregroundcolor = "cyan"; "Downloading $KB from " + $applicable_KBs.$KB; Start-BitsTransfer -Source $url -Destination $output}
     catch{Write-Error $KB "Is not an available KB`n"; return}
-    Write-Host "$KB downloaded to `"Script_Output`""
+    Write-Host "$KB downloaded to `"%userprofile%\downloads\updates`""
     $host.UI.RawUI.foregroundcolor = "magenta"
     $install = Read-Host "Would you like to install that KB now? (y, n)"
     if($install -eq 'y'){
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Installing $KB"
-        Start-Process wusa -ArgumentList ("$env:userprofile\desktop\Script_Output\updates\$KB.msu", '/quiet', '/norestart') -Wait
+        Start-Process wusa -ArgumentList ("$env:userprofile\downloads\updates\$KB.msu", '/quiet', '/norestart') -Wait
         $host.UI.RawUI.foregroundcolor = "white"
         Restart-Computer -Confirm
     }
@@ -1070,7 +1076,7 @@ function hotFixCheck{
             if(($system_info | Out-String).Contains("Service Pack 1")){ #Windows Server 2008 R2 64-bit (6.1) SP1
                 Write-Host "The system is 64-bit 6.1 and SP1 is installed"
                 $auto_download_KBs = @{
-                    KB975517 = "https://bit.ly/2rArzrt" # after SP1
+                    #KB975517 = "https://bit.ly/2rArzrt" # after SP1 6.0 x86
                     KB2393802 = "http://bit.ly/2kodsxw" # after SP1
                     KB3006226 = "http://bit.ly/2jLUmzu" # after SP1
                     KB3000869 = "http://bit.ly/2kxFGZk" # after SP1
@@ -1084,7 +1090,7 @@ function hotFixCheck{
                     KB3019978 = "https://download.microsoft.com/download/A/9/2/A9261883-EDDB-4282-9028-25D3A73BFAA8/Windows6.1-KB3019978-x64.msu" # after SP1
                     KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu" # after SP1
                     KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu" # after SP1
-                    KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1
+                    #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 update readyness tool
                     KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu" # after SP1
                     KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu" # after SP1
                     KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu" # after SP1
@@ -1093,7 +1099,7 @@ function hotFixCheck{
                     KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                     KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
                     KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                    KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1
+                    #KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1
                     KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
                 }
             }
@@ -1135,59 +1141,67 @@ function hotFixCheck{
         }
     }
 
-    #removes installed from $auto_download_KBs and removes junk from systeminfo KB name
+    #creates list of installed HotFixes from systeminfo, then parses just the KB from that, then removes those from $auto_download_KBs
+    #if there is no match (nothing is installed) then skipps parsing the junk
     $kb_list = Foreach ($KB in $auto_download_KBs.GetEnumerator()){$KB.Name}
     $installed = $system_info | Select-String $kb_list
     if ($null -ne $installed){
         $installed = $installed -replace '(?m)^\s{27,}\[[0-9]\w\]\:\s',''
         $installed | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} | ForEach-Object {$auto_download_KBs.Remove($c)}
     }
-
     #export applicable list and provide output to console
     $host.UI.RawUI.foregroundcolor = "cyan"
     $auto_download_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
     Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
-
     #download and install logic
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    $auto_download_KBs
-    $host.UI.RawUI.foregroundcolor = "magenta"
-    $yes = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "applicable HotFixes now? (y, n)"    
-    if ($yes -eq 'y'){
-        #download all
-        $host.UI.RawUI.foregroundcolor = "cyan"
-        Write-Host "The" $auto_download_KBs.count "hotfixes below will be downloaded and installed"
+    if($auto_download_KBs.Count -gt 0){
         $host.UI.RawUI.foregroundcolor = "darkgray"
         $auto_download_KBs
-        $host.UI.RawUI.foregroundcolor = "cyan"
-        Write-Host "Importing BitsTransfer module"
-        Import-Module BitsTransfer
-        foreach ($key in $auto_download_KBs.GetEnumerator()) {
-            "Downloading $($key.Name) from $($key.Value)"
-            $KB = $($key.Name)
-            $url = $auto_download_KBs.$KB
-            $output = "$env:userprofile\desktop\Script_Output\updates\$KB.msu"
-            Start-BitsTransfer -Source $url -Destination $output
-        }
-        #install loop
         $host.UI.RawUI.foregroundcolor = "magenta"
-        $files = Get-ChildItem "$env:userprofile\desktop\Script_Output\updates"
-        $yes = Read-Host "`nWould you like to quietly install all" $files.count "downloaded HotFixes now? (y, n)"
-        $host.UI.RawUI.foregroundcolor = "cyan"
+        $yes = Read-Host "`nWould you like to downlad all" $auto_download_KBs.count "above HotFixes applicable to your system now? (y, n)"    
         if ($yes -eq 'y'){
-            foreach ($f in $files){ 
-                Write-Host "Installing $f"
-                Start-Process wusa -ArgumentList ($f.FullName, '/quiet', '/norestart') -Wait
+            #download all
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            Write-Host "The following" $auto_download_KBs.count "hotfixes below will be downloaded."
+            $host.UI.RawUI.foregroundcolor = "darkgray"
+            $auto_download_KBs
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            Write-Host "Importing BitsTransfer module"
+            Import-Module BitsTransfer
+            foreach ($key in $auto_download_KBs.GetEnumerator()) {
+                "Downloading $($key.Name) from $($key.Value)"
+                $KB = $($key.Name)
+                $url = $auto_download_KBs.$KB
+                $output = "$env:userprofile\downloads\updates\$KB.msu"
+                Start-BitsTransfer -Source $url -Destination $output
             }
-            Write-Host "Finished installing updates."
+            Write-Host "Downloading complete."
+            #from downloaded what is still applicable to install
+            $files = Get-ChildItem "$env:userprofile\downloads\updates"
+            $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
+            $kb_list = $files -replace '(?m).{4}$',''
+            $install = $files | Where-Object { $_ –notmatch $installed }
+            $host.UI.RawUI.foregroundcolor = "darkgray"
+            $install
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "Would you like to install the above" $install.count "remaining HotFixes applicable to your system now? (y, n)"
+            $host.UI.RawUI.foregroundcolor = "cyan"                        
+            #install loop 
+            if ($yes -eq 'y'){
+                foreach ($f in $install){ 
+                    Write-Host "Installing $f"
+                    Start-Process wusa -ArgumentList ("$env:userprofile\downloads\updates\$f", '/quiet', '/norestart') -Wait
+                }
+                Write-Host "Finished installing updates."
+            }
+        } else {
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list to download? (y, n)"
+            if ($pick -eq 'y'){
+                pickAKB
+            }else{Write-Host -ForegroundColor Cyan "No updates from the database will be installed."}
         }
-    } else {
-        $host.UI.RawUI.foregroundcolor = "magenta"
-        $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list to download? (y, n)"
-        if ($pick -eq 'y'){
-            pickAKB
-        }
-    }  
+    }else{Write-Host "All of the HotFixes in the database applicable to your system have already been installed."}
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
