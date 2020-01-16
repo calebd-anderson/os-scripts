@@ -29,6 +29,7 @@ function downloadTools{
     Import-Module BitsTransfer    
     #master tools list
     $downloads = @{
+        winSCP_exe = "https://cdn.winscp.net/files/WinSCP-5.15.9-Setup.exe?secure=crToMdPESi8axxxbub8Y0Q==,1579143049"
         malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
         firefox_installer_exe = "https://mzl.la/35e3KDv"
         Sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
@@ -292,7 +293,7 @@ function GPTool{
     Restricted_Groups = "Computer Configuration\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
     Harden_UNC = "Computer Configuration / Administrative Templates / Network / Network Provider -> Hardened UNC Paths"
     X_Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
-    X_RDP = "Computer Configuration – Administrative Templates – Windows Components – Remote Desktop Services – Remote Desktop Session Host – Connections.
+    X_RDP = "Computer Configuration ï¿½ Administrative Templates ï¿½ Windows Components ï¿½ Remote Desktop Services ï¿½ Remote Desktop Session Host ï¿½ Connections.
     Allow users to connect remotely using Remote Desktop Services (enable or disable)"
     Block_APP = "User Config - Policies - Admin Templates - System - Don't run specified Windows applications `"Enable`" powershell.exe
     Comp Config - Policies - Sec Settings - App Control Policies - AppLocker - Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
@@ -632,7 +633,7 @@ function disableRDP{
     Set-Service "TermService" -StartupType Disabled
     Set-Service "UmRdpService" -StartupType Disabled
     Write-Host "Removing RDP via registry"
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" –Value 1 –Force
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" ï¿½Value 1 ï¿½Force
     Write-Host "RDP disabled"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query "HKLM\System\CurrentControlSet\Control\Terminal Server" /f fDenyTSConnections
@@ -1197,7 +1198,7 @@ function hotFixCheck{
             $files = Get-ChildItem "$env:userprofile\downloads\updates"
             $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
             $kb_list = $files -replace '(?m).{4}$',''
-            $install = $files | Where-Object { $_ –notmatch $installed }
+            $install = $files | Where-Object { $_ ï¿½notmatch $installed }
             $host.UI.RawUI.foregroundcolor = "darkgray"
             $install
             $host.UI.RawUI.foregroundcolor = "magenta"
@@ -1394,52 +1395,52 @@ Write-Host "`nAvailable Functions:"
 $host.UI.RawUI.foregroundcolor = "darkcyan"
 Write-Host "
 ------- Noninvasive: -------
-makeOutDir (makes script output directory on desktop)
+makeOutDirï¿½(makesï¿½scriptï¿½outputï¿½directoryï¿½onï¿½desktop)
 timeStamp (timestamp Script_Output)
-enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck)
+enumerateï¿½(enumStartup, formatNetstat,ï¿½firewallStatus,ï¿½runningServices, hotFixCheck)
 ports (displays common ports file)
-downloadTools (download relevant tools)
-hotFixCheck (checks list of HotFix KBs against systeminfo)
-pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to Script_Output)
-autoDownloadKB (#incomplete)
+downloadToolsï¿½(downloadï¿½relevantï¿½tools)
+hotFixCheck (checksï¿½listï¿½ofï¿½HotFixï¿½KBsï¿½againstï¿½systeminfo)
+pickAKBï¿½(Providesï¿½applicableï¿½KBï¿½infoï¿½thenï¿½promptsï¿½forï¿½KBï¿½andï¿½downloadsï¿½<KB>.msuï¿½toï¿½Script_Output)
+autoDownloadKBï¿½(#incomplete)
 enumStartup
 dateChanged
 firewallStatus
-SMBStatus (returns SMB registry info)
-formatNetstat (format netstat -abno)
+SMBStatusï¿½(returnsï¿½SMBï¿½registryï¿½info)
+formatNetstatï¿½(formatï¿½netstatï¿½-abno)
 runningServices
-morePIDInfo (enter a PID for more info)
-serviceInfo (enter a service name for more info)
+morePIDInfoï¿½(enterï¿½aï¿½PIDï¿½forï¿½moreï¿½info)
+serviceInfoï¿½(enterï¿½aï¿½serviceï¿½nameï¿½forï¿½moreï¿½info)
 NTPStripchart
 readPasswords
-readOutput (provide function output to console)
+readOutputï¿½(provideï¿½functionï¿½outputï¿½to console)
 avail (display this screen)
 "
 $host.UI.RawUI.foregroundcolor = "darkgreen"
 Write-Host "
 ------- Invasive: -------
-harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRegedits, disableSMB1, disableRDP,
-disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
-setAssToTxt (script file type open with notepad)
+hardenï¿½(makeOutputDir,ï¿½turnOnFirewall,ï¿½setAssToTxt,ï¿½disableAdminShares,ï¿½miscRegedits, disableSMB1,ï¿½disableRDP,
+disablePrintSpooler,ï¿½disableGuest,ï¿½changePAdmin, changePBinddn, GPTool,ï¿½changeP,ï¿½setPassPol,ï¿½uniqueUserPols,ï¿½enumerate)
+setAssToTxtï¿½(scriptï¿½fileï¿½typeï¿½openï¿½withï¿½notepad)
 makeADBackup
 changeDCMode (changes Domain Mode to Windows2008R2Domain)
 netCease (disable Net Session Enumeration | -Revert)
-GPTool (opens GP info tool)
-disableGuest (disables Guest account)
-disableRDP (disables RDP via regedit)
-disableAdminShares (disables Admin share via regedit)
+GPTool (opensï¿½GPï¿½infoï¿½tool)
+disableGuestï¿½(disablesï¿½Guestï¿½account)
+disableRDPï¿½(disablesï¿½RDPï¿½viaï¿½regedit)
+disableAdminSharesï¿½(disablesï¿½Adminï¿½shareï¿½viaï¿½regedit)
 miscRegedits (many mimikatz cache edits)
 disablePrintSpooler (disables print spooler service)
-disableTeredo  (disables teredo)
-turnOnFirewall (turns on firewall)
-firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
-disableSMB1 (disables SMB1 and enable SMB2 via registry)
-configNTP (ipconfig + set NTP server)
-changeP (Kyle's AD user password script enhanced)
+disableTeredoï¿½ï¿½(disablesï¿½teredo)
+turnOnFirewallï¿½(turnsï¿½onï¿½firewall)
+firewallRulesï¿½(Blockï¿½RDPï¿½In,ï¿½Blockï¿½VNCï¿½In,ï¿½Blockï¿½VNCï¿½Javaï¿½In,ï¿½Blockï¿½FTPï¿½In)
+disableSMB1ï¿½(disablesï¿½SMB1ï¿½andï¿½enableï¿½SMB2ï¿½viaï¿½registry)
+configNTPï¿½(ipconfigï¿½+ï¿½setï¿½NTPï¿½server)
+changePï¿½(Kyle'sï¿½ADï¿½userï¿½passwordï¿½scriptï¿½enhanced)
 changePAdmin
 changePBinddn
-setPassPol (enable passwd complexity and length 12)
-uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
+setPassPolï¿½(enableï¿½passwdï¿½complexityï¿½andï¿½lengthï¿½12)
+uniqueUserPolsï¿½(enableï¿½allï¿½usersï¿½requireï¿½passwords,ï¿½enableï¿½adminï¿½sensitive,ï¿½removeï¿½allï¿½membersï¿½fromï¿½Schemaï¿½Admins)
 "
 $host.UI.RawUI.foregroundcolor = "darkred"
 Write-Host "
@@ -1451,7 +1452,7 @@ $host.UI.RawUI.foregroundcolor = "white"
 }
 avail
 
-#$HOST.UI.RawUI.ReadKey(“NoEcho,IncludeKeyDown”) | OUT-NULL
+#$HOST.UI.RawUI.ReadKey(ï¿½NoEcho,IncludeKeyDownï¿½) | OUT-NULL
 #$HOST.UI.RawUI.Flushinputbuffer()
 
 #cmd /c pause
