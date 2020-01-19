@@ -748,12 +748,12 @@ function New-CtmADComplexPassword
     #gpupdate /force
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Changing All Passwords except admin and binddn`n"
+    #$list was somewhere in here
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
     $users = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $OU
     $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb" #fully qualified name
     #$binddn = "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    #to-do: fix when auto pass not meet complex required
     New-Variable -Name hashTable -Visibility Public -Value @{}
     foreach ($user in $users) 
     { 
