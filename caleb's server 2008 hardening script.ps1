@@ -663,7 +663,66 @@ function changeDCMode { param ( )
 # --------- Main password changer ---------
 #disable reverse encryption policy then change all DC user passwords except admin and binddn
 function changeP{
-    ##Make sure $OU is accurate
+    #region scriptkitty
+    function Confirm-CtmADPasswordIsComplex
+    {
+    Param(
+    [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+    [string]
+    $Pw
+    )
+        Process
+        {
+        $CriteriaMet = 0
+        If ($Pw -cmatch '[A-Z]') {$CriteriaMet++}
+        If ($Pw -cmatch '[a-z]') {$CriteriaMet++}
+        If ($Pw -match '\d') {$CriteriaMet++}
+        If ($Pw -match '[\^~!@#$%^&*_+=`|\\(){}\[\]:;"''<>,.?/]') {$CriteriaMet++}
+        If ($CriteriaMet -lt 3) {Return $false}
+        If ($Pw.Length -lt 6) {Return $false}
+        Return $true
+        }
+    }
+function New-CtmADComplexPassword 
+    {
+    Param(
+        [Parameter(Mandatory=$false,ValueFromPipeline=$true)]
+        [ValidateRange(6,127)]
+        [Int]
+        $PwLength=24
+    )
+    Process
+        {
+        $Iterations = 0
+        Do 
+            {
+            If ($Iterations -ge 20) 
+                {
+                Write-Host "Password generation failed to meet complexity after $Iterations attempts, exiting."
+                Return $null
+                }
+            $Iterations++
+            $PWBytes = @()
+            $RNG = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+            Do 
+                {
+                [byte[]]$Byte = [byte]1
+                $RNG.GetBytes($Byte)
+                If ($Byte[0] -lt 33 -or $Byte[0] -gt 126) { continue }
+                $PWBytes += $Byte[0]
+                } 
+            While 
+                ($PWBytes.Count -lt $PwLength)
+
+            $Pw = ([char[]]$PWBytes) -join ''
+            } 
+        Until 
+            (Confirm-CtmADPasswordIsComplex $Pw)
+        Return $Pw
+        }      
+    }
+    #endregion scriptkitty
+    #Make sure $OU is accurate
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nChanging all DC user passwords"
@@ -683,15 +742,12 @@ function changeP{
     Write-Host "Disabling reversible encryption"
     Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
     $host.UI.RawUI.foregroundcolor = "magenta"
-    #Write-Host "Ready to change all user passwords?"
-    #cmd /c pause
     Write-Host "Press any key to start changing all AD user passwords . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
     #Write-Host "Forcing GP update"
     #gpupdate /force
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Changing All Passwords except admin and binddn`n"
-    $list = "0123456789!@#$".ToCharArray()
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
     $users = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $OU
     $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb" #fully qualified name
@@ -708,22 +764,25 @@ function changeP{
         Write-Host "Skipping binddn"
         }
         elseif ($user -match 'krbtgt'){
-            $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
+            #$securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
+            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force
             Write-Host -ForegroundColor Gray "Changing the password of $user"
             Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
-            $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
+            #$securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
+            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force
             Write-Host -ForegroundColor Gray "Changing the password of $user a second time"
             Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
         }
         else{
-        $securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
-        Write-Host "Changing the password of $user"
-        Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
-        $user = "$user".Trim() -replace '[CN=]{3}|[\,].*',''
-        $encrypted = ConvertFrom-SecureString -SecureString $securePassword
-        Out-File $env:userprofile\desktop\Script_Output\user_passwds_list.txt -Append -InputObject $user, $encrypted,""
-        Write-Host "Adding $user to the hash table"
-        $hashTable.Add($user,$encrypted)
+            #$securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
+            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force
+            Write-Host "Changing the password of $user"
+            Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
+            $user = "$user".Trim() -replace '[CN=]{3}|[\,].*',''
+            $encrypted = ConvertFrom-SecureString -SecureString $securePassword
+            Out-File $env:userprofile\desktop\Script_Output\user_passwds_list.txt -Append -InputObject $user, $encrypted,""
+            Write-Host "Adding $user to the hash table"
+            $hashTable.Add($user,$encrypted)
         }
     }
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -966,33 +1025,32 @@ function disableGuest{
 
 #region File System
 # --------- sets script extensions to open notepad ---------
-function scriptToTxt{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nAssociating script extensions to open with notepad"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    cmd /c assoc .bat=txtfile
-    cmd /c assoc .js =txtfile
-    cmd /c assoc .jse=txtfile
-    cmd /c assoc .vbe=txtfile
-    cmd /c assoc .vbs=txtfile
-    cmd /c assoc .wsf=txtfile
-    cmd /c assoc .wsh=txtfile
-    $host.UI.RawUI.foregroundcolor = "white"
-    cmd /c pause
-}
-function undoScriptToTxt {
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nAssociating script extensions to default"
-$host.UI.RawUI.foregroundcolor = "cyan"
-cmd /c assoc .bat=batfile
-cmd /c assoc .js=JSFile
-cmd /c assoc .jse=JSEFile
-cmd /c assoc .vbe=VBEFile
-cmd /c assoc .vbs=VBSFile
-cmd /c assoc .wsf=WSFFile
-cmd /c assoc .wsh=WSHFile
-$host.UI.RawUI.foregroundcolor = "white"
-cmd /c pause
+function scriptToTxt{param([switch]$Revert)
+    if($Revert){
+        Write-Host -ForegroundColor Green "`nReverting script extensions association to default"
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        cmd /c assoc .bat=batfile
+        cmd /c assoc .js =JSFile
+        cmd /c assoc .jse=JSEFile
+        cmd /c assoc .vbe=VBEFile
+        cmd /c assoc .vbs=VBSFile
+        cmd /c assoc .wsf=WSFFile
+        cmd /c assoc .wsh=WSHFile
+        $host.UI.RawUI.foregroundcolor = "white"
+        cmd /c pause
+    }else{
+        Write-Host -ForegroundColor Green "`nAssociating script extensions to open with notepad"
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        cmd /c assoc .bat=txtfile
+        cmd /c assoc .js =txtfile
+        cmd /c assoc .jse=txtfile
+        cmd /c assoc .vbe=txtfile
+        cmd /c assoc .vbs=txtfile
+        cmd /c assoc .wsf=txtfile
+        cmd /c assoc .wsh=txtfile
+        $host.UI.RawUI.foregroundcolor = "white"
+        cmd /c pause
+    }
 }
 # --------- makes a backup ---------
 function makeADBackup {
@@ -1362,7 +1420,7 @@ uniqueUserPols
 disableTeredo
 disableSMB1
 disableRDP
-disableAdminShares #netcease
+disableAdminShares #also netcease
 miscRegedits
 disablePrintSpooler
 disableGuest
@@ -1419,28 +1477,28 @@ avail (display this screen)
 $host.UI.RawUI.foregroundcolor = "darkgreen"
 Write-Host "
 ------- Invasive: -------
-hardenù(makeOutputDir,ùturnOnFirewall,ùsetAssToTxt,ùdisableAdminShares,ùmiscRegedits, disableSMB1,ùdisableRDP,
-disablePrintSpooler,ùdisableGuest,ùchangePAdmin, changePBinddn, GPTool,ùchangeP,ùsetPassPol,ùuniqueUserPols,ùenumerate)
-setAssToTxtù(scriptùfileùtypeùopenùwithùnotepad)
+harden†(makeOutputDir,†turnOnFirewall,†setAssToTxt,†disableAdminShares,†miscRegedits, disableSMB1,†disableRDP,
+disablePrintSpooler,†disableGuest,†changePAdmin, changePBinddn, GPTool,†changeP,†setPassPol,†uniqueUserPols,†enumerate)
+scriptToTxt (script†file†type†open†with†notepad) | -Revert, -r
 makeADBackup
 changeDCMode (changes Domain Mode to Windows2008R2Domain)
-netCease (disable Net Session Enumeration | -Revert)
-GPTool (opensùGPùinfoùtool)
-disableGuestù(disablesùGuestùaccount)
-disableRDPù(disablesùRDPùviaùregedit)
-disableAdminSharesù(disablesùAdminùshareùviaùregedit)
+netCease (disable Net Session Enumeration) | -Revert
+GPTool (opens†GP†info†tool)
+disableGuest†(disables†Guest†account)
+disableRDP†(disables†RDP†via†regedit)
+disableAdminShares†(disables†Admin†share†via†regedit)
 miscRegedits (many mimikatz cache edits)
 disablePrintSpooler (disables print spooler service)
-disableTeredoùù(disablesùteredo)
-turnOnFirewallù(turnsùonùfirewall)
-firewallRulesù(BlockùRDPùIn,ùBlockùVNCùIn,ùBlockùVNCùJavaùIn,ùBlockùFTPùIn)
-disableSMB1ù(disablesùSMB1ùandùenableùSMB2ùviaùregistry)
-configNTPù(ipconfigù+ùsetùNTPùserver)
-changePù(Kyle'sùADùuserùpasswordùscriptùenhanced)
-changePAdmin
-changePBinddn
-setPassPolù(enableùpasswdùcomplexityùandùlengthù12)
-uniqueUserPolsù(enableùallùusersùrequireùpasswords,ùenableùadminùsensitive,ùremoveùallùmembersùfromùSchemaùAdmins)
+disableTeredo††(disables†teredo)
+turnOnFirewall†(turns†on†firewall)
+firewallRules†(Block†RDP†In,†Block†VNC†In,†Block†VNC†Java†In,†Block†FTP†In)
+disableSMB1†(disables†SMB1†and†enable†SMB2†via†registry)
+configNTP†(ipconfig†+†set†NTP†server)
+changeP†(Kyle's†AD†user†password†script†enhanced)
+changePAdmin (input admin password)
+changePBinddn (input admin password)
+setPassPol†(enable†passwd†complexity†and†length†12)
+uniqueUserPols†(enable†all†users†require†passwords,†enable†admin†sensitive,†remove†all†members†from†Schema†Admins)
 "
 $host.UI.RawUI.foregroundcolor = "darkred"
 Write-Host "
