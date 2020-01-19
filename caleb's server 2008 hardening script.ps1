@@ -1256,7 +1256,7 @@ function hotFixCheck{
             $files = Get-ChildItem "$env:userprofile\downloads\updates"
             $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
             $kb_list = $files -replace '(?m).{4}$',''
-            $install = $files | Where-Object { $_ ùnotmatch $installed }
+            $install = $files | Where-Object { $_ -notmatch $installed }
             $host.UI.RawUI.foregroundcolor = "darkgray"
             $install
             $host.UI.RawUI.foregroundcolor = "magenta"
@@ -1453,12 +1453,12 @@ Write-Host "`nAvailable Functions:"
 $host.UI.RawUI.foregroundcolor = "darkcyan"
 Write-Host "
 ------- Noninvasive: -------
-makeOutDirù(makesùscriptùoutputùdirectoryùonùdesktop)
+makeOutDir (makes script output directory on desktop)
 timeStamp (timestamp Script_Output)
-enumerateù(enumStartup, formatNetstat,ùfirewallStatus,ùrunningServices, hotFixCheck)
+enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck)
 ports (displays common ports file)
-downloadToolsù(downloadùrelevantùtools)
-hotFixCheck (checksùlistùofùHotFixùKBsùagainstùsysteminfo)
+downloadTools (download relevant tools)
+hotFixCheck (checks list of HotFix KBs against systeminfo)
 pickAKBù(ProvidesùapplicableùKBùinfoùthenùpromptsùforùKBùandùdownloadsù<KB>.msuùtoùScript_Output)
 autoDownloadKBù(#incomplete)
 enumStartup
