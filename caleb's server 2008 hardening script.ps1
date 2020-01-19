@@ -1459,19 +1459,19 @@ enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCh
 ports (displays common ports file)
 downloadTools (download relevant tools)
 hotFixCheck (checks list of HotFix KBs against systeminfo)
-pickAKBù(ProvidesùapplicableùKBùinfoùthenùpromptsùforùKBùandùdownloadsù<KB>.msuùtoùScript_Output)
-autoDownloadKBù(#incomplete)
+pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
+autoDownloadKB (#incomplete)
 enumStartup
 dateChanged
 firewallStatus
-SMBStatusù(returnsùSMBùregistryùinfo)
-formatNetstatù(formatùnetstatù-abno)
+SMBStatus (returns SMB registry info)
+formatNetstat (format netstat -abno)
 runningServices
-morePIDInfoù(enterùaùPIDùforùmoreùinfo)
-serviceInfoù(enterùaùserviceùnameùforùmoreùinfo)
+morePIDInfo (enter a PID for more info)
+serviceInfo (enter a service name for more info)
 NTPStripchart
 readPasswords
-readOutputù(provideùfunctionùoutputùto console)
+readOutput (provide function output to console)
 avail (display this screen)
 "
 $host.UI.RawUI.foregroundcolor = "darkgreen"
@@ -1510,7 +1510,7 @@ $host.UI.RawUI.foregroundcolor = "white"
 }
 avail
 
-#$HOST.UI.RawUI.ReadKey(ùNoEcho,IncludeKeyDownù) | OUT-NULL
+#$HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
 #$HOST.UI.RawUI.Flushinputbuffer()
 
 #cmd /c pause
