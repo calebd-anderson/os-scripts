@@ -1204,50 +1204,50 @@ function hotFixCheck{
         }else{ #2012
             if (($system_info | Out-String).Contains("R2")){
                 if (($system_info | Out-String).Contains("Service Pack 1")){ #2012 R2 64-bit SP1
-                    Write-Host "The system is 2012 R2 64-bit pre-SP1"
-                    $auto_download_KBs = @{
-                        KB4012217 = "https://bit.ly/2JcsYfW" #eternal blue
-                        KB3177186 = "https://bit.ly/2Je9p72" #smb 1 remote exectution
-                        KB2973501 = "https://bit.ly/2u9NTpK" #mimikatz
-                        KB2959936 = ""
-                        KB2896496 = ""
-                        KB2919355 = ""
-                        KB2920189 = ""
-                        KB2928120 = ""
-                        KB2931358 = ""
-                        KB2931366 = ""
-                        KB2933826 = ""
-                        KB2938772 = ""
-                        KB2949621 = ""
-                        KB2954879 = ""
-                        KB2958262 = ""
-                        KB2958263 = ""
-                        KB2961072 = ""
-                        KB2965500 = ""
-                        KB2966407 = ""
-                        KB2967917 = ""
-                        KB2971203 = ""
-                        KB2971850 = ""
-                        KB2973351 = ""
-                        KB2973448 = ""
-                        KB2975061 = ""
-                        KB2976627 = ""
-                        KB2977629 = ""
-                        KB2981580 = ""
-                        KB2987107 = ""
-                        KB2989647 = ""
-                        KB2998527 = ""
-                        KB3000850 = ""
-                        KB3003057 = ""
-                        KB3014442 = ""
-                    }
+                    $os = Get-WmiObject -Class Win32_OperatingSystem            
+                    Write-Host "No auto KBs on file for $os.Caption"
                 }
             }elseif(($system_info | Out-String).Contains("Service Pack 1")){
                 $os = Get-WmiObject -Class Win32_OperatingSystem            
                 Write-Host "No auto KBs on file for $os.Caption"                
             }else{ #2012 64-bit pre-SP1
-                $os = Get-WmiObject -Class Win32_OperatingSystem            
-                Write-Host "No auto KBs on file for $os.Caption"
+                Write-Host "The system is 2012 R2 64-bit and SP1 is not installed"
+                $auto_download_KBs = @{
+                    KB4012217 = "https://bit.ly/2JcsYfW" #eternal blue
+                    KB3177186 = "https://bit.ly/2Je9p72" #smb 1 remote exectution
+                    KB2973501 = "https://bit.ly/2u9NTpK" #mimikatz
+                    KB2959936 = ""
+                    KB2896496 = ""
+                    KB2919355 = ""
+                    KB2920189 = ""
+                    KB2928120 = ""
+                    KB2931358 = ""
+                    KB2931366 = ""
+                    KB2933826 = ""
+                    KB2938772 = ""
+                    KB2949621 = ""
+                    KB2954879 = ""
+                    KB2958262 = ""
+                    KB2958263 = ""
+                    KB2961072 = ""
+                    KB2965500 = ""
+                    KB2966407 = ""
+                    KB2967917 = ""
+                    KB2971203 = ""
+                    KB2971850 = ""
+                    KB2973351 = ""
+                    KB2973448 = ""
+                    KB2975061 = ""
+                    KB2976627 = ""
+                    KB2977629 = ""
+                    KB2981580 = ""
+                    KB2987107 = ""
+                    KB2989647 = ""
+                    KB2998527 = ""
+                    KB3000850 = ""
+                    KB3003057 = ""
+                    KB3014442 = ""
+                }                
             }
         }
     }else{ #32-bit PCs
