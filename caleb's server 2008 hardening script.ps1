@@ -1142,6 +1142,7 @@ function hotFixCheck{
     $host.UI.RawUI.foregroundcolor = "cyan"
     $system_info = systeminfo
     $host.UI.RawUI.foregroundcolor = "darkgray"
+    #region OS detect
     if (($system_info | Out-String).Contains("x64-based PC")){ #64-bit PCs
         if (($system_info | Out-String).Contains("Windows Server 2008")){ #2008
             if (($system_info | Out-String).Contains("R2")){
@@ -1256,7 +1257,7 @@ function hotFixCheck{
             if (($system_info | Out-String).Contains("R2")){
                 if (($system_info | Out-String).Contains("Service Pack 1")){ #2008 R2 32-bit SP1
                     $os = Get-WmiObject -Class Win32_OperatingSystem            
-                    Write-Host "No auto KBs on file for $os.Caption"
+                    Write-Host "No auto KBs on file for " $os.Caption " 32-bit SP1"
                 }
                 else{ #2008 R2 32-bit pre-SP1
                     Write-Host "The system is 32-bit 6.1 pre-SP1"
@@ -1279,8 +1280,8 @@ function hotFixCheck{
             }
         }else{ #2012
             $os = Get-WmiObject -Class Win32_OperatingSystem            
-            Write-Host "No auto KBs on file for $os.Caption"
-            
+            Write-Host "No auto KBs on file for " $os.Caption " 32-bit"
+            <#
             if (($system_info | Out-String).Contains("R2")){
                 if (($system_info | Out-String).Contains("Service Pack 1")){ #2012 R2 32-bit SP1
                 }else{ #2012 R2 64-bit pre-SP1
@@ -1293,6 +1294,7 @@ function hotFixCheck{
             #>
         }        
     }
+    #endregion OS detect
     #creates list of installed HotFixes from systeminfo, then parses just the KB from that, then removes those from $auto_download_KBs
     #if there is no match (nothing is installed) then skipps parsing the junk
     $kb_list = Foreach ($KB in $auto_download_KBs.GetEnumerator()){$KB.Name}
