@@ -1066,15 +1066,20 @@ function makeADBackup {
 #endregion File System
 
 #region Enumeration
+# --------- loop ping ---------
+function loopPing{
+    $network = Read-Host "Enter the class C network portion you would like to loop ping (<255.255.255>.[loop]):"
+    cmd /c "for /L %I in (1,1,254) do ping -w 30 -n 1 $network.%I | find `"Reply`" >> `"$env:USERPROFILE\desktop\$network`_ping_loop.txt`""
+}
 # --------- order directory by date changed ---------
 function dateChanged {
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nProvide files by date changed"
-$host.UI.RawUI.foregroundcolor = "darkgray"
-cmd /c dir /O-D /P %SystemRoot%\System32 | more
-cmd /c dir /O-D /P "%appdata%" | more
-$host.UI.RawUI.foregroundcolor = "white"
-cmd /c pause
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nProvide files by date changed"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    cmd /c dir /O-D /P %SystemRoot%\System32 | more
+    cmd /c dir /O-D /P "%appdata%" | more
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- startup enumeration --------- 
 function enumStartup {
@@ -1544,6 +1549,7 @@ Write-Host "
 makeOutDir (makes script output directory on desktop)
 timeStamp (timestamp Script_Output)
 enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck)
+loopPing (ping all IP addresses in a class C network)
 ports (displays common ports file)
 downloadTools (download relevant tools)
 hotFixCheck (checks list of HotFix KBs against systeminfo)
