@@ -1141,77 +1141,154 @@ function hotFixCheck{
     #compare systeminfo to KB hashtable master list
     $host.UI.RawUI.foregroundcolor = "cyan"
     $system_info = systeminfo
-    $host.UI.RawUI.foregroundcolor = "darkgray"    
-    if(($system_info | Out-String).Contains("x64-based PC")){
-        if(($system_info | Out-String).Contains("R2")){
-            if(($system_info | Out-String).Contains("Service Pack 1")){ #Windows Server 2008 R2 64-bit (6.1) SP1
-                Write-Host "The system is 64-bit 6.1 and SP1 is installed"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    if (($system_info | Out-String).Contains("x64-based PC")){ #64-bit PCs
+        if (($system_info | Out-String).Contains("Windows Server 2008")){ #2008
+            if (($system_info | Out-String).Contains("R2")){
+                if (($system_info | Out-String).Contains("Service Pack 1")){ #2008 R2 64-bit SP1
+                    Write-Host "The system is 2008 64-bit R2 and SP1 is installed"
+                    $auto_download_KBs = @{
+                        #KB975517 = "https://bit.ly/2rArzrt" # 6.0 x86
+                        KB2393802 = "http://bit.ly/2kodsxw" # after SP1
+                        KB3006226 = "http://bit.ly/2jLUmzu" # after SP1
+                        KB3000869 = "http://bit.ly/2kxFGZk" # after SP1
+                        KB3000061 = "http://bit.ly/2k4FRHV" # after SP1
+                        KB2984972 = "http://bit.ly/2l6dBFP" # after SP1
+                        KB3126593 = "http://bit.ly/2jN0x6n" # after SP1
+                        KB2982378 = "https://bit.ly/39o5fTa" # after SP1
+                        KB3042553 = "https://download.microsoft.com/download/9/6/0/96092B3C-20B0-4D15-9C0A-AD71EC2FEC1E/Windows6.1-KB3042553-x64.msu" # after SP1
+                        KB2562485 = "https://download.microsoft.com/download/8/F/6/8F6409C8-CA14-411D-B9EE-71D063FA6912/Windows6.1-KB2562485-x64.msu" # after SP1
+                        KB3100465 = "https://bit.ly/2F2usVm" # after SP1
+                        KB3019978 = "https://download.microsoft.com/download/A/9/2/A9261883-EDDB-4282-9028-25D3A73BFAA8/Windows6.1-KB3019978-x64.msu" # after SP1
+                        KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu" # after SP1
+                        KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu" # after SP1
+                        #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 (update readyness tool)
+                        KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu" # after SP1
+                        KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu" # after SP1
+                        KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu" # after SP1
+                        KB2871997 = "https://download.microsoft.com/download/E/E/6/EE61BDFF-E2EA-41A9-AC03-CEBC88972337/Windows6.1-KB2871997-v2-x64.msu" # after SP1
+                        KB2931356 = "https://download.microsoft.com/download/8/C/2/8C2D99DA-306D-4CC0-88C7-DCFD81820CCE/Windows6.1-KB2931356-x64.msu" # after SP1
+                        KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
+                        KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
+                        KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
+                        #KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1 (not security or critical at all)
+                        #KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
+                    }
+                }
+                else{ #2008 R2 64-bit pre-SP1
+                    $os = Get-WmiObject -Class Win32_OperatingSystem            
+                    $os.Caption
+                    Write-Host "The system is 2008 64-bit R2 and SP1 is not installed"
+                    $auto_download_KBs = @{
+                        KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
+                        KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
+                        KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
+                        #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work (update readiness tool)
+                        }
+                }
+            }elseif (($system_info | Out-String).Contains("Service Pack 1")) { #2008 64-bit SP1
+                $os = Get-WmiObject -Class Win32_OperatingSystem            
+                Write-Host "No auto KBs on file for" $os.Caption "64-bit, 6.0, SP1"
+            }
+            else { #2008 64-bit pre-SP1
+                Write-Host "The system is 2008 64-bit 6.0 and SP1 is not installed"
                 $auto_download_KBs = @{
-                    #KB975517 = "https://bit.ly/2rArzrt" # 6.0 x86
-                    KB2393802 = "http://bit.ly/2kodsxw" # after SP1
-                    KB3006226 = "http://bit.ly/2jLUmzu" # after SP1
-                    KB3000869 = "http://bit.ly/2kxFGZk" # after SP1
-                    KB3000061 = "http://bit.ly/2k4FRHV" # after SP1
-                    KB2984972 = "http://bit.ly/2l6dBFP" # after SP1
-                    KB3126593 = "http://bit.ly/2jN0x6n" # after SP1
-                    KB2982378 = "https://bit.ly/39o5fTa" # after SP1
-                    KB3042553 = "https://download.microsoft.com/download/9/6/0/96092B3C-20B0-4D15-9C0A-AD71EC2FEC1E/Windows6.1-KB3042553-x64.msu" # after SP1
-                    KB2562485 = "https://download.microsoft.com/download/8/F/6/8F6409C8-CA14-411D-B9EE-71D063FA6912/Windows6.1-KB2562485-x64.msu" # after SP1
-                    KB3100465 = "https://bit.ly/2F2usVm" # after SP1
-                    KB3019978 = "https://download.microsoft.com/download/A/9/2/A9261883-EDDB-4282-9028-25D3A73BFAA8/Windows6.1-KB3019978-x64.msu" # after SP1
-                    KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu" # after SP1
-                    KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu" # after SP1
-                    #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 (update readyness tool)
-                    KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu" # after SP1
-                    KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu" # after SP1
-                    KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu" # after SP1
-                    KB2871997 = "https://download.microsoft.com/download/E/E/6/EE61BDFF-E2EA-41A9-AC03-CEBC88972337/Windows6.1-KB2871997-v2-x64.msu" # after SP1
-                    KB2931356 = "https://download.microsoft.com/download/8/C/2/8C2D99DA-306D-4CC0-88C7-DCFD81820CCE/Windows6.1-KB2931356-x64.msu" # after SP1
-                    KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
-                    KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
-                    KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                    #KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1 (not security or critical at all)
-                    #KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
+                    KB2588516 = "https://bit.ly/37oIwEN"
+                    KB2705219 = "https://bit.ly/2ZxEGGm"
+                    KB2849470 = "https://bit.ly/2MG0fQ6"
+                    KB3011780 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2014/10/windows6.0-kb3011780-x64_c6135e518ffd1b053f1244a3f17d4c352c569c5b.msu"
+                    KB4012598 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/02/windows6.0-kb4012598-x64_6a186ba2b2b98b2144b50f88baf33a5fa53b5d76.msu"
+                    KB958644 = "https://download.microsoft.com/download/0/f/4/0f425c69-4a1f-4654-b4f8-476a5b1bae1d/Windows6.0-KB958644-x64.msu"
+                } 
+            }
+        }else{ #2012
+            if (($system_info | Out-String).Contains("R2")){
+                if (($system_info | Out-String).Contains("Service Pack 1")){ #2012 R2 64-bit SP1
+                    Write-Host "The system is 2012 R2 64-bit pre-SP1"
+                    $auto_download_KBs = @{
+                        KB4012217 = "https://bit.ly/2JcsYfW" #eternal blue
+                        KB3177186 = "https://bit.ly/2Je9p72" #smb 1 remote exectution
+                        KB2973501 = "https://bit.ly/2u9NTpK" #mimikatz
+                        KB2959936 = ""
+                        KB2896496 = ""
+                        KB2919355 = ""
+                        KB2920189 = ""
+                        KB2928120 = ""
+                        KB2931358 = ""
+                        KB2931366 = ""
+                        KB2933826 = ""
+                        KB2938772 = ""
+                        KB2949621 = ""
+                        KB2954879 = ""
+                        KB2958262 = ""
+                        KB2958263 = ""
+                        KB2961072 = ""
+                        KB2965500 = ""
+                        KB2966407 = ""
+                        KB2967917 = ""
+                        KB2971203 = ""
+                        KB2971850 = ""
+                        KB2973351 = ""
+                        KB2973448 = ""
+                        KB2975061 = ""
+                        KB2976627 = ""
+                        KB2977629 = ""
+                        KB2981580 = ""
+                        KB2987107 = ""
+                        KB2989647 = ""
+                        KB2998527 = ""
+                        KB3000850 = ""
+                        KB3003057 = ""
+                        KB3014442 = ""
+                    }
+                }
+            }elseif(($system_info | Out-String).Contains("Service Pack 1")){
+                $os = Get-WmiObject -Class Win32_OperatingSystem            
+                Write-Host "No auto KBs on file for $os.Caption"                
+            }else{ #2012 64-bit pre-SP1
+                $os = Get-WmiObject -Class Win32_OperatingSystem            
+                Write-Host "No auto KBs on file for $os.Caption"
+            }
+        }
+    }else{ #32-bit PCs
+        if (($system_info | Out-String).Contains("Windows Server 2008")){ #2008
+            if (($system_info | Out-String).Contains("R2")){
+                if (($system_info | Out-String).Contains("Service Pack 1")){ #2008 R2 32-bit SP1
+                    $os = Get-WmiObject -Class Win32_OperatingSystem            
+                    Write-Host "No auto KBs on file for $os.Caption"
+                }
+                else{ #2008 R2 32-bit pre-SP1
+                    Write-Host "The system is 32-bit 6.1 pre-SP1"
+                    $auto_download_KBs = @{
+                    KB2931356 = "https://download.microsoft.com/download/8/C/2/8C2D99DA-306D-4CC0-88C7-DCFD81820CCE/Windows6.1-KB2931356-x86.msu"
+                    }
+                }
+            }elseif (($system_info | Out-String).Contains("Service Pack 1")) { #2008 32-bit SP1
+                $os = Get-WmiObject -Class Win32_OperatingSystem            
+                Write-Host "No auto KBs on file for $os.Caption"
+            }
+            else{ #2008 32-bit pre-SP1            
+                Write-Host "The system is 32-bit 6.0"
+                $auto_download_KBs = @{            
+                    KB975517 = "https://bit.ly/2rArzrt"
+                    KB4012598 = "https://bit.ly/2Q3Qjlk"
+                    KB3011780 = "https://bit.ly/2ZzTRPF"
+                    KB958644 = "https://download.microsoft.com/download/4/9/8/498e39f6-9f49-4ca5-99dd-761456da0012/Windows6.0-KB958644-x86.msu"
                 }
             }
-            else{ #Windows Server 2008 R2 64-bit (6.1) pre-SP1
-            Write-Host "The system is 64-bit 6.1 and pre-SP1"
-            $auto_download_KBs = @{
-                KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
-                KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
-                KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work (update readiness tool)
+        }else{ #2012
+            $os = Get-WmiObject -Class Win32_OperatingSystem            
+            Write-Host "No auto KBs on file for $os.Caption"
+            <#
+            if (($system_info | Out-String).Contains("R2")){
+                if (($system_info | Out-String).Contains("Service Pack 1")){ #2012 R2 32-bit SP1
                 }
+            }elseif(($system_info | Out-String).Contains("Service Pack 1")){ #2012 32-bit SP1
+            }else{ #2012 32-bit pre-SP1
             }
-        }
-        else{ #Windows Server 2008 64-bit (6.0)
-            Write-Host "The system is 64-bit 6.0"
-            $auto_download_KBs = @{
-                KB2588516 = "https://bit.ly/37oIwEN"
-                KB2705219 = "https://bit.ly/2ZxEGGm"
-                KB2849470 = "https://bit.ly/2MG0fQ6"
-                KB3011780 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2014/10/windows6.0-kb3011780-x64_c6135e518ffd1b053f1244a3f17d4c352c569c5b.msu"
-                KB4012598 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/02/windows6.0-kb4012598-x64_6a186ba2b2b98b2144b50f88baf33a5fa53b5d76.msu"
-                KB958644 = "https://download.microsoft.com/download/0/f/4/0f425c69-4a1f-4654-b4f8-476a5b1bae1d/Windows6.0-KB958644-x64.msu"
-            } 
-        }
+            #>
+        }        
     }
-    elseif(($system_info | Out-String).Contains("R2")){ #Windows Server 2008 R2 32-bit (6.1)
-        Write-Host "The system is 32-bit 6.1 pre-SP1"
-        $auto_download_KBs = @{
-        KB2931356 = "https://download.microsoft.com/download/8/C/2/8C2D99DA-306D-4CC0-88C7-DCFD81820CCE/Windows6.1-KB2931356-x86.msu"
-        }
-    }
-    else{ #Windows Server 2008 32-bit (6.0)
-        Write-Host "The system is 32-bit 6.0"
-        $auto_download_KBs = @{            
-            KB975517 = "https://bit.ly/2rArzrt"
-            KB4012598 = "https://bit.ly/2Q3Qjlk"
-            KB3011780 = "https://bit.ly/2ZzTRPF"
-            KB958644 = "https://download.microsoft.com/download/4/9/8/498e39f6-9f49-4ca5-99dd-761456da0012/Windows6.0-KB958644-x86.msu"
-        }
-    }
-
     #creates list of installed HotFixes from systeminfo, then parses just the KB from that, then removes those from $auto_download_KBs
     #if there is no match (nothing is installed) then skipps parsing the junk
     $kb_list = Foreach ($KB in $auto_download_KBs.GetEnumerator()){$KB.Name}
@@ -1227,56 +1304,61 @@ function hotFixCheck{
     #download and install logic
     if($auto_download_KBs.Count -gt 0){
         #remove what has already been downloaded from database
-        $files = Get-ChildItem "$env:userprofile\downloads\updates"
-        $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
-        $kb_list = $files -replace '(?m).{4}$',''
-        foreach($kb in $kb_list){$auto_download_KBs.Remove($kb)}
-        $host.UI.RawUI.foregroundcolor = "darkgray"
-        $auto_download_KBs
-        $host.UI.RawUI.foregroundcolor = "magenta"
-        $yes = Read-Host "`nWould you like to downlad the" $auto_download_KBs.count "above HotFixes applicable to your system now? (y, n)"    
-        if ($yes -eq 'y'){
-            $host.UI.RawUI.foregroundcolor = "cyan"
-            Write-Host "The following" $auto_download_KBs.count "hotfixes below will be downloaded."
-            $host.UI.RawUI.foregroundcolor = "darkgray"
-            $auto_download_KBs
-            $host.UI.RawUI.foregroundcolor = "cyan"
-            Write-Host "Importing BitsTransfer module"
-            Import-Module BitsTransfer            
-            #download loop
-            foreach ($key in $auto_download_KBs.GetEnumerator()) {
-                "Downloading $($key.Name) from $($key.Value)"
-                $KB = $($key.Name)
-                $url = $auto_download_KBs.$KB
-                $output = "$env:userprofile\downloads\updates\$KB.msu"
-                Start-BitsTransfer -Source $url -Destination $output
-            }
-            Write-Host "Downloading complete."
-            #from downloaded what is still applicable to install
+        try{
             $files = Get-ChildItem "$env:userprofile\downloads\updates"
             $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
             $kb_list = $files -replace '(?m).{4}$',''
-            $install = $files | Where-Object { $_ -notmatch $installed }
-            $host.UI.RawUI.foregroundcolor = "darkgray"
-            $install
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "Would you like to install the above" $install.count "remaining HotFixes applicable to your system now? (y, n)"
-            $host.UI.RawUI.foregroundcolor = "cyan"                        
-            #install loop 
-            if ($yes -eq 'y'){
-                foreach ($f in $install){ 
-                    Write-Host "Installing $f"
-                    Start-Process wusa -ArgumentList ("$env:userprofile\downloads\updates\$f", '/quiet', '/norestart') -Wait
-                }
-                Write-Host "Finished installing updates."
-            }
-        } else {
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list to download? (y, n)"
-            if ($pick -eq 'y'){
-                pickAKB
-            }else{Write-Host -ForegroundColor Cyan "No updates from the database will be installed."}
+            foreach($kb in $kb_list){$auto_download_KBs.Remove($kb)}
         }
+        catch{Write-Host "No HotFixes have been downloaded yet."}
+        finally{
+            $host.UI.RawUI.foregroundcolor = "darkgray"
+            $auto_download_KBs
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "`nWould you like to downlad the" $auto_download_KBs.count "above HotFixes applicable to your system now? (y, n)"    
+            if ($yes -eq 'y'){
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                Write-Host "The following" $auto_download_KBs.count "hotfixes below will be downloaded."
+                $host.UI.RawUI.foregroundcolor = "darkgray"
+                $auto_download_KBs
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                Write-Host "Importing BitsTransfer module"
+                Import-Module BitsTransfer            
+                #download loop
+                foreach ($key in $auto_download_KBs.GetEnumerator()) {
+                    "Downloading $($key.Name) from $($key.Value)"
+                    $KB = $($key.Name)
+                    $url = $auto_download_KBs.$KB
+                    $output = "$env:userprofile\downloads\updates\$KB.msu"
+                    Start-BitsTransfer -Source $url -Destination $output
+                }
+                Write-Host "Downloading complete."
+                #from downloaded what is still applicable to install
+                $files = Get-ChildItem "$env:userprofile\downloads\updates"
+                $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
+                $kb_list = $files -replace '(?m).{4}$',''
+                $install = $files | Where-Object { $_ -notmatch $installed }
+                $host.UI.RawUI.foregroundcolor = "darkgray"
+                $install
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $yes = Read-Host "Would you like to install the above" $install.count "remaining HotFixes applicable to your system now? (y, n)"
+                $host.UI.RawUI.foregroundcolor = "cyan"                        
+                #install loop 
+                if ($yes -eq 'y'){
+                    foreach ($f in $install){ 
+                        Write-Host "Installing $f"
+                        Start-Process wusa -ArgumentList ("$env:userprofile\downloads\updates\$f", '/quiet', '/norestart') -Wait
+                    }
+                    Write-Host "Finished installing updates."
+                }
+            } else {
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list to download? (y, n)"
+                if ($pick -eq 'y'){
+                    pickAKB
+                }else{Write-Host -ForegroundColor Cyan "No updates from the database will be installed."}
+            }
+        }   
     }else{Write-Host "All of the HotFixes in the database applicable to your system have already been installed."}
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
