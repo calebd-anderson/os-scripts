@@ -1152,7 +1152,7 @@ function hotFixCheck{
         if (($system_info | Out-String).Contains("Windows Server 2008")){ #2008
             if (($system_info | Out-String).Contains("R2")){
                 if (($system_info | Out-String).Contains("Service Pack 1")){ #2008 R2 64-bit SP1
-                    Write-Host "The system is 2008 64-bit R2 and SP1 is installed"
+                    Write-Host "The system is 2008 64-bit R2 and SP1 is installed. These HotFixes should be installed:"
                     $auto_download_KBs = @{
                         #KB975517 = "https://bit.ly/2rArzrt" # 6.0 x86
                         KB2393802 = "http://bit.ly/2kodsxw" # after SP1
@@ -1182,22 +1182,20 @@ function hotFixCheck{
                     }
                 }
                 else{ #2008 R2 64-bit pre-SP1
-                    $os = Get-WmiObject -Class Win32_OperatingSystem            
-                    $os.Caption
-                    Write-Host "The system is 2008 64-bit R2 and SP1 is not installed"
+                    Write-Host "The system is 2008 64-bit R2 and SP1 is not installed. These HotFixes can be installed:"
                     $auto_download_KBs = @{
                         KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                         KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
                         KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
                         #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work (update readiness tool)
-                        }
+                    }
                 }
             }elseif (($system_info | Out-String).Contains("Service Pack 1")) { #2008 64-bit SP1
                 $os = Get-WmiObject -Class Win32_OperatingSystem            
                 Write-Host "No auto KBs on file for" $os.Caption "64-bit, 6.0, SP1"
             }
             else { #2008 64-bit pre-SP1
-                Write-Host "The system is 2008 64-bit 6.0 and SP1 is not installed"
+                Write-Host "The system is 2008 64-bit 6.0 and SP1 is not installed. These HotFixes can be installed:"
                 $auto_download_KBs = @{
                     KB2588516 = "https://bit.ly/37oIwEN"
                     KB2705219 = "https://bit.ly/2ZxEGGm"
@@ -1211,9 +1209,9 @@ function hotFixCheck{
             if (($system_info | Out-String).Contains("R2")){
                 if (($system_info | Out-String).Contains("Service Pack 1")){ #2012 R2 64-bit SP1
                     $os = Get-WmiObject -Class Win32_OperatingSystem            
-                    Write-Host "No auto KBs on file for $os.Caption"
+                    Write-Host "No auto KBs on file for " $os.Caption
                 }else{ #2012 R2 64-bit pre-SP1
-                    Write-Host "The system is 2012 R2 64-bit and SP1 is not installed"
+                    Write-Host "The system is 2012 R2 64-bit and SP1 is not installed. These HotFixes can be installed:"
                     $auto_download_KBs = @{
                         KB4012217 = "https://bit.ly/2JcsYfW" #eternal blue
                         KB3177186 = "https://bit.ly/2Je9p72" #smb 1 remote exectution
@@ -1253,7 +1251,7 @@ function hotFixCheck{
                 }
             }elseif(($system_info | Out-String).Contains("Service Pack 1")){
                 $os = Get-WmiObject -Class Win32_OperatingSystem            
-                Write-Host "No auto KBs on file for $os.Caption"                
+                Write-Host "No auto KBs on file for " $os.Caption
             }else{ #2012 64-bit pre-SP1               
             }
         }
