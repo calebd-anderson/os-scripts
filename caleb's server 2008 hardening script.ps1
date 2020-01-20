@@ -29,6 +29,7 @@ function downloadTools{
     Import-Module BitsTransfer    
     #master tools list
     $downloads = @{
+        splunk7_2_msi = 'https://www.splunk.com/page/download_track?file=7.2.0/windows/splunkforwarder-7.2.0-8c86330ac18-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.2.0&product=universalforwarder&typed=release'
         winSCP_exe = "https://cdn.winscp.net/files/WinSCP-5.15.9-Setup.exe?secure=crToMdPESi8axxxbub8Y0Q==,1579143049"
         malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
         firefox_installer_exe = "https://mzl.la/35e3KDv"
