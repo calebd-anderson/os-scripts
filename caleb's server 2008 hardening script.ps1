@@ -663,7 +663,7 @@ function changeDCMode { param ( )
 }
 # --------- Main password changer ---------
 #disable reverse encryption policy then change all DC user passwords except admin and binddn
-function changeP{
+function changePass{
     #region scriptkitty
     function Confirm-CtmADPasswordIsComplex
     {
@@ -960,7 +960,7 @@ function NTPStripchart{
     cmd /c pause
 }
 # --------- read a password ---------
-function readPasswords{
+function plainPass{
     Write-Host -ForegroundColor Green "Retreives plaintext AD password(s)"    
     $hashtable = Import-Clixml $env:userprofile\appdata\local\securePasswords.xml
     #$host.UI.RawUI.foregroundcolor = "darkgray"
@@ -1548,7 +1548,7 @@ disableAdminShares #also netcease
 miscRegedits
 disablePrintSpooler
 disableGuest
-changeP
+changePass
 changePAdmin
 changePBinddn
 setPassPol
@@ -1595,7 +1595,7 @@ runningServices
 morePIDInfo (enter a PID for more info)
 serviceInfo (enter a service name for more info)
 NTPStripchart
-readPasswords
+plainPass (retreive plaintext password(s) from saved ciphertext file)
 readOutput (provide function output to console)
 avail (display this screen)
 "
@@ -1603,7 +1603,7 @@ $host.UI.RawUI.foregroundcolor = "darkgreen"
 Write-Host "
 ------- Invasive: -------
 harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRegedits, disableSMB1, disableRDP,
-disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changeP, setPassPol, uniqueUserPols, enumerate)
+disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool,changePass, setPassPol, uniqueUserPols, enumerate)
 scriptToTxt (script file type open with notepad) | -Revert, -r
 makeADBackup
 changeDCMode (changes Domain Mode to Windows2008R2Domain)
@@ -1619,7 +1619,7 @@ turnOnFirewall (turns on firewall)
 firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
 disableSMB1 (disables SMB1 and enable SMB2 via registry)
 configNTP (ipconfig + set NTP server)
-changeP (Kyle's AD user password script enhanced)
+changePass (Kyle's AD user password script enhanced)
 changePAdmin (input admin password)
 changePBinddn (input admin password)
 setPassPol (enable passwd complexity and length 12)
