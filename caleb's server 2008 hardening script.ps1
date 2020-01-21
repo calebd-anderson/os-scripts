@@ -748,7 +748,7 @@ function New-CtmADComplexPassword
     #Write-Host "Forcing GP update"
     #gpupdate /force
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Changing All Passwords except admin and binddn`n"
+    Write-Host "Changing all AD passwords except admin and binddn`n"
     #$list was somewhere in here
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
     $users = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $OU
@@ -961,18 +961,50 @@ function NTPStripchart{
 }
 # --------- read a password ---------
 function readPasswords{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "Retreives the plaintext AD password from the encrypted password DB file"
-    $host.UI.RawUI.foregroundcolor = "magenta"
-    $username = Read-Host "Enter a full username to retreive the password"
+    Write-Host -ForegroundColor Green "Retreives plaintext AD password(s)"    
     $hashtable = Import-Clixml $env:userprofile\appdata\local\securePasswords.xml
-    $PlainPassword = $hashtable."$username"
-    $SecurePassword = ConvertTo-SecureString $PlainPassword
-    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
-    $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
-    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    Write-Host "The $username password is: $UnsecurePassword`n"
+    #$host.UI.RawUI.foregroundcolor = "darkgray"
+    Write-Host -ForegroundColor Cyan "1) Prints all to console.`n2) Saves all to `"Script_Output\all_user_passwords.txt`".`n3) Prompts for a single username."
+    Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
+    $switch = Read-Host
+    switch ($switch) {
+        1{
+            foreach ($key in $hashTable.GetEnumerator()) {
+                #"The key $($key.Name) is $($key.Value)"
+                $PlainPassword = "$($key.Value)"
+                $SecurePassword = ConvertTo-SecureString $PlainPassword
+                $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
+                $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
+                [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+                #$host.UI.RawUI.foregroundcolor = "darkgray"
+                Write-Host -ForegroundColor Cyan "$($key.Name)'s password is:" -NoNewline; Write-Host -ForegroundColor DarkGray " $UnsecurePassword`n" -NoNewline
+            }
+        }
+        2{
+            foreach ($key in $hashTable.GetEnumerator()) {
+                #"The key $($key.Name) is $($key.Value)"
+                $PlainPassword = "$($key.Value)"
+                $SecurePassword = ConvertTo-SecureString $PlainPassword
+                $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
+                $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
+                [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+                #$host.UI.RawUI.foregroundcolor = "darkgray"
+                Out-File -FilePath "$env:userprofile\desktop\Script_Output\all_user_passwords.txt" -InputObject "$($key.Name):$UnsecurePassword`n" -Append
+            }                
+            Write-Host -ForegroundColor Cyan "All plaintext passwords are saved to `"Script_Output\all_user_passwords.txt`""
+        }
+        3{
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $username = Read-Host "Enter a full username to retreive the password"    
+            $PlainPassword = $hashtable."$username"
+            $SecurePassword = ConvertTo-SecureString $PlainPassword
+            $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
+            $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
+            [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+            $host.UI.RawUI.foregroundcolor = "darkgray"
+            Write-Host "The $username password is: $UnsecurePassword`n"
+        }
+    }    
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
