@@ -354,7 +354,7 @@ function timeStamp {
 }
 #region Firewall
 # --------- turn firewall on ---------
-function turnOnFirewall{
+function firewallOn{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nTurning On Firewall"
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -363,7 +363,7 @@ function turnOnFirewall{
     cmd /c pause
 }
 # --------- firewall rules ---------
-function firewallRules{
+function setFirewallRules{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nCreating firewall rules:"
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -1115,7 +1115,7 @@ function dateChanged {
     cmd /c pause
 }
 # --------- startup enumeration --------- 
-function enumStartup {
+function startups {
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nCreating list of startup tasks"
@@ -1523,10 +1523,10 @@ cmd /c pause
 function enumerate{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "Running enumeration functions"
-    formatNetstat
+    netstatRegex
     firewallStatus
     runningServices
-    enumStartup
+    startups
     hotFixCheck
     SMBStatus
     #readOutput
@@ -1538,8 +1538,8 @@ function harden{
 Write-Host -ForegroundColor Green "Hardening . . ."
 makeOutDir
 enumerate
-turnOnFirewall
-firewallRules
+firewallOn
+setFirewallRules
 uniqueUserPols
 disableTeredo
 disableSMB1
@@ -1574,31 +1574,6 @@ restart-computer -Confirm
 function avail{
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nAvailable Functions:"
-$host.UI.RawUI.foregroundcolor = "darkcyan"
-Write-Host "
-------- Noninvasive: -------
-makeOutDir (makes script output directory on desktop)
-timeStamp (timestamp Script_Output)
-enumerate (enumStartup, formatNetstat, firewallStatus, runningServices, hotFixCheck)
-loopPing (ping all IP addresses in a class C network)
-ports (displays common ports file)
-downloadTools (download relevant tools)
-hotFixCheck (checks list of HotFix KBs against systeminfo)
-pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
-autoDownloadKB (#incomplete)
-enumStartup
-dateChanged
-firewallStatus
-SMBStatus (returns SMB registry info)
-formatNetstat (format netstat -abno)
-runningServices
-morePIDInfo (enter a PID for more info)
-serviceInfo (enter a service name for more info)
-NTPStripchart
-plainPass (retreive plaintext password(s) from saved ciphertext file)
-readOutput (provide function output to console)
-avail (display this screen)
-"
 $host.UI.RawUI.foregroundcolor = "darkgreen"
 Write-Host "
 ------- Invasive: -------
@@ -1615,8 +1590,8 @@ disableAdminShares (disables Admin share via regedit)
 miscRegedits (many mimikatz cache edits)
 disablePrintSpooler (disables print spooler service)
 disableTeredo  (disables teredo)
-turnOnFirewall (turns on firewall)
-firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
+firewallOn (turns on firewall)
+setFirewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
 disableSMB1 (disables SMB1 and enable SMB2 via registry)
 configNTP (ipconfig + set NTP server)
 changePass (Kyle's AD user password script enhanced)
@@ -1624,6 +1599,31 @@ changePAdmin (input admin password)
 changePBinddn (input admin password)
 setPassPol (enable passwd complexity and length 12)
 uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
+"
+$host.UI.RawUI.foregroundcolor = "darkcyan"
+Write-Host "
+------- Noninvasive: -------
+makeOutDir (makes script output directory on desktop)
+timeStamp (timestamp Script_Output)
+enumerate (startups, formatNetstat, firewallStatus, runningServices, hotFixCheck)
+loopPing (ping all IP addresses in a class C network)
+ports (displays common ports file)
+downloadTools (download relevant tools)
+hotFixCheck (checks list of HotFix KBs against systeminfo)
+pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
+autoDownloadKB (#incomplete)
+startups
+dateChanged
+firewallStatus
+SMBStatus (returns SMB registry info)
+netstatRegex (format/regex netstat -abno, listening, and established > netstat_lsn.txt, netstat_est.txt)
+runningServices
+morePIDInfo (enter a PID for more info)
+serviceInfo (enter a service name for more info)
+NTPStripchart
+plainPass (retreive plaintext password(s) from saved ciphertext file)
+readOutput (provide function output to console)
+avail (display this screen)
 "
 $host.UI.RawUI.foregroundcolor = "darkred"
 Write-Host "
