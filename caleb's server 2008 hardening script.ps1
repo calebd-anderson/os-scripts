@@ -1117,18 +1117,32 @@ function dateChanged {
     cmd /c pause
 }
 # --------- startup enumeration --------- 
-function startups {
+function startups { (param[switch]$virus)
     makeOutDir
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nCreating list of startup tasks"
     $host.UI.RawUI.foregroundcolor = "cyan"
-    wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt
+    #wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt
+    if(Test-Path -Path "C:\tools"){
+        if($virus){
+            Write-Host -ForegroundColor Green "`nCreating CSV list of startup tasks `'autorunsc`' and checking with VirusTotal"
+            autorunsc -accepteula -a * -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\autos_run.csv
+            Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\autos_run.csv`" has suspicious startup programs"
+        }else{
+            Write-Host -ForegroundColor Green "`nCreating list of startup tasks using `'autorunsc`'"
+            autorunsc -accepteula -m | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt
+            Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
+            #autorunsc -accepteula -a ciel -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\autos.csv
+        }        
+    }else{
+        Write-Host -ForegroundColor Green "`nCreating list of startup tasks using `'wmic`'"
+        wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt
+        Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
+    }
+    <#
     reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
     reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
     reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
     reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
+    #>
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
