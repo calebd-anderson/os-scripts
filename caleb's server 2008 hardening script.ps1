@@ -1059,9 +1059,24 @@ function disableGuest{
 #endregion User Edits
 
 #region File System
+# --------- CVE-2020-0674 ---------
+function cve_0674{(param[switch]$revert)
+    Write-Host -ForegroundColor Green "`nDisables jscript.dll (-r to revert)"
+    if($revert){
+        cacls %windir%\system32\jscript.dll /E /R everyone
+        cacls %windir%\syswow64\jscript.dll /E /R everyone
+    }else{
+        takeown /f %windir%\system32\jscript.dll
+        cacls %windir%\system32\jscript.dll /E /P everyone:N
+        takeown /f %windir%\syswow64\jscript.dll
+        cacls %windir%\syswow64\jscript.dll /E /P everyone:N
+    }
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
+}
 # --------- sets script extensions to open notepad ---------
-function scriptToTxt{param([switch]$Revert)
-    if($Revert){
+function scriptToTxt{param([switch]$revert)
+    if($revert){
         Write-Host -ForegroundColor Green "`nReverting script extensions association to default"
         $host.UI.RawUI.foregroundcolor = "cyan"
         cmd /c assoc .bat=batfile
@@ -1071,8 +1086,6 @@ function scriptToTxt{param([switch]$Revert)
         cmd /c assoc .vbs=VBSFile
         cmd /c assoc .wsf=WSFFile
         cmd /c assoc .wsh=WSHFile
-        $host.UI.RawUI.foregroundcolor = "white"
-        cmd /c pause
     }else{
         Write-Host -ForegroundColor Green "`nAssociating script extensions to open with notepad"
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -1083,9 +1096,9 @@ function scriptToTxt{param([switch]$Revert)
         cmd /c assoc .vbs=txtfile
         cmd /c assoc .wsf=txtfile
         cmd /c assoc .wsh=txtfile
-        $host.UI.RawUI.foregroundcolor = "white"
-        cmd /c pause
     }
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- makes a backup ---------
 function makeADBackup {
@@ -1571,6 +1584,7 @@ changePass
 changePAdmin
 changePBinddn
 setPassPol
+cve_0674
 scriptToTxt
 downloadTools
 $host.UI.RawUI.foregroundcolor = "green"
@@ -1601,8 +1615,8 @@ disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool,changePas
 scriptToTxt (script file type open with notepad) | -Revert, -r
 makeADBackup
 changeDCMode (changes Domain Mode to Windows2008R2Domain)
-netCease (disable Net Session Enumeration) | -Revert
-GPTool (opens GP info tool)
+netCease (disable Net Session Enumeration) | -Revert, -r
+cve_0674 (disables jscript.dll) | -Revert, -r
 disableGuest (disables Guest account)
 disableRDP (disables RDP via regedit)
 disableAdminShares (disables Admin share via regedit)
@@ -1632,6 +1646,7 @@ hotFixCheck (checks list of HotFix KBs against systeminfo)
 pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
 autoDownloadKB (#incomplete)
 startups
+GPTool (opens GP info tool)
 dateChanged
 firewallStatus
 SMBStatus (returns SMB registry info)
