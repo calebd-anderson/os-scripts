@@ -33,7 +33,7 @@ function downloadTools{
         winSCP_exe = "https://cdn.winscp.net/files/WinSCP-5.15.9-Setup.exe?secure=crToMdPESi8axxxbub8Y0Q==,1579143049"
         malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
         firefox_installer_exe = "https://mzl.la/35e3KDv"
-        Sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
+        sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
         mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi" #baseline security analyzer
         fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe" #hash tool
         nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
@@ -41,7 +41,7 @@ function downloadTools{
         gmer_zip = "http://www2.gmer.net/gmer.zip" #malware tool
         sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe" #text editor
         #bccrypto_zip = "https://www.bouncycastle.org/csharp/download/bccrypto-csharp-1.8.5-bin.zip"
-        new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip" #kerberos reset ps script
+        #new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip" #kerberos reset ps script
         #encryption_examples_zip = "https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87/file/108341/2/EncryptionExamples.zip"
         #protectedData_zip = "https://gallery.technet.microsoft.com/scriptcenter/Share-encrypted-data-2f91fd3f/file/129591/1/ProtectedData.zip"
         #PSBouncyCastle_psm1 = "https://raw.githubusercontent.com/rlipscombe/PSBouncyCastle/master/PSBouncyCastle.psm1"
@@ -62,7 +62,7 @@ function downloadTools{
     $downloads
     #download all?
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $yes = Read-Host "Would you like to download all above" $downloads.count "tools now? (y, n)"
+    $yes = Read-Host "Would you like to download all above" $downloads.count "jobs now? (y, n)"
     $host.UI.RawUI.foregroundcolor = "cyan"
     if ($yes -eq 'y'){
         #download loop
@@ -139,7 +139,7 @@ function downloadTools{
                     setx PATH "$env:path;C:\Program Files\7-Zip"
                 }
             }else{Write-Host "7-Zip is already installed"}
-        }else{Write-Host "7-Zip Is not required. Use `"Expand-Archive`" CmdLet"}
+        }else{Write-Host "7-Zip is not required. Use `"Expand-Archive`" CmdLet"}
     }
     #install Sysinternals
     function installSysinternals {
@@ -181,6 +181,8 @@ function downloadTools{
                     }else{
                         Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
                         Expand-Archive -LiteralPath $sys_zip_path -DestinationPath "C:\Tools" -Force
+                        $env:Path += ";C:\tools"
+                        cmd /c "setx /m path `"%path%;C:\tools\`"" | Out-Null
                     }
                 }
             }
