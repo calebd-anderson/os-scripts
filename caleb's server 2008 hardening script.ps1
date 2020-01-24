@@ -1103,13 +1103,16 @@ function makeADBackup {
 #region Enumeration
 # --------- loop ping ---------
 function loopPing{
-    $network = Read-Host "Enter the class C network portion you would like to loop ping (<255.255.255>.[loop]):"
+    Write-Host -ForegroundColor Green "`nEnumerates subnet"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    ipconfig /all
+    $host.UI.RawUI.foregroundcolor = "magenta"
+    $network = Read-Host "Enter the class C subnet (255.255.255) portion you would like to loop ping (<255.255.255>.[loop]):"
     cmd /c "for /L %I in (1,1,254) do ping -w 30 -n 1 $network.%I | find `"Reply`" >> `"$env:USERPROFILE\desktop\$network`_ping_loop.txt`""
 }
 # --------- order directory by date changed ---------
 function dateChanged {
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nProvide files by date changed"
+    Write-Host -ForegroundColor Green "`nProvide files by date changed"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     cmd /c dir /O-D /P %SystemRoot%\System32 | more
     cmd /c dir /O-D /P "%appdata%" | more
