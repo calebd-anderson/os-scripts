@@ -31,7 +31,7 @@ function downloadTools{
     $downloads = @{
         splunkUF7_2_msi = 'https://www.splunk.com/page/download_track?file=7.2.0/windows/splunkforwarder-7.2.0-8c86330ac18-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.2.0&product=universalforwarder&typed=release'
         winSCP_exe = "https://cdn.winscp.net/files/WinSCP-5.15.9-Setup.exe?secure=crToMdPESi8axxxbub8Y0Q==,1579143049"
-        malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
+        #malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
         firefox_installer_exe = "https://mzl.la/35e3KDv"
         sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
         mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi" #baseline security analyzer
@@ -72,37 +72,41 @@ function downloadTools{
             $url = $downloads.$filename
             $filename = $filename -replace '_(?!.*_)', '.' #Lookahead and Lookbehind Zero-Length Assertions
             $output = "$env:USERPROFILE\downloads\tools\$filename"           
-            try{Start-BitsTransfer -Source $url -Destination $output}
+            try{Start-BitsTransfer -Source $url -Destination $output -ErrorAction Stop}
             catch{
-                $host.UI.RawUI.foregroundcolor = "red"
-                Write-Host "An error occurred:"
-                Write-Host $_
+                Write-Host -ForegroundColor Yellow $_ "The URL below has been copied to the clipboard"
+                $url | clip
+                Write-Host -ForegroundColor Yellow $url
+                cmd /c pause
             }
         }
         Write-Host "All relevant tools downloaded"
     }    
     #install sublime text editor?
     function installSublime{
-        if(Test-Path -Path "$env:USERPROFILE\downloads\tools\sublime.exe"){
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
-            if ($yes -eq 'y'){
-                if(Test-Path -Path "C:\Program Files\Sublime Text 3"){
-                    Write-Host "Sublime is already installed"
-                } 
-                else{
-                    $host.UI.RawUI.foregroundcolor = "cyan"
-                    Write-Host "Installing Sublime Text and adding context menue"
-                    cmd /c %userprofile%\downloads\tools\sublime.exe /verysilent
-                    REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
+        if(-not (Test-Path "C:\Program Files\Sublime Text 3")){
+            if(Test-Path -Path "$env:USERPROFILE\downloads\tools\sublime.exe"){
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
+                if ($yes -eq 'y'){
+                    if(Test-Path -Path "C:\Program Files\Sublime Text 3"){
+                        Write-Host "Sublime is already installed"
+                    } 
+                    else{
+                        $host.UI.RawUI.foregroundcolor = "cyan"
+                        Write-Host "Installing Sublime Text and adding context menue"
+                        cmd /c %userprofile%\downloads\tools\sublime.exe /verysilent
+                        REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
+                    }
                 }
-            }
-        }else{Write-Host -ForegroundColor Cyan "Sublime has not been downloaded yet"}
+            }else{Write-Host -ForegroundColor Cyan "Sublime has not been downloaded yet"}
+        }else{Write-Host "Sublime has already been installed"}
     }
     #install SP1?
     function installSP1{
-        $host.UI.RawUI.foregroundcolor = "magenta"
-        $yes = Read-Host "windows6.1-KB976932-X64 has been downloaded. Would you like to install SP1 now? (y, n)"
+        Write-Host -ForegroundColor Cyan "windows6.1-KB976932-X64 has been downloaded. " -NoNewline
+        Write-Host -ForegroundColor Magenta "Would you like to install SP1 now? (y, n): " -NoNewline
+        $yes = Read-Host
         if ($yes -eq 'y'){
             $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Host "Installing SP1"
@@ -291,12 +295,12 @@ function GPTool{
     Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)`nUser Config\Windows Settings\Scripts (Startup/Shutdown)"
     Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE ???`""
     X_Passwd_Policy = "Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
-    Add_Comp_Pol = "Computer Configuration\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`""
+    Add_Comp_Pol = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`""
     Deny_User_Rights = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignments\ -> `"MANY w/ Deny`""
     Restricted_Groups = "Computer Configuration\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
     Harden_UNC = "Computer Configuration / Administrative Templates / Network / Network Provider -> Hardened UNC Paths"
     X_Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
-    X_RDP = "Computer Configuration  Administrative Templates  Windows Components  Remote Desktop Services  Remote Desktop Session Host  Connections.
+    X_RDP = "Computer Configuration ï¿½ Administrative Templates ï¿½ Windows Components ï¿½ Remote Desktop Services ï¿½ Remote Desktop Session Host ï¿½ Connections.
     Allow users to connect remotely using Remote Desktop Services (enable or disable)"
     Block_APP = "User Config - Policies - Admin Templates - System - Don't run specified Windows applications `"Enable`" powershell.exe
     Comp Config - Policies - Sec Settings - App Control Policies - AppLocker - Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
@@ -636,7 +640,7 @@ function disableRDP{
     Set-Service "TermService" -StartupType Disabled
     Set-Service "UmRdpService" -StartupType Disabled
     Write-Host "Removing RDP via registry"
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" Value 1 Force
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" ï¿½Value 1 ï¿½Force
     Write-Host "RDP disabled"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query "HKLM\System\CurrentControlSet\Control\Terminal Server" /f fDenyTSConnections
@@ -1174,7 +1178,7 @@ function dateChanged {
     cmd /c pause
 }
 # --------- startup enumeration --------- 
-function startups { (param[switch]$virus)
+function startups { param([switch]$virus)
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "cyan"
     #wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt
@@ -1451,7 +1455,13 @@ function hotFixCheck{
                     $KB = $($key.Name)
                     $url = $auto_download_KBs.$KB
                     $output = "$env:userprofile\downloads\updates\$KB.msu"
-                    Start-BitsTransfer -Source $url -Destination $output
+                    try{Start-BitsTransfer -Source $url -Destination $output -ErrorAction Stop}
+                    catch{
+                        Write-Host -ForegroundColor Yellow $_ "The URL below has been copied to the clipboard"
+                        $url | clip
+                        Write-Host -ForegroundColor Yellow $url
+                        cmd /c pause
+                    }
                 }
                 Write-Host "Downloading complete."
                 #from downloaded what is still applicable to install
@@ -1658,29 +1668,29 @@ Write-Host "`nAvailable Functions:"
 $host.UI.RawUI.foregroundcolor = "darkgreen"
 Write-Host "
 ------- Invasive: -------
-harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRegedits, disableSMB1, disableRDP,
-disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool,changePass, setPassPol, uniqueUserPols, enumerate)
-scriptToTxt (script file type open with notepad) | -Revert, -r
+hardenï¿½(makeOutputDir,ï¿½turnOnFirewall,ï¿½setAssToTxt,ï¿½disableAdminShares,ï¿½miscRegedits, disableSMB1,ï¿½disableRDP,
+disablePrintSpooler,ï¿½disableGuest,ï¿½changePAdmin, changePBinddn, GPTool,changePass,ï¿½setPassPol,ï¿½uniqueUserPols,ï¿½enumerate)
+scriptToTxt (scriptï¿½fileï¿½typeï¿½openï¿½withï¿½notepad) | -Revert, -r
 makeADBackup
 removeIsass
 changeDCMode (changes Domain Mode to Windows2008R2Domain)
 netCease (disable Net Session Enumeration) | -Revert, -r
 cve_0674 (disables jscript.dll) | -Revert, -r
-disableGuest (disables Guest account)
-disableRDP (disables RDP via regedit)
-disableAdminShares (disables Admin share via regedit)
+disableGuestï¿½(disablesï¿½Guestï¿½account)
+disableRDPï¿½(disablesï¿½RDPï¿½viaï¿½regedit)
+disableAdminSharesï¿½(disablesï¿½Adminï¿½shareï¿½viaï¿½regedit)
 miscRegedits (many mimikatz cache edits)
 disablePrintSpooler (disables print spooler service)
-disableTeredo  (disables teredo)
-firewallOn (turns on firewall)
-setFirewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
-disableSMB1 (disables SMB1 and enable SMB2 via registry)
-configNTP (ipconfig + set NTP server)
-changePass (Kyle's AD user password script enhanced)
+disableTeredoï¿½ï¿½(disablesï¿½teredo)
+firewallOn (turnsï¿½onï¿½firewall)
+setFirewallRules (Blockï¿½RDPï¿½In,ï¿½Blockï¿½VNCï¿½In,ï¿½Blockï¿½VNCï¿½Javaï¿½In,ï¿½Blockï¿½FTPï¿½In)
+disableSMB1ï¿½(disablesï¿½SMB1ï¿½andï¿½enableï¿½SMB2ï¿½viaï¿½registry)
+configNTPï¿½(ipconfigï¿½+ï¿½setï¿½NTPï¿½server)
+changePass (Kyle'sï¿½ADï¿½userï¿½passwordï¿½scriptï¿½enhanced)
 changePAdmin (input admin password)
 changePBinddn (input admin password)
-setPassPol (enable passwd complexity and length 12)
-uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
+setPassPolï¿½(enableï¿½passwdï¿½complexityï¿½andï¿½lengthï¿½12)
+uniqueUserPolsï¿½(enableï¿½allï¿½usersï¿½requireï¿½passwords,ï¿½enableï¿½adminï¿½sensitive,ï¿½removeï¿½allï¿½membersï¿½fromï¿½Schemaï¿½Admins)
 "
 $host.UI.RawUI.foregroundcolor = "darkcyan"
 Write-Host "
@@ -1695,7 +1705,7 @@ hotFixCheck (checks list of HotFix KBs against systeminfo)
 pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
 autoDownloadKB (#incomplete)
 startups
-GPTool (opens GP info tool)
+GPTool (opensï¿½GPï¿½infoï¿½tool)
 dateChanged
 firewallStatus
 SMBStatus (returns SMB registry info)
