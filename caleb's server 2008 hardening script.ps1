@@ -1059,6 +1059,47 @@ function disableGuest{
 #endregion User Edits
 
 #region File System
+# --------- Isass.exe ---------
+function removeIsass{
+    Write-Host -ForegroundColor Green "Detects and removes Isass.exe (not to be confused with Lsass.exe)"
+    #REG query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
+    cmd /c "echo Isass in Registry:" > desktop\Script_Output\isass_exe.txt
+    reg query HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /f Isass | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    type $env:USERPROFILE\desktop\Script_Output\isass_exe.txt
+    #region TestReg
+    function Test-RegistryValue {
+        param (
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]$Path,
+    
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]$Value
+        )
+        try {
+            Get-ItemProperty -Path $Path | Select-Object -ExpandProperty $Value -ErrorAction Stop | Out-Null
+            return $true
+        }
+        catch {return $false}
+    }
+    #endregion TestReg
+    if (Test-RegistryValue -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Value Isass){
+        Write-Host -ForegroundColor Cyan "Backing up `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`""
+        reg export HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run $env:USERPROFILE\desktop\Script_Output\isass_reg_bak.reg
+        Write-Host -ForegroundColor Cyan "Deleting `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v Isass`""
+        reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v Isass /f
+        cmd /c "echo Isass.exe in `"%SystemRoot%\System32`":" >> desktop\Script_Output\isass_exe.txt
+        try{dir $env:systemroot\System32\Isass.exe | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append}
+        catch{Write-Host -ForegroundColor Cyan "Isass.exe is not in `"%SystemRoot%\System32\`""}
+        Write-Host -ForegroundColor Cyan "Deleting Isass.exe from `"%SystemRoot%\System32\`""
+        cmd /c del /f %Systemroot%\system32\Isass.exe        
+        cmd /c "echo Isass.exe in `"%SystemRoot%\System32`" after:" >> desktop\Script_Output\isass_exe.txt
+        cmd /c del /f %Systemroot%\system32\Isass.exe | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append
+    }else{Write-Host -ForegroundColor Cyan "Isass.exe is not in `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`""}
+    type $env:USERPROFILE\desktop\Script_Output\isass_exe.txt
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
+}
 # --------- CVE-2020-0674 ---------
 function cve_0674{(param[switch]$revert)
     Write-Host -ForegroundColor Green "`nDisables jscript.dll (-r to revert)"
@@ -1576,6 +1617,7 @@ function harden{
 Write-Host -ForegroundColor Green "Hardening . . ."
 makeOutDir
 enumerate
+removeIsass
 firewallOn
 setFirewallRules
 uniqueUserPols
@@ -1620,6 +1662,7 @@ harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRege
 disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool,changePass, setPassPol, uniqueUserPols, enumerate)
 scriptToTxt (script file type open with notepad) | -Revert, -r
 makeADBackup
+removeIsass
 changeDCMode (changes Domain Mode to Windows2008R2Domain)
 netCease (disable Net Session Enumeration) | -Revert, -r
 cve_0674 (disables jscript.dll) | -Revert, -r
