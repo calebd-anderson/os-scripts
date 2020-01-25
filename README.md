@@ -17,3 +17,5 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine</br>
 Get-ExecutionPolicy -List
 
 Ensure Encoding is ANSI
+
+https://send.firefox.com/download/dfafd3053d2c0792/#iQaMa3rU_tX1JPaqncivmA
