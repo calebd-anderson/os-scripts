@@ -1140,17 +1140,23 @@ function startups { (param[switch]$virus)
     if(Test-Path -Path "C:\tools"){
         if($virus){
             Write-Host -ForegroundColor Green "`nCreating CSV list of startup tasks `'autorunsc`' and checking with VirusTotal"
-            autorunsc -accepteula -a * -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\autos_run.csv
-            Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\autos_run.csv`" has suspicious startup programs"
+            autorunsc -accepteula -a * -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\auto_run.csv
+            $host.UI.RawUI.foregroundcolor = "darkgray"
+            type $env:userprofile\desktop\Script_Output\auto_run.csv
+            Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\auto_run.csv`" has suspicious startup programs"
         }else{
             Write-Host -ForegroundColor Green "`nCreating list of startup tasks using `'autorunsc`'"
-            autorunsc -accepteula -m | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt
+            autorunsc -accepteula -m | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+            $host.UI.RawUI.foregroundcolor = "darkgray"
+            type $env:userprofile\desktop\Script_Output\startup_programs.txt
             Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
             #autorunsc -accepteula -a ciel -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\autos.csv
         }        
     }else{
         Write-Host -ForegroundColor Green "`nCreating list of startup tasks using `'wmic`'"
-        wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt
+        wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        type $env:userprofile\desktop\Script_Output\startup_programs.txt
         Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
     }
     <#
