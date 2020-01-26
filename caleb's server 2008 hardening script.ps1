@@ -272,12 +272,12 @@ function GPTool{
     #WPF AD GUI script
     Add-Type -assembly System.Windows.Forms
     $main_form = New-Object System.Windows.Forms.Form
-    $main_form.Text ='Set GPO Tool'
+    $main_form.Text ='Set GP Tool'
     $main_form.Width = 600
     $main_form.Height = 100
     $main_form.AutoSize = $true
     $Label = New-Object System.Windows.Forms.Label
-    $Label.Text = "GPO Object "
+    $Label.Text = "GP Object "
     $Label.Location  = New-Object System.Drawing.Point(0,10)
     $Label.AutoSize = $true
     $main_form.Controls.Add($Label)
@@ -304,8 +304,10 @@ function GPTool{
     Allow users to connect remotely using Remote Desktop Services (enable or disable)"
     Block_APP = "User Config - Policies - Admin Templates - System - Don't run specified Windows applications `"Enable`" powershell.exe
     Comp Config - Policies - Sec Settings - App Control Policies - AppLocker - Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
+    Banner = "CompConfig\Policies\Windows Settings\Sec Settings\Local Policies\Sec Options\`"Interactive logon: Message text for users attempting to log on`"
+    CompConfig\Policies\Windows Settings\Sec Settings\Local Policies\Sec Options\`"Interactive logon: Message title for users attempting to log on`""
     }    
-    
+    #region buttons
     Foreach ($GPO in $GPO_EDITS.GetEnumerator()){$ComboBox.Items.Add($($GPO.Name)) | Out-Null}
     $ComboBox.Location = New-Object System.Drawing.Point(70,10)
     $main_form.Controls.Add($ComboBox)
@@ -322,24 +324,28 @@ function GPTool{
     $Button = New-Object System.Windows.Forms.Button
     $Button.Location = New-Object System.Drawing.Size(400,10)
     $Button.Size = New-Object System.Drawing.Size(120,23)
-    $Button.Text = "Check"
+    $Button.Text = "`"gpedit.msc`""
     $main_form.Controls.Add($Button)
+    $Button.Add_Click({gpedit.msc})
     $ComboBox.Add_SelectedIndexChanged({$Label3.Text = $GPO_EDITS[$ComboBox.selectedItem]})
     #$Button.Add_Click({$Label3.Text = $GPO_EDITS[$ComboBox.selectedItem]})
     $Button2 = New-Object System.Windows.Forms.Button
     $Button2.Location = New-Object System.Drawing.Size(530,10)
     $Button2.Size = New-Object System.Drawing.Size(120,23)
-    $Button2.Text = "Open gpmc.msc"
+    $Button2.Text = "`"gpmc.msc`""
     $main_form.Controls.Add($Button2)
     $Button2.Add_Click({gpmc.msc})
     $Button3 = New-Object System.Windows.Forms.Button
     $Button3.Location = New-Object System.Drawing.Size(660,10)
     $Button3.Size = New-Object System.Drawing.Size(120,23)
-    $Button3.Text = "Open secpol.msc"
+    $Button3.Text = "`"secpol.msc`""
     $main_form.Controls.Add($Button3)
     $Button3.Add_Click({secpol.msc})
+    #endregion buttons
     $main_form.ShowDialog()
     Write-Host "Ending GP tool"
+    Write-Host "Forcing GP update"
+    gpupdate /force
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -751,8 +757,6 @@ function New-CtmADComplexPassword
     $host.UI.RawUI.foregroundcolor = "magenta"
     Write-Host "Press any key to start changing all AD user passwords . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
-    #Write-Host "Forcing GP update"
-    #gpupdate /force
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Changing all AD passwords except admin and binddn`n"
     #$list was somewhere in here
@@ -779,6 +783,11 @@ function New-CtmADComplexPassword
             $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force
             Write-Host -ForegroundColor Gray "Changing the password of $user a second time"
             Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
+            $user = "$user".Trim() -replace '[CN=]{3}|[\,].*',''
+            $encrypted = ConvertFrom-SecureString -SecureString $securePassword
+            Out-File $env:userprofile\desktop\Script_Output\user_passwds_list.txt -Append -InputObject $user, $encrypted,""
+            Write-Host "Adding $user to the hash table"
+            $hashTable.Add($user,$encrypted)
         }
         else{
             #$securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
@@ -850,6 +859,7 @@ function changePBinddn{
     $securePassword = Read-Host "`nEnter a new binddn password" -AsSecureString
     Set-ADAccountPassword -Identity $binddn -Reset -NewPassword $securePassword
     $host.UI.RawUI.foregroundcolor = "cyan"
+    <# encrypt and export
     Write-Host "Encrypting and exporting"
     $encrypted = ConvertFrom-SecureString -SecureString $securePassword
     $binddn = "$binddn".Trim() -replace '[CN=]{3}|[\,].*',''
@@ -860,6 +870,7 @@ function changePBinddn{
     }else{$hashtable = @{}}
     $hashTable[$binddn] = $encrypted
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
+    #>
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "binddn user password has been changed"
     $host.UI.RawUI.foregroundcolor = "white"
@@ -970,7 +981,7 @@ function plainPass{
     Write-Host -ForegroundColor Green "Retreives plaintext AD password(s)"    
     $hashtable = Import-Clixml $env:userprofile\appdata\local\securePasswords.xml
     #$host.UI.RawUI.foregroundcolor = "darkgray"
-    Write-Host -ForegroundColor Cyan "1) Prints all to console.`n2) Saves all to `"Script_Output\all_user_passwords.txt`".`n3) Prompts for a single username."
+    Write-Host -ForegroundColor Cyan "1) Prints all to console.`n2) Saves all to `"Script_Output\all_user_passwords.txt`".`n3) Prompts for a single username.`n4) Uploads all CCDC_Scoring user creds to PasteBin."
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
     $switch = Read-Host
     switch ($switch) {
@@ -1009,6 +1020,103 @@ function plainPass{
             [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
             $host.UI.RawUI.foregroundcolor = "darkgray"
             Write-Host "The $username password is: $UnsecurePassword`n"
+        }
+        4{
+            #region PasteBin ScriptKitty
+            function Invoke-Request
+            {
+                param (
+                    $parametros,
+                    $url
+                )
+                $bytes = [System.Text.Encoding]::ASCII.GetBytes($parametros)
+                $ch = [System.Net.WebRequest]::Create($url)
+                $ch.Method = "POST";
+                $ch.ContentType = "application/x-www-form-urlencoded"
+                $ch.ContentLength = $bytes.Length
+
+                $stream = $ch.GetRequestStream()
+                $stream.Write($bytes, 0, $bytes.Length)
+                $stream.Flush()
+                $stream.Close()
+                $resp = $ch.GetResponse()
+                $sr = [System.IO.StreamReader] $resp.GetResponseStream()
+                $return = $sr.ReadToEnd().Trim()
+                return $return
+            }
+            function Create-NewPaste
+            {
+                param (
+                    [Parameter(Mandatory=$True)]
+                    $DevKey, # api_developer_key
+                    [Parameter(Mandatory=$True)]
+                    $PasteCode, # paste text
+                    [Int32]
+                    [ValidateSet(0, 1, 2)] # 0=public 1=unlisted 2=private
+                    $PastePrivacy = 1,
+                    [Parameter(Mandatory=$True)]
+                    $PasteName, # name or title of your paste
+                    [ValidateSet("N", "10M", "1H", "1D", "1M")]
+                    $PasteExpireDate = '10M',
+                    [Parameter(Mandatory=$False)]
+                    [ValidateSet("4cs", "6502acme", "6502kickass", "6502tasm", "abap", "actionscript", "actionscript3", "ada", "aimms", "algol68", "apache", "applescript", "apt_sources", "arm", "asm", "asp", "asymptote", "autoconf", "autohotkey", "autoit", "avisynth", "awk", "bascomavr", "bash", "basic4gl", "dos", "bibtex", "blitzbasic", "b3d", "bmx", "bnf", "boo", "bf", "c", "c_winapi", "c_mac", "cil", "csharp", "cpp", "cp", "cp", "c_loadrunner", "caddcl", "cadlisp", "cfdg", "chaiscript", "chapel", "clojure", "klonec", "klonecpp", "cmake", "cobol", "coffeescript", "cfm", "css", "cuesheet", "d", "dart", "dcl", "dcpu16", "dcs", "delphi", "oxygene", "diff", "div", "dot", "e", "ezt", "ecmascript", "eiffel", "email", "epc", "erlang", "euphoria", "fsharp", "falcon", "filemaker", "fo", "f1", "fortran", "freebasic", "freeswitch", "gambas", "gml", "gdb", "genero", "genie", "gettext", "go", "groovy", "gwbasic", "haskell", "haxe", "hicest", "hq9plus", "html4strict", "html5", "icon", "idl", "ini", "inno", "intercal", "io", "ispfpanel", "j", "java", "java5", "javascript", "jcl", "jquery", "json", "julia", "kixtart", "latex", "ldif", "lb", "lsl2", "lisp", "llvm", "locobasic", "logtalk", "lolcode", "lotusformulas", "lotusscript", "lscript", "lua", "m68k", "magiksf", "make", "mapbasic", "matlab", "mirc", "mmix", "modula2", "modula3", "68000devpac", "mpasm", "mxml", "mysql", "nagios", "netrexx", "newlisp", "nginx", "nimrod", "text", "nsis", "oberon2", "objeck", "objc", "ocam", "ocaml", "octave", "oorexx", "pf", "glsl", "oobas", "oracle11", "oracle8", "oz", "parasail", "parigp", "pascal", "pawn", "pcre", "per", "perl", "perl6", "php", "ph", "pic16", "pike", "pixelbender", "pli", "plsql", "postgresql", "postscript", "povray", "powershell", "powerbuilder", "proftpd", "progress", "prolog", "properties", "providex", "puppet", "purebasic", "pycon", "python", "pys60", "q", "qbasic", "qml", "rsplus", "racket", "rails", "rbs", "rebol", "reg", "rexx", "robots", "rpmspec", "ruby", "gnuplot", "rust", "sas", "scala", "scheme", "scilab", "scl", "sdlbasic", "smalltalk", "smarty", "spark", "sparql", "sqf", "sql", "standardml", "stonescript", "sclang", "swift", "systemverilog", "tsql", "tcl", "teraterm", "thinbasic", "typoscript", "unicon", "uscript", "upc", "urbi", "vala", "vbnet", "vbscript", "vedit", "verilog", "vhdl", "vim", "visualprolog", "vb", "visualfoxpro", "whitespace", "whois", "winbatch", "xbasic", "xml", "xorg_conf", "xpp", "yaml", "z80", "zxbasic")]
+                    $PasteFormat,
+                    [Parameter(Mandatory=$False)]
+                    $UserKey = '' # if an invalid api_user_key or no key is used, the paste will be create as a guest
+                )
+                $api_dev_key 			= $DevKey;
+                $api_paste_code 		= $PasteCode;
+                $api_paste_private 		= $PastePrivacy;
+                $api_paste_name			= $PasteName;
+                $api_paste_expire_date  = $PasteExpireDate;
+                $api_paste_format 		= $PasteFormat;
+                $api_user_key 			= $UserKey;
+                
+                $api_paste_name			= [uri]::EscapeDataString($api_paste_name);
+                $api_paste_code			= [uri]::EscapeDataString($api_paste_code);
+
+                $url 				= 'http://pastebin.com/api/api_post.php';
+                $parametros = "api_option=paste&api_user_key=$api_user_key&api_paste_private=$api_paste_private&api_paste_name=$api_paste_name&api_paste_expire_date=$api_paste_expire_date&api_paste_format=$api_paste_format&api_dev_key=$api_dev_key&api_paste_code=$api_paste_code"
+                
+                Invoke-Request $parametros $url
+            }
+            #endregion PasteBin ScriptKitty
+            #-DevKey -> api_developer_key DevKey: 7a94b5dfa4691350117da8aaf3251b56
+            #-PasteCode -> The data
+            #-PastePrivacy -> 0=public 1=unlisted 2=private
+            #-PasteName -> name or title of your paste
+            #-PasteExpireDate (valid: "N", "10M", "1H", "1D", "1M")
+            #-PasteFormat -> text
+            #UserKey -> if an invalid api_user_key or no key is used, the paste will be create as a guest UserKey: 0a03a70e23a721783496bcf3a6669829
+            foreach ($key in $hashTable.GetEnumerator()) {
+                #"The key $($key.Name) is $($key.Value)"
+                if($($key.name) -eq "Guest"){
+                    Write-Host -ForegroundColor DarkGray "Skipping Guest"
+                }elseif($($key.name).Contains('_')){
+                    Write-Host -ForegroundColor DarkGray "Skipping $($key.name)"
+                }
+                <#elseif($($key.name) -eq "IUSR_SHAREPEG"){
+                    Write-Host -ForegroundColor DarkGray "Skipping IUSR_SHAREPEG"
+                }elseif($($key.name) -eq "HVU_FILESERVER1"){
+                    Write-Host -ForegroundColor DarkGray "Skipping HVU_FILESERVER1"
+                }elseif($($key.name) -eq "IWAM_SHAREPEG"){
+                    Write-Host -ForegroundColor DarkGray "Skipping IWAM_SHAREPEG"
+                }#>
+                elseif($($key.name) -eq "krbtgt"){
+                    Write-Host -ForegroundColor DarkGray "Skipping krbtgt"                
+                }else{
+                    $PlainPassword = "$($key.Value)"
+                    $SecurePassword = ConvertTo-SecureString $PlainPassword
+                    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
+                    $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
+                    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+                    #$host.UI.RawUI.foregroundcolor = "darkgray"
+                    $string += "$($key.Name):$UnsecurePassword`n"
+                }
+            }                
+            Write-Host -ForegroundColor Cyan "All CCDC_Scoring user creds saved to URL below"
+            $host.UI.RawUI.foregroundcolor = "yellow"
+            Create-NewPaste -DevKey 7a94b5dfa4691350117da8aaf3251b56 -PasteFormat text -PastePrivacy 1 -PasteCode $string -PasteName CCDC_Scoring_Users
         }
     }    
     $host.UI.RawUI.foregroundcolor = "white"
@@ -1293,6 +1401,8 @@ function hotFixCheck{
                         KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                         KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
                         KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
+                        KB2992611 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/10/windows6.1-kb2992611-x64_786356207570e1f5c422795f3c15961af3cb2d0a.msu"
+                        KB3018238 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2014/11/windows6.1-kb3018238-x64_a8abfb302c814db104e6c0f987dd4b887899b54a.msu"
                         #KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1 (not security or critical at all)
                         #KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
                     }
