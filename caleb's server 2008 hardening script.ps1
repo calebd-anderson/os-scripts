@@ -300,7 +300,7 @@ function GPTool{
     Restricted_Groups = "Computer Configuration\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
     Harden_UNC = "Computer Configuration / Administrative Templates / Network / Network Provider -> Hardened UNC Paths"
     X_Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
-    X_RDP = "Computer Configuration � Administrative Templates � Windows Components � Remote Desktop Services � Remote Desktop Session Host � Connections.
+    X_RDP = "Comp Config\Administrative Templates\Windows Components\Remote Desktop Services\Remote Desktop Session Host\Connections.
     Allow users to connect remotely using Remote Desktop Services (enable or disable)"
     Block_APP = "User Config - Policies - Admin Templates - System - Don't run specified Windows applications `"Enable`" powershell.exe
     Comp Config - Policies - Sec Settings - App Control Policies - AppLocker - Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
@@ -640,7 +640,7 @@ function disableRDP{
     Set-Service "TermService" -StartupType Disabled
     Set-Service "UmRdpService" -StartupType Disabled
     Write-Host "Removing RDP via registry"
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" �Value 1 �Force
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1 -Force
     Write-Host "RDP disabled"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query "HKLM\System\CurrentControlSet\Control\Terminal Server" /f fDenyTSConnections
@@ -1668,29 +1668,29 @@ Write-Host "`nAvailable Functions:"
 $host.UI.RawUI.foregroundcolor = "darkgreen"
 Write-Host "
 ------- Invasive: -------
-harden�(makeOutputDir,�turnOnFirewall,�setAssToTxt,�disableAdminShares,�miscRegedits, disableSMB1,�disableRDP,
-disablePrintSpooler,�disableGuest,�changePAdmin, changePBinddn, GPTool,changePass,�setPassPol,�uniqueUserPols,�enumerate)
-scriptToTxt (script�file�type�open�with�notepad) | -Revert, -r
+harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRegedits, disableSMB1, disableRDP,
+disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool,changePass, setPassPol, uniqueUserPols, enumerate)
+scriptToTxt (script file type open with notepad) | -Revert, -r
 makeADBackup
 removeIsass
 changeDCMode (changes Domain Mode to Windows2008R2Domain)
 netCease (disable Net Session Enumeration) | -Revert, -r
 cve_0674 (disables jscript.dll) | -Revert, -r
-disableGuest�(disables�Guest�account)
-disableRDP�(disables�RDP�via�regedit)
-disableAdminShares�(disables�Admin�share�via�regedit)
+disableGuest (disables Guest account)
+disableRDP (disables RDP via regedit)
+disableAdminShares (disables Admin share via regedit)
 miscRegedits (many mimikatz cache edits)
 disablePrintSpooler (disables print spooler service)
-disableTeredo��(disables�teredo)
-firewallOn (turns�on�firewall)
-setFirewallRules (Block�RDP�In,�Block�VNC�In,�Block�VNC�Java�In,�Block�FTP�In)
-disableSMB1�(disables�SMB1�and�enable�SMB2�via�registry)
-configNTP�(ipconfig�+�set�NTP�server)
-changePass (Kyle's�AD�user�password�script�enhanced)
+disableTeredo  (disables teredo)
+firewallOn (turns on firewall)
+setFirewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
+disableSMB1 (disables SMB1 and enable SMB2 via registry)
+configNTP (ipconfig + set NTP server)
+changePass (Kyle's AD user password script enhanced)
 changePAdmin (input admin password)
 changePBinddn (input admin password)
-setPassPol�(enable�passwd�complexity�and�length�12)
-uniqueUserPols�(enable�all�users�require�passwords,�enable�admin�sensitive,�remove�all�members�from�Schema�Admins)
+setPassPol (enable passwd complexity and length 12)
+uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
 "
 $host.UI.RawUI.foregroundcolor = "darkcyan"
 Write-Host "
@@ -1705,7 +1705,7 @@ hotFixCheck (checks list of HotFix KBs against systeminfo)
 pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
 autoDownloadKB (#incomplete)
 startups
-GPTool (opens�GP�info�tool)
+GPTool (opens GP info tool)
 dateChanged
 firewallStatus
 SMBStatus (returns SMB registry info)
