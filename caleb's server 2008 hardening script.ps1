@@ -395,56 +395,62 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
     #netsh advfirewall firewall add rule name="Allow DNS port 53 out" protocol=UDP dir=out localport=53 action=allow
     #>
     if($reset){
-        $host.UI.RawUI.foregroundcolor = "cyan"
-        Write-Host "Deleteing all previous rules"
-        netsh advfirewall firewall delete rule name=all        
-        Write-Host "Allowing:"
-        Write-Host "DNS: port 53 TCP, UDP"
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        Write-Host -ForegroundColor Cyan "Reseting fireall"
+        netsh advfirewall reset
+        Write-Host -ForegroundColor "Disabling all default previous rules"
+        netsh advfirewall firewall set rule name="all" new enable=No
+        <#        
+            Write-Host "Deleteing all previous rules"
+            netsh advfirewall firewall delete rule name=all
+        #>
+        Write-Host -ForegroundColor Cyan "Creating new rules. Allowing:"
+        Write-Host -ForegroundColor Cyan  "DNS: port 53 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow DNS UDP port 53 IN" protocol=UDP dir=in localport=53 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow DNS TCP port 53 IN" protocol=TCP dir=in localport=53 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow DNS UDP port 53 OUT" protocol=UDP dir=out localport=53 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow DNS TCP port 53 OUT" protocol=TCP dir=out localport=53 action=allow | Out-Null
-        Write-Host "RPC endpoint mapper: port 135 TCP, UDP"
+        Write-Host -ForegroundColor Cyan  "RPC endpoint mapper: port 135 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow RPC endpoint mapper UDP port 135 IN" protocol=UDP dir=in localport=135 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow RPC endpoint mapper TCP port 135 IN" protocol=TCP dir=in localport=135 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow RPC endpoint mapper UDP port 135 OUT" protocol=UDP dir=out localport=135 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow RPC endpoint mapper TCP port 135 OUT" protocol=TCP dir=out localport=135 action=allow | Out-Null
-        Write-Host "NetBIOS name service: port 137 TCP, UDP"
+        Write-Host -ForegroundColor Cyan  "NetBIOS name service: port 137 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow NetBIOS name service UDP port 137 IN" protocol=UDP dir=in localport=137 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow NetBIOS name service TCP port 137 IN" protocol=TCP dir=in localport=137 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow NetBIOS name service UDP port 137 OUT" protocol=UDP dir=out localport=137 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow NetBIOS name service TCP port 137 OUT" protocol=TCP dir=out localport=137 action=allow | Out-Null
-        Write-Host "NetBIOS datagram service: port 138 UDP"
+        Write-Host -ForegroundColor Cyan  "NetBIOS datagram service: port 138 UDP"
         netsh advfirewall firewall add rule name="Allow NetBIOS datagram service UDP port 138 IN" protocol=UDP dir=in localport=138 action=allow | Out-Null
         netsh advfirewall firewall add rule name="NetBIOS datagram service UDP port 138 OUT" protocol=UDP dir=out localport=138 action=allow | Out-Null
-        Write-Host "NetBIOS session service: port 139 TCP"
+        Write-Host -ForegroundColor Cyan  "NetBIOS session service: port 139 TCP"
         netsh advfirewall firewall add rule name="Allow NetBIOS session service UDP port 139 IN" protocol=TCP dir=in localport=139 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow NetBIOS session service UDP port 139 OUT" protocol=TCP dir=out localport=139 action=allow | Out-Null
-        Write-Host "SMB over IP (Microsoft-DS): port 445 TCP, UDP"
+        Write-Host -ForegroundColor Cyan  "SMB over IP (Microsoft-DS): port 445 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) UDP port 445 IN" protocol=UDP dir=in localport=445 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) TCP port 445 IN" protocol=TCP dir=in localport=445 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) UDP port 445 OUT" protocol=UDP dir=out localport=445 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) TCP port 445 OUT" protocol=TCP dir=out localport=445 action=allow | Out-Null
-        Write-Host "LDAP: port 389 TCP, UDP"
+        Write-Host -ForegroundColor Cyan  "LDAP: port 389 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow LDAP: UDP port 389 IN" protocol=UDP dir=in localport=389 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow LDAP: TCP port 389 IN" protocol=TCP dir=in localport=389 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow LDAP: UDP port 389 OUT" protocol=UDP dir=out localport=389 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow LDAP: TCP port 389 OUT" protocol=TCP dir=out localport=389 action=allow | Out-Null
-        Write-Host "LDAP over SSL: port 636 TCP"
+        Write-Host -ForegroundColor Cyan  "LDAP over SSL: port 636 TCP"
         netsh advfirewall firewall add rule name="Allow LDAP over SSL: TCP port 636 IN" protocol=TCP dir=in localport=636 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow LDAP over SSL: TCP port 636 OUT" protocol=TCP dir=out localport=636 action=allow | Out-Null
-        Write-Host "Global catalog LDAP: port 3268 TCP"
+        Write-Host -ForegroundColor Cyan  "Global catalog LDAP: port 3268 TCP"
         netsh advfirewall firewall add rule name="Allow Global catalog LDAP: TCP port 3268 IN" protocol=TCP dir=in localport=3268 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow Global catalog LDAP: TCP port 3268 OUT" protocol=TCP dir=out localport=3268 action=allow | Out-Null
-        Write-Host "Global catalog LDAP over SSL: port 3269 TCP"
+        Write-Host -ForegroundColor Cyan  "Global catalog LDAP over SSL: port 3269 TCP"
         netsh advfirewall firewall add rule name="Allow Global catalog LDAP over SSL: TCP port 3269 IN" protocol=TCP dir=in localport=3269 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow Global catalog LDAP over SSL: TCP port 3269 OUT" protocol=TCP dir=out localport=3269 action=allow | Out-Null
-        Write-Host "Kerberos: port 88 TCP, UDP"    
+        Write-Host -ForegroundColor Cyan  "Kerberos: port 88 TCP, UDP"    
         netsh advfirewall firewall add rule name="Allow Kerberos: UDP port 88 IN" protocol=UDP dir=in localport=88 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow Kerberos: TCP port 88 IN" protocol=TCP dir=in localport=88 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow Kerberos: UDP port 88 OUT" protocol=UDP dir=out localport=88 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow Kerberos: TCP port 88 OUT" protocol=TCP dir=out localport=88 action=allow | Out-Null
-        Write-Host "Blocking inbound, allowing outbound"
+        Write-Host -ForegroundColor Cyan  "Blocking inbound, allowing outbound"
         cmd /c "netsh advfirewall set currentprofile firewallpolicy blockinbound,allowoutbound"
     }else{
         Write-Host -ForegroundColor Cyan "1) Enter an IP to allow RDP IN`n2) Disable above RDP IN`n3) Reset to Win default`n4) Delete all rules"
