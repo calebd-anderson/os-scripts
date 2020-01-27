@@ -1359,6 +1359,14 @@ function makeADBackup {
 #endregion File System
 
 #region Enumeration
+# --------- active processes ---------
+function processes{
+    #at.exe
+    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userproile\desktop\Script_Output\tasklist.txt -Append
+    tasklist | Out-File $env:userproile\desktop\Script_Output\tasklist.txt -Append #session
+    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userproile\desktop\Script_Output\schtasks.txt -Append
+    schtasks | Out-File $env:userproile\desktop\Script_Output\schtasks.txt -Append
+}
 # --------- loop ping ---------
 function loopPing{
     Write-Host -ForegroundColor Green "`nEnumerates subnet"
@@ -1706,7 +1714,8 @@ $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nReg query SMB status"
 $host.UI.RawUI.foregroundcolor = "cyan"
 #reg query HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
-Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters | ForEach-Object {Get-ItemProperty $_.pspath} | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
+Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
+Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters | ForEach-Object {Get-ItemProperty $_.pspath} | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
 sc.exe qc lanmanworkstation | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
 $host.UI.RawUI.foregroundcolor = "darkgray"
 Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
@@ -1821,6 +1830,7 @@ function enumerate{
     startups
     hotFixCheck
     SMBStatus
+    processes
 }
 #endregion Enumeration
 
