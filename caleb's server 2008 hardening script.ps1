@@ -140,7 +140,8 @@ function downloadTools{
                     cmd /c C:\Users\Administrator\downloads\tools\seven_ZIP.exe /S
                     Write-Host "Setting 7-Zip machine path variable"
                     #Set-Variable "PATH=%PATH%;C:\Program Files\7-Zip"
-                    setx PATH "$env:path;C:\Program Files\7-Zip"
+                    setx PATH "$env:path;C:\Program Files\7-Zip\"
+                    $env:Path += ";C:\Program Files\7-Zip\"
                 }
             }else{Write-Host "7-Zip is already installed"}
         }else{Write-Host "7-Zip is not required. Use `"Expand-Archive`" CmdLet"}
@@ -197,11 +198,11 @@ function downloadTools{
         $host.UI.RawUI.foregroundcolor = "cyan"
         if(Test-Path -Path "$env:USERPROFILE\downloads\tools\dotNet_4_5.exe"){
         Write-Host "Installing dotNet_4.5"
-        cmd /c C:\Users\Administrator\desktop\Script_Output\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
+        cmd /c C:\Users\Administrator\downloads\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
         }else{Write-Host "dotNet_4.5 has not been downloaded yet"}
     }
     #install WMF_5.1
-    function installWMF{   
+    function installWMF{
         if(!(Test-Path -Path 'C:\Program Files\7-Zip')){
             $yes = Read-Host "7-Zip is required to programatically install WMF 5.1. Would you like to install 7-Zip now? (y, n)"           
             if($yes -eq 'y'){install7Zip}else{Write-Host "Nothing is available to programatically extract `"WMF_5_1.zip`""; return}
@@ -215,7 +216,7 @@ function downloadTools{
         }
         if(Test-Path -Path "$env:USERPROFILE\downloads\tools\WMF_5_1.zip"){
             Write-Host "Unzipping WMF_5_1.zip to tools\WMF_5_1"
-            cmd /c "7z e `"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1.zip`" -o`"C:\Users\Administrator\Desktop\Script_Output\tools\WMF_5_1`""
+            cmd /c "7z e `"C:\Users\Administrator\downloads\tools\WMF_5_1.zip`" -o`"C:\Users\Administrator\downloads\tools\WMF_5_1`""
             if(Test-Path -Path "$env:userprofile\downloads\tools\WMF_5_1\Install-WMF5.1.ps1"){
                 Write-Host "Invoking the script that comes with WMF_5_1.zip"
                 & "$env:userprofile\downloads\tools\WMF_5_1\Install-WMF5.1.ps1"
@@ -246,7 +247,7 @@ function downloadTools{
         installSublime
     }
     #install WMF 5.1? if SP1 and WMF not already installed
-    elseif($host.Version.Major -lt 3){
+    elseif($host.Version.Major -lt 5){
         $host.UI.RawUI.foregroundcolor = "magenta"
         $yes = Read-Host "Would you like to install Windows Managemnt Framework 5.1 now? (y, n)"
         if ($yes -eq 'y'){
@@ -265,10 +266,8 @@ function downloadTools{
 }
 # --------- group policy tool ---------
 function GPTool{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "Opening GP Tool"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Click each drop box item and make the change displayed"
+    Write-Host -ForegroundColor Green "Opening GP Tool"
+    Write-Host -ForegroundColor Cyan "Click each drop box item and make the change displayed"
     #WPF AD GUI script
     Add-Type -assembly System.Windows.Forms
     $main_form = New-Object System.Windows.Forms.Form
@@ -289,21 +288,21 @@ function GPTool{
     PS_Script_Execution = "Comp Config\Policies\Administrative Templates\Windows Components\Windows PowerShell\ -> `"Turn on script execution`"
     User Config - Policies - Admin Templates - Windows Components - Windows Powershell - Turn on Script Execution `"Disabled`""
     Kerberos_Encryption = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Config encrypt types (...) Kerberos\ `"AES256`""
-    X_LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`""
-    X_LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"?Refuse All`""
+    LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`""
+    LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"?Refuse All`""
     Win32_Conficker = "Comp Config\Policies\Administrative Templates\Windows Components\Autoplay Policies -> Turn off Autoplay\ `"ENABLE`""
     Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)`nUser Config\Windows Settings\Scripts (Startup/Shutdown)"
-    Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE ???`""
-    X_Passwd_Policy = "Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
+    Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE . . .`""
+    Passwd_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
     Add_Comp_Pol = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`""
     Deny_User_Rights = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignments\ -> `"MANY w/ Deny`""
-    Restricted_Groups = "Computer Configuration\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
-    Harden_UNC = "Computer Configuration / Administrative Templates / Network / Network Provider -> Hardened UNC Paths"
-    X_Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
-    X_RDP = "Comp Config\Administrative Templates\Windows Components\Remote Desktop Services\Remote Desktop Session Host\Connections.
+    Restricted_Groups = "CompConfig\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
+    Harden_UNC = "ComConfig\Administrative Templates\Network\Network Provider -> `"Hardened UNC Paths`""
+    Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
+    RDP = "Comp Config\Administrative Templates\Windows Components\Remote Desktop Services\Remote Desktop Session Host\Connections.
     Allow users to connect remotely using Remote Desktop Services (enable or disable)"
-    Block_APP = "User Config - Policies - Admin Templates - System - Don't run specified Windows applications `"Enable`" powershell.exe
-    Comp Config - Policies - Sec Settings - App Control Policies - AppLocker - Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
+    Block_APP = "User Config\Policies\Admin Templates\System\Don't run specified Windows applications `"Enable`" powershell.exe, Isass.exe
+    Comp Config\Policies\Sec Settings\App Control Policies\AppLocker\Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
     Banner = "CompConfig\Policies\Windows Settings\Sec Settings\Local Policies\Sec Options\`"Interactive logon: Message text for users attempting to log on`"
     CompConfig\Policies\Windows Settings\Sec Settings\Local Policies\Sec Options\`"Interactive logon: Message title for users attempting to log on`""
     }    
@@ -343,8 +342,8 @@ function GPTool{
     $Button3.Add_Click({secpol.msc})
     #endregion buttons
     $main_form.ShowDialog()
-    Write-Host "Ending GP tool"
-    Write-Host "Forcing GP update"
+    Write-Host -ForegroundColor Cyan "Ending GP tool"
+    Write-Host -ForegroundColor Cyan "Forcing GP update"
     gpupdate /force
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
@@ -375,7 +374,8 @@ function firewallOn{
     cmd /c pause
 }
 # --------- firewall rules ---------
-function setFirewallRules{
+function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
+    <#old rules via blocking
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nCreating firewall rules:"
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -393,6 +393,81 @@ function setFirewallRules{
     Write-Host "Allowing DNS port 53 IN and (OUT?)"
     netsh advfirewall firewall add rule name="Allow DNS port 53 in" protocol=UDP dir=in localport=53 action=allow
     #netsh advfirewall firewall add rule name="Allow DNS port 53 out" protocol=UDP dir=out localport=53 action=allow
+    #>
+    if($reset){
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        Write-Host "Deleteing all previous rules"
+        netsh advfirewall firewall delete rule name=all        
+        Write-Host "Allowing:"
+        Write-Host "DNS: port 53 TCP, UDP"
+        netsh advfirewall firewall add rule name="Allow DNS UDP port 53 IN" protocol=UDP dir=in localport=53 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow DNS TCP port 53 IN" protocol=TCP dir=in localport=53 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow DNS UDP port 53 OUT" protocol=UDP dir=out localport=53 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow DNS TCP port 53 OUT" protocol=TCP dir=out localport=53 action=allow | Out-Null
+        Write-Host "RPC endpoint mapper: port 135 TCP, UDP"
+        netsh advfirewall firewall add rule name="Allow RPC endpoint mapper UDP port 135 IN" protocol=UDP dir=in localport=135 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow RPC endpoint mapper TCP port 135 IN" protocol=TCP dir=in localport=135 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow RPC endpoint mapper UDP port 135 OUT" protocol=UDP dir=out localport=135 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow RPC endpoint mapper TCP port 135 OUT" protocol=TCP dir=out localport=135 action=allow | Out-Null
+        Write-Host "NetBIOS name service: port 137 TCP, UDP"
+        netsh advfirewall firewall add rule name="Allow NetBIOS name service UDP port 137 IN" protocol=UDP dir=in localport=137 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow NetBIOS name service TCP port 137 IN" protocol=TCP dir=in localport=137 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow NetBIOS name service UDP port 137 OUT" protocol=UDP dir=out localport=137 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow NetBIOS name service TCP port 137 OUT" protocol=TCP dir=out localport=137 action=allow | Out-Null
+        Write-Host "NetBIOS datagram service: port 138 UDP"
+        netsh advfirewall firewall add rule name="Allow NetBIOS datagram service UDP port 138 IN" protocol=UDP dir=in localport=138 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="NetBIOS datagram service UDP port 138 OUT" protocol=UDP dir=out localport=138 action=allow | Out-Null
+        Write-Host "NetBIOS session service: port 139 TCP"
+        netsh advfirewall firewall add rule name="Allow NetBIOS session service UDP port 139 IN" protocol=TCP dir=in localport=139 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow NetBIOS session service UDP port 139 OUT" protocol=TCP dir=out localport=139 action=allow | Out-Null
+        Write-Host "SMB over IP (Microsoft-DS): port 445 TCP, UDP"
+        netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) UDP port 445 IN" protocol=UDP dir=in localport=445 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) TCP port 445 IN" protocol=TCP dir=in localport=445 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) UDP port 445 OUT" protocol=UDP dir=out localport=445 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) TCP port 445 OUT" protocol=TCP dir=out localport=445 action=allow | Out-Null
+        Write-Host "LDAP: port 389 TCP, UDP"
+        netsh advfirewall firewall add rule name="Allow LDAP: UDP port 389 IN" protocol=UDP dir=in localport=389 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow LDAP: TCP port 389 IN" protocol=TCP dir=in localport=389 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow LDAP: UDP port 389 OUT" protocol=UDP dir=out localport=389 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow LDAP: TCP port 389 OUT" protocol=TCP dir=out localport=389 action=allow | Out-Null
+        Write-Host "LDAP over SSL: port 636 TCP"
+        netsh advfirewall firewall add rule name="Allow LDAP over SSL: TCP port 636 IN" protocol=TCP dir=in localport=636 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow LDAP over SSL: TCP port 636 OUT" protocol=TCP dir=out localport=636 action=allow | Out-Null
+        Write-Host "Global catalog LDAP: port 3268 TCP"
+        netsh advfirewall firewall add rule name="Allow Global catalog LDAP: TCP port 3268 IN" protocol=TCP dir=in localport=3268 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow Global catalog LDAP: TCP port 3268 OUT" protocol=TCP dir=out localport=3268 action=allow | Out-Null
+        Write-Host "Global catalog LDAP over SSL: port 3269 TCP"
+        netsh advfirewall firewall add rule name="Allow Global catalog LDAP over SSL: TCP port 3269 IN" protocol=TCP dir=in localport=3269 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow Global catalog LDAP over SSL: TCP port 3269 OUT" protocol=TCP dir=out localport=3269 action=allow | Out-Null
+        Write-Host "Kerberos: port 88 TCP, UDP"    
+        netsh advfirewall firewall add rule name="Allow Kerberos: UDP port 88 IN" protocol=UDP dir=in localport=88 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow Kerberos: TCP port 88 IN" protocol=TCP dir=in localport=88 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow Kerberos: UDP port 88 OUT" protocol=UDP dir=out localport=88 action=allow | Out-Null
+        netsh advfirewall firewall add rule name="Allow Kerberos: TCP port 88 OUT" protocol=TCP dir=out localport=88 action=allow | Out-Null
+        Write-Host "Blocking inbound, allowing outbound"
+        cmd /c "netsh advfirewall set currentprofile firewallpolicy blockinbound,allowoutbound"
+    }else{
+        Write-Host -ForegroundColor Cyan "1) Enter an IP to allow RDP IN`n2) Disable above RDP IN`n3) Reset to Win default`n4) Delete all rules"
+        Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
+        $switch = Read-Host
+        switch ($switch) {
+            1{
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $ip = Read-Host "Enter an IP address to allow through RDP"
+                netsh advfirewall firewall add rule name="remote desktop (TCP-In-3389)" protocol=TCP dir=in localport=3389 action=allow remoteip=$ip
+            }
+            2{
+                netsh advfirewall firewall set rule name="remote desktop (TCP-In-3389)" new enable=No
+            }
+            3{
+                netsh advfirewall reset
+            }
+            4{
+                netsh advfirewall firewall delete rule name=all
+            }
+        }
+    }
+   
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -525,26 +600,37 @@ function netCease {
     Write-Host "Permissions successfully updated"
     Write-Host "In order for the hardening to take effect, please restart the Server service" 
 }
-
 # --------- Disable Teredo ---------
-function disableTeredo{
-makeOutDir
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nDisabling Teredo"
-cmd /c echo Before: > desktop\Script_Output\teredo_state.txt
-netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
-#$host.UI.RawUI.foregroundcolor = "darkgray"
-#Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
-Start-Process cmd -ArgumentList ('/k', 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs') -Wait
-cmd /c echo After: >> desktop\Script_Output\teredo_state.txt
-netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
-$host.UI.RawUI.foregroundcolor = "darkgray"
-Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "`Teredo disabled"
-Write-Host "`"$env:USERPROFILE\desktop\Script_Output\teredo_state`" has teredo status"
-$host.UI.RawUI.foregroundcolor = "white"
-cmd /c pause
+function disableTeredo{Param([switch]$revert)
+    makeOutDir
+    if($revert){
+        Write-Host -ForegroundColor Green "`nEnabling Teredo"
+        cmd /c echo Before: > desktop\Script_Output\teredo_state.txt
+        netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
+        #$host.UI.RawUI.foregroundcolor = "darkgray"
+        #Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+        Start-Process cmd -ArgumentList ('/k', 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state enabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs') -Wait
+        cmd /c echo After: >> desktop\Script_Output\teredo_state.txt
+        netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+        Write-Host -ForegroundColor Cyan "`Teredo enabled"
+    }else{
+        Write-Host -ForegroundColor Green "`nDisabling Teredo"
+        cmd /c echo Before: > desktop\Script_Output\teredo_state.txt
+        netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
+        #$host.UI.RawUI.foregroundcolor = "darkgray"
+        #Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+        Start-Process cmd -ArgumentList ('/k', 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state disabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs') -Wait
+        cmd /c echo After: >> desktop\Script_Output\teredo_state.txt
+        netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+        Write-Host -ForegroundColor Cyan "`Teredo disabled"
+    }    
+    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\teredo_state`" has teredo status"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- disable administrative shares via registry ---------
 function disableAdminShares{
@@ -552,10 +638,8 @@ function disableAdminShares{
     $host.UI.RawUI.foregroundcolor = "darkgray"
     REG query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
     $host.UI.RawUI.foregroundcolor = "cyan"
-    REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /v AutoShareServer /t REG_DWORD /d 0
-    #script kitty-ing
-    Write-Host "Running NetCease"
-    netCease
+    REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /v AutoShareServer /t REG_DWORD /d 0    
+    <#
     Write-Host "Restarting the `'Server`' service"
     #cmd /c "net stop server && net start server"
     #cmd /c "net start Netlogon && net start dfs"
@@ -563,7 +647,8 @@ function disableAdminShares{
     Start-Service dfs
     Start-Service netlogon
     Start-Service server
-    Write-Host "Admin shares disabled"
+    #>
+    Write-Host "Admin shares disabled. Restart required"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
     $host.UI.RawUI.foregroundcolor = "white"
@@ -571,96 +656,86 @@ function disableAdminShares{
 } 
 # --------- disable cached credentials via registry ---------
 function miscRegedits{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nMiscilanious settings via registry (mimikatz)"
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Disabling cached creds"
-REG ADD HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential /t REG_DWORD /d 0
-$host.UI.RawUI.foregroundcolor = "darkgray"
-reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /f UseLogonCredential
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Enabling clear password cache after 30 sec."
-reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /v TokenLeakDetectDelaySecs /t REG_DWORD /d 30
-$host.UI.RawUI.foregroundcolor = "darkgray"
-reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /f TokenLeakDetectDelaySecs
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "restrict to NTLMv2"
-reg add HKLM\System\CurrentControlSet\Control\Lsa\ /v lmcompatibilitylevel /t REG_DWORD /d 5 /f
-$host.UI.RawUI.foregroundcolor = "darkgray"
-reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /f lmcompatibilitylevel
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "restrict anonymous access"
-reg add HKLM\System\CurrentControlSet\Control\Lsa\ /v restrictanonymous /t REG_DWORD /d 1 /f
-$host.UI.RawUI.foregroundcolor = "darkgray"
-reg query HKLM\System\CurrentControlSet\Control\Lsa\ /f restrictanonymous
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Disallow anonymous enumeration of SAM accounts and shares"
-reg add HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v restrictanonymoussam /t REG_DWORD /d 1 /f
-$host.UI.RawUI.foregroundcolor = "darkgray"
-reg query HKLM\SYSTEM\CurrentControlSet\Control\Lsa /f restrictanonymoussam
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "disable IE password cache"
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v DisablePasswordCaching /t REG_DWORD /d 1 /f
-$host.UI.RawUI.foregroundcolor = "darkgray"
-reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /f DisablePasswordCaching
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "disableing run once"
-reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
-reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
-$host.UI.RawUI.foregroundcolor = "darkgray"
-reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
-reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Finished with reg edits"
-$host.UI.RawUI.foregroundcolor = "white"
-cmd /c pause
+    Write-Host -ForegroundColor Green "`nMiscilanious reg edits"
+    Write-Host -ForegroundColor Cyan "Disabling cached creds"
+    REG ADD HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential /t REG_DWORD /d 0
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /f UseLogonCredential
+    Write-Host -ForegroundColor Cyan "Enabling clear password cache after 30 sec."
+    reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /v TokenLeakDetectDelaySecs /t REG_DWORD /d 30
+    reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /f TokenLeakDetectDelaySecs
+    Write-Host -ForegroundColor Cyan "restrict to NTLMv2"
+    reg add HKLM\System\CurrentControlSet\Control\Lsa\ /v lmcompatibilitylevel /t REG_DWORD /d 5 /f
+    reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa /f lmcompatibilitylevel
+    Write-Host -ForegroundColor Cyan "restrict anonymous access"
+    reg add HKLM\System\CurrentControlSet\Control\Lsa\ /v restrictanonymous /t REG_DWORD /d 1 /f
+    reg query HKLM\System\CurrentControlSet\Control\Lsa\ /f restrictanonymous
+    Write-Host -ForegroundColor Cyan "Disallow anonymous enumeration of SAM accounts and shares"
+    reg add HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v restrictanonymoussam /t REG_DWORD /d 1 /f
+    reg query HKLM\SYSTEM\CurrentControlSet\Control\Lsa /f restrictanonymoussam
+    Write-Host -ForegroundColor Cyan "disable IE password cache"
+    reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v DisablePasswordCaching /t REG_DWORD /d 1 /f
+    reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /f DisablePasswordCaching
+    Write-Host -ForegroundColor Cyan "disableing run once"
+    reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
+    reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
+    reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
+    reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
+    Write-Host -ForegroundColor Cyan "Removing RDP via registry"
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1 -Force
+    reg query "HKLM\System\CurrentControlSet\Control\Terminal Server" /f fDenyTSConnections
+    Write-Host -ForegroundColor Cyan "Finished with reg edits"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- disable SMB1 via registry ---------
-function disableSMB1{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nDisabling SMB1 and enabling SMB2"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force
-    Write-Host "SMB1 disabled via HKLM registry"
-    sc.exe config lanmanworkstation depend= bowser/mrxsmb20/nsi
-    sc.exe config mrxsmb10 start= disabled
-    Write-Host "SMB1 disabled (SMB Client)"
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 1 -Force
-    Write-Host "SMB2 enabled via HKLM registry"
-    sc.exe config lanmanworkstation depend= bowser/mrxsmb10/mrxsmb20/nsi
-    sc.exe config mrxsmb20 start= auto
-    Write-Host "SMB2 enabled (SMB Client)"
+function enableSMB2{
+    $BuildVersion = [System.Environment]::OSVersion.Version
+    if($BuildVersion.Revision -ge '0'){
+        Write-Host -ForegroundColor Green "`nDisabling SMB1 and enabling SMB2 via registry"
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        #disable SMB1
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force 
+        #enable SMB2/3
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 1 -Force
+        #disable SMB1
+        sc.exe config lanmanworkstation depend= bowser/mrxsmb20/nsi
+        sc.exe config mrxsmb10 start= disabled
+        #enable SMB2/3
+        sc.exe config lanmanworkstation depend= bowser/mrxsmb20/nsi
+        sc.exe config mrxsmb20 start= auto
+    }else{
+        #Win12 SMB CMD-Lets
+    }
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
 # --------- disable RDP ---------
 function disableRDP{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nDisabling RDP"
+    Write-Host -ForegroundColor Green "`nDisabling RDP (place-holder)"
+    <#
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Opening System Properties dialog box. Remove all Remote Desktop Users"
-    sysdm.cpl
+    #Write-Host "Opening System Properties dialog box. Remove all Remote Desktop Users"
+    #sysdm.cpl    
     Write-Host "Stopping RDP Service, also UserMode Port Redirector; and disabling"
     #net stop "remote desktop services"
     Stop-Service "Remote Desktop Services" -Force
     Set-Service "TermService" -StartupType Disabled
     Set-Service "UmRdpService" -StartupType Disabled
-    Write-Host "Removing RDP via registry"
-    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1 -Force
-    Write-Host "RDP disabled"
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    reg query "HKLM\System\CurrentControlSet\Control\Terminal Server" /f fDenyTSConnections
+    #>
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
-function disablePrintSpooler{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nStopping Print Spooler Service; and disabling"    
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Stopping WMI Service too"    
-    Stop-Service winmgmt -Force
-    Stop-Service spooler -Force
-    Set-Service spooler -StartupType Disabled
+function disablePrintSpooler{Param([switch]$revert)
+    if($revert){
+        #fill in
+    }else{
+        Write-Host -ForegroundColor Green "`nStopping Print Spooler Service; and disabling"
+        Write-Host -ForegroundColor Cyan "Stopping WMI Service too"
+        Stop-Service winmgmt -Force
+        Stop-Service spooler -Force
+        Set-Service spooler -StartupType Disabled
+    }
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -668,10 +743,39 @@ function disablePrintSpooler{
 
 #region Passwords
 # --------- Change AD Primary DC Mode ---------
-function changeDCMode { param ( )
+function changeDCMode {
     Import-Module ActiveDirectory
     $pdc = Get-ADDomainController -Discover -Service PrimaryDC
     Set-ADDomainMode -Identity $pdc.Domain -Server $pdc.HostName[0] -DomainMode Windows2008R2Domain
+}
+# --------- enable LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12 ---------
+function passPolicy{
+    Write-Host -ForegroundColor Green "`nSetting default domain password policies"
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Importing ActiveDirectory module"
+    Import-Module ActiveDirectory
+    Write-Host "Extracting domain name"
+    $domain = wmic computersystem get domain | Select-Object -skip 1
+    $domain = "$domain".Trim()
+    Write-Host "Disabling PasswordNeverExpires on `'Domain Users`'" #($_.objectClass -eq "user") -and
+    Get-ADGroupMember -Identity 'Domain Users' | Set-ADUser -PasswordNeverExpires:$false
+    Write-Host "LockoutDuration 00:40:00"
+    Set-ADDefaultDomainPasswordPolicy -Identity $domain -LockoutDuration 00:40:00
+    Write-Host "LockoutObservationWindow 00:20:00"
+    Set-ADDefaultDomainPasswordPolicy -Identity $domain -LockoutObservationWindow 00:20:00
+    Write-Host "Complexity enabled"
+    Set-ADDefaultDomainPasswordPolicy -Identity $domain -ComplexityEnabled $True
+    Write-Host "MaxPasswordAge 10.00:00:00"
+    Set-ADDefaultDomainPasswordPolicy -Identity $domain -MaxPasswordAge 90.00:00:00
+    Write-Host "MinPasswordLength 12"
+    Set-ADDefaultDomainPasswordPolicy -Identity $domain -MinPasswordLength 12
+    Write-Host "Disabling reversible encryption"
+    Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
+    Write-Host "Disabling creation of hashes (used in pass the hash attack)"
+    reg add HKLM\System\CurrentControlSet\Control\Lsa /f /v NoLMHash /t REG_DWORD /d 1
+    Write-Host "Password policies enabled"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
 }
 # --------- Main password changer ---------
 #disable reverse encryption policy then change all DC user passwords except admin and binddn
@@ -737,23 +841,17 @@ function New-CtmADComplexPassword
     #endregion scriptkitty
     #Make sure $OU is accurate
     makeOutDir
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nChanging all DC user passwords"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Importing AD module"
+    Write-Host -ForegroundColor Green "`nChanging all DC user passwords"
+    Write-Host -ForegroundColor Cyan "Importing AD module"
     Import-Module ActiveDirectory
-    Write-Host "Disabling creation of hashes (used in pass the hash attack)"
-    reg add HKLM\System\CurrentControlSet\Control\Lsa /f /v NoLMHash /t REG_DWORD /d 1
+    Write-Host -ForegroundColor Cyan "Creation of hashes used in pass the hash attack reg setting:"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query HKLM\System\CurrentControlSet\Control\Lsa /f NoLMHash
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Parsing the domain name"
+    Write-Host -ForegroundColor Cyan "Parsing the domain name"
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
     $domaina = "$domain".Trim() -replace '.\b\w+', ''
-    $domainb = "$domain".trim() -replace '^\w+\.', ''
-    Write-Host "Disabling reversible encryption"
-    Set-ADDefaultDomainPasswordPolicy -Identity $domain -ReversibleEncryptionEnabled $false
+    $domainb = "$domain".trim() -replace '^\w+\.', ''    
     $host.UI.RawUI.foregroundcolor = "magenta"
     Write-Host "Press any key to start changing all AD user passwords . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
@@ -770,11 +868,9 @@ function New-CtmADComplexPassword
     { 
         if ($user -match $admin){
         Write-Host "Skipping Administrator"
-        }
-        elseif ($user -match 'binddn'){
+        }elseif ($user -match 'binddn'){
         Write-Host "Skipping binddn"
-        }
-        elseif ($user -match 'krbtgt'){
+        }elseif ($user -match 'krbtgt'){
             #$securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
             $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force
             Write-Host -ForegroundColor Gray "Changing the password of $user"
@@ -788,23 +884,20 @@ function New-CtmADComplexPassword
             Out-File $env:userprofile\desktop\Script_Output\user_passwds_list.txt -Append -InputObject $user, $encrypted,""
             Write-Host "Adding $user to the hash table"
             $hashTable.Add($user,$encrypted)
-        }
-        else{
-            #$securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
-            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force
+        }else{            
+            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force            
             Write-Host "Changing the password of $user"
             Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
-            $user = "$user".Trim() -replace '[CN=]{3}|[\,].*',''
             $encrypted = ConvertFrom-SecureString -SecureString $securePassword
+            $user = "$user".Trim() -replace '[CN=]{3}|[\,].*',''
             Out-File $env:userprofile\desktop\Script_Output\user_passwds_list.txt -Append -InputObject $user, $encrypted,""
             Write-Host "Adding $user to the hash table"
             $hashTable.Add($user,$encrypted)
         }
     }
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "`n`"$env:USERPROFILE\desktop\Script_Output\user_passwds_list.txt`" has list of users and passwords"
+    Write-Host -ForegroundColor Cyan "`n`"$env:USERPROFILE\desktop\Script_Output\user_passwds_list.txt`" has list of users and passwords"
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
-    Write-Host "`"%localappdata%\securePasswords.xml`" has AD users .xml hashtable"
+    Write-Host -ForegroundColor Cyan "`"%localappdata%\securePasswords.xml`" has AD users .xml hashtable"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }    
@@ -873,21 +966,6 @@ function changePBinddn{
     #>
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "binddn user password has been changed"
-    $host.UI.RawUI.foregroundcolor = "white"
-    cmd /c pause
-}    
-# --------- enable LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12 ---------
-function setPassPol{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nEnabling LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Importing ActiveDirectory module"
-    Import-Module ActiveDirectory
-    Write-Host "Extracting domain name"
-    $domain = wmic computersystem get domain | Select-Object -skip 1
-    $domain = "$domain".Trim()
-    Set-ADDefaultDomainPasswordPolicy -Identity $domain -LockoutDuration 00:40:00 -LockoutObservationWindow 00:20:00 -ComplexityEnabled $True -MaxPasswordAge 10.00:00:00 -MinPasswordLength 12
-    Write-Host "Password policies enabled"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -1213,22 +1291,23 @@ function removeIsass{
     cmd /c pause
 }
 # --------- CVE-2020-0674 ---------
-function cve_0674{(param[switch]$revert)
+function cve_0674{Param([switch]$revert)
     Write-Host -ForegroundColor Green "`nDisables jscript.dll (-r to revert)"
+    $host.UI.RawUI.foregroundcolor = "cyan"
     if($revert){
-        cacls %windir%\system32\jscript.dll /E /R everyone
-        cacls %windir%\syswow64\jscript.dll /E /R everyone
+        cmd /c "cacls %windir%\system32\jscript.dll /E /R everyone"
+        cmd /c "cacls %windir%\syswow64\jscript.dll /E /R everyone"
     }else{
-        takeown /f %windir%\system32\jscript.dll
-        cacls %windir%\system32\jscript.dll /E /P everyone:N
-        takeown /f %windir%\syswow64\jscript.dll
-        cacls %windir%\syswow64\jscript.dll /E /P everyone:N
+        cmd /c "takeown /f %windir%\system32\jscript.dll"
+        cmd /c "cacls %windir%\system32\jscript.dll /E /P everyone:N"
+        cmd /c "takeown /f %windir%\syswow64\jscript.dll"
+        cmd /c "cacls %windir%\syswow64\jscript.dll /E /P everyone:N"
     }
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
 # --------- sets script extensions to open notepad ---------
-function scriptToTxt{param([switch]$revert)
+function scriptToTxt{Param([switch]$revert)
     if($revert){
         Write-Host -ForegroundColor Green "`nReverting script extensions association to default"
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -1240,7 +1319,7 @@ function scriptToTxt{param([switch]$revert)
         cmd /c assoc .wsf=WSFFile
         cmd /c assoc .wsh=WSHFile
     }else{
-        Write-Host -ForegroundColor Green "`nAssociating script extensions to open with notepad"
+        Write-Host -ForegroundColor Green "`nAssociating script extensions to open with notepad (-r to revert)"
         $host.UI.RawUI.foregroundcolor = "cyan"
         cmd /c assoc .bat=txtfile
         cmd /c assoc .js =txtfile
@@ -1442,6 +1521,7 @@ function hotFixCheck{
                         KB4012217 = "https://bit.ly/2JcsYfW" #eternal blue
                         KB3177186 = "https://bit.ly/2Je9p72" #smb 1 remote exectution
                         KB2973501 = "https://bit.ly/2u9NTpK" #mimikatz
+                        <#
                         KB2959936 = ""
                         KB2896496 = ""
                         KB2919355 = ""
@@ -1473,6 +1553,7 @@ function hotFixCheck{
                         KB3000850 = ""
                         KB3003057 = ""
                         KB3014442 = ""
+                        #>
                     } 
                 }
             }elseif(($system_info | Out-String).Contains("Service Pack 1")){
@@ -1722,7 +1803,7 @@ cmd /c pause
 function enumerate{
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "Running enumeration functions"
-    netstatRegex
+    formatNetstat
     firewallStatus
     runningServices
     startups
@@ -1739,19 +1820,20 @@ makeOutDir
 enumerate
 removeIsass
 firewallOn
-setFirewallRules
+firewallRules -reset
 uniqueUserPols
 disableTeredo
-disableSMB1
+enableSMB2
 disableRDP
-disableAdminShares #also netcease
+disableAdminShares
+Write-Host -ForegroundColor Cyan "Here is netCease"; netCease #script kitty-ing netCease (-r to revert changes)
 miscRegedits
 disablePrintSpooler
 disableGuest
-changePass
 changePAdmin
 changePBinddn
-setPassPol
+passPolicy
+changePass
 cve_0674
 scriptToTxt
 downloadTools
@@ -1770,7 +1852,6 @@ Write-Host "`nAll hardening functions are finished. Restart computer?"
 $host.UI.RawUI.foregroundcolor = "white"
 restart-computer -Confirm
 }
-
 # --------- provide list of available functions ---------
 function avail{
 $host.UI.RawUI.foregroundcolor = "green"
@@ -1778,8 +1859,8 @@ Write-Host "`nAvailable Functions:"
 $host.UI.RawUI.foregroundcolor = "darkgreen"
 Write-Host "
 ------- Invasive: -------
-harden (makeOutputDir, turnOnFirewall, setAssToTxt, disableAdminShares, miscRegedits, disableSMB1, disableRDP,
-disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool,changePass, setPassPol, uniqueUserPols, enumerate)
+harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
+disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, uniqueUserPols, enumerate)
 scriptToTxt (script file type open with notepad) | -Revert, -r
 makeADBackup
 removeIsass
@@ -1793,13 +1874,13 @@ miscRegedits (many mimikatz cache edits)
 disablePrintSpooler (disables print spooler service)
 disableTeredo  (disables teredo)
 firewallOn (turns on firewall)
-setFirewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
-disableSMB1 (disables SMB1 and enable SMB2 via registry)
+firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
+enableSMB2 (disables SMB1 and enable SMB2 via registry)
 configNTP (ipconfig + set NTP server)
 changePass (Kyle's AD user password script enhanced)
 changePAdmin (input admin password)
 changePBinddn (input admin password)
-setPassPol (enable passwd complexity and length 12)
+passPolicy (enable passwd complexity and length 12)
 uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
 "
 $host.UI.RawUI.foregroundcolor = "darkcyan"
@@ -1833,6 +1914,7 @@ Write-Host "
 ------- Injects: -------
 firewallStatus
 configNTP
+firewallRules (opt. 1) - Open RDP for an IP address
 `n"
 $host.UI.RawUI.foregroundcolor = "white"
 }
