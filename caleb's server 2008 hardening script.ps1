@@ -453,7 +453,8 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
         Write-Host -ForegroundColor Cyan  "Blocking inbound, allowing outbound"
         cmd /c "netsh advfirewall set currentprofile firewallpolicy blockinbound,allowoutbound"
     }else{
-        Write-Host -ForegroundColor Cyan "1) Enter an IP to allow RDP IN`n2) Disable above RDP IN`n3) Reset to Win default`n4) Delete all rules"
+        Write-Host -ForegroundColor Cyan "1) Enter an IP to allow RDP IN`n2) Disable above RDP IN`n3) Reset to Win default`n4) Delete all rules
+        5) Backup fireawll policy`n6) Restore FW from backup"
         Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
         $switch = Read-Host
         switch ($switch) {
@@ -470,6 +471,12 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
             }
             4{
                 netsh advfirewall firewall delete rule name=all
+            }
+            5{
+                netsh advfirewall export $env:USERPROFILE\desktop\Script_Output\firewall.pol
+            }
+            6{
+                netsh advfirewall import $env:USERPROFILE\desktop\Script_Output\firewall.pol
             }
         }
     }
