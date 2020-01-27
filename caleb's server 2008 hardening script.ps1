@@ -486,11 +486,11 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
 }
 # --------- firewall status ---------
 function firewallStatus{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nGenerating firewall status"
-    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host -ForegroundColor Green "`nGenerating firewall status"
     netsh firewall show config | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_status.txt
-    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\firewall_status.txt`" has fireawll status"
+    netsh advfirewall firewall show rule status=enabled name=all | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_rules_enabled.txt
+    Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\firewall_status.txt`" has fireawll status"
+    Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\firewall_rules_enabled.txt`" has list of enabled rules"
     $host.UI.RawUI.foregroundcolor = "white"
     cmd /c pause
 }
@@ -1205,9 +1205,9 @@ function plainPass{
                     $string += "$($key.Name):$UnsecurePassword`n"
                 }
             }                
-            Write-Host -ForegroundColor Cyan "All CCDC_Scoring user creds saved to URL below"
+            Write-Host -ForegroundColor Cyan "All CCDC_Scoring user creds saved at URL below. URL copied to clib-board"
             $host.UI.RawUI.foregroundcolor = "yellow"
-            Create-NewPaste -DevKey 7a94b5dfa4691350117da8aaf3251b56 -PasteFormat text -PastePrivacy 1 -PasteCode $string -PasteName CCDC_Scoring_Users
+            Create-NewPaste -DevKey 7a94b5dfa4691350117da8aaf3251b56 -PasteFormat text -PastePrivacy 1 -PasteCode $string -PasteName CCDC_Scoring_Users | clip
         }
     }    
     $host.UI.RawUI.foregroundcolor = "white"
@@ -1814,15 +1814,13 @@ cmd /c pause
 
 # --------- run enumeration functions ---------
 function enumerate{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "Running enumeration functions"
+    Write-Host -ForegroundColor Green "Running enumeration functions"
     formatNetstat
     firewallStatus
     runningServices
     startups
     hotFixCheck
     SMBStatus
-    #readOutput
 }
 #endregion Enumeration
 
@@ -1830,10 +1828,11 @@ function enumerate{
 function harden{
 Write-Host -ForegroundColor Green "Hardening . . ."
 makeOutDir
-enumerate
-removeIsass
 firewallOn
 firewallRules -reset
+enumerate #formatNetstat, firewallStatus, runningServices, startups, hotFixCheck, SMBStatus
+downloadTools
+removeIsass
 uniqueUserPols
 disableTeredo
 enableSMB2
@@ -1849,7 +1848,6 @@ passPolicy
 changePass
 cve_0674
 scriptToTxt
-downloadTools
 $host.UI.RawUI.foregroundcolor = "green"
 Write-Host "`nOpening Task Scheduler"
 taskschd.msc
