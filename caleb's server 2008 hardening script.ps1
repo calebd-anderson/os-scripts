@@ -86,21 +86,41 @@ function downloadTools{
     function installSublime{
         if(-not (Test-Path "C:\Program Files\Sublime Text 3")){
             if(Test-Path -Path "$env:USERPROFILE\downloads\tools\sublime.exe"){
-                $host.UI.RawUI.foregroundcolor = "magenta"
-                $yes = Read-Host "Would you like to install Sublime Text Editor now? (y, n)"
+                Write-Host -ForegroundColor Cyan "Sublime Text Editor has been downloaded but not installed. " -NoNewline
+                Write-Host -ForegroundColor Magenta "Would you like to install it now? (y, n): " -NoNewline
+                $yes = Read-Host 
                 if ($yes -eq 'y'){
                     if(Test-Path -Path "C:\Program Files\Sublime Text 3"){
                         Write-Host "Sublime is already installed"
                     } 
                     else{
-                        $host.UI.RawUI.foregroundcolor = "cyan"
-                        Write-Host "Installing Sublime Text and adding context menue"
+                        Write-Host -ForegroundColor Cyan "Installing Sublime Text and adding context menue"
                         cmd /c %userprofile%\downloads\tools\sublime.exe /verysilent
-                        REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d "C:\Program Files\Sublime Text 3\sublime_text.exe \"%1\""
+                        REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d 'C:\Program Files\Sublime Text 3\sublime_text.exe "%1"'
                     }
                 }
-            }else{Write-Host -ForegroundColor Cyan "Sublime has not been downloaded yet"}
-        }else{Write-Host "Sublime has already been installed"}
+            }else{
+                Write-Host -ForegroundColor Cyan "Sublime has not been downloaded yet." -NoNewline
+                Write-Host -ForegroundColor Magenta " Would you like to download it now? (y, n): " -NoNewline
+                $yes = Read-Host
+                if($yes -eq 'y'){
+                    $source = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe"
+                    $destination = "$env:USERPROFILE\downloads\tools\sublime.exe"
+                    Write-Host "Downloading sublime.exe from $source"
+                    Start-BitsTransfer -Source $source -Destination $destination
+                    if(!(Test-Path "C:\Program Files\Sublime Text 3")){
+                        Write-Host -ForegroundColor Cyan "Sublime Text Editor has been downloaded but not installed. " -NoNewline
+                        Write-Host -ForegroundColor Magenta "Would you like to install it now? (y, n): " -NoNewline
+                        $yes = Read-Host 
+                        if ($yes -eq 'y'){
+                            Write-Host -ForegroundColor Cyan "Installing Sublime Text and adding context menue"
+                            cmd /c %userprofile%\downloads\tools\sublime.exe /verysilent
+                            REG ADD "HKCR\*\shell\Open with Sublime Text\command" /t REG_SZ /d 'C:\Program Files\Sublime Text 3\sublime_text.exe "%1"'
+                        }
+                    }
+                }
+            }
+        }else{Write-Host -ForegroundColor Cyan "Sublime is already installed"}
     }
     #install SP1?
     function installSP1{
