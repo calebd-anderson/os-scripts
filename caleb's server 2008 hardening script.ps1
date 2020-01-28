@@ -1855,109 +1855,109 @@ function enumerate{
 #endregion Enumeration
 
 # --------- run all hardening functions ---------
-function harden{
-Write-Host -ForegroundColor Green "Hardening . . ."
-makeOutDir
-firewallOn
-firewallRules -reset
-enumerate #formatNetstat, firewallStatus, runningServices, startups, hotFixCheck, SMBStatus
-downloadTools
-removeIsass
-uniqueUserPols
-disableTeredo
-enableSMB2
-disableRDP
-disableAdminShares
-Write-Host -ForegroundColor Cyan "Here is netCease"; netCease #script kitty-ing netCease (-r to revert changes)
-miscRegedits
-disablePrintSpooler
-disableGuest
-changePAdmin
-changePBinddn
-passPolicy
-changePass
-cve_0674
-scriptToTxt
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nOpening Task Scheduler"
-taskschd.msc
-$host.UI.RawUI.foregroundcolor = "cyan"
-Write-Host "Manually examine scheduled tasks"
-$host.UI.RawUI.foregroundcolor = "white"
-cmd /c pause
-GPTool
-#timestamp
-timeStamp
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nAll hardening functions are finished. Restart computer?"
-$host.UI.RawUI.foregroundcolor = "white"
-restart-computer -Confirm
+    function harden{
+    Write-Host -ForegroundColor Green "Hardening . . ."
+    makeOutDir
+    firewallOn
+    firewallRules -reset
+    enumerate #formatNetstat, firewallStatus, runningServices, startups, hotFixCheck, SMBStatus
+    downloadTools
+    removeIsass
+    uniqueUserPols
+    disableTeredo
+    enableSMB2
+    disableRDP
+    disableAdminShares
+    Write-Host -ForegroundColor Cyan "Here is netCease"; netCease #script kitty-ing netCease (-r to revert changes)
+    miscRegedits
+    disablePrintSpooler
+    disableGuest
+    changePAdmin
+    changePBinddn
+    passPolicy
+    changePass
+    cve_0674
+    scriptToTxt
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nOpening Task Scheduler"
+    taskschd.msc
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host "Manually examine scheduled tasks"
+    $host.UI.RawUI.foregroundcolor = "white"
+    cmd /c pause
+    GPTool
+    #timestamp
+    timeStamp
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nAll hardening functions are finished. Restart computer?"
+    $host.UI.RawUI.foregroundcolor = "white"
+    restart-computer -Confirm
 }
 # --------- provide list of available functions ---------
 function avail{
-$host.UI.RawUI.foregroundcolor = "green"
-Write-Host "`nAvailable Functions:"
-$host.UI.RawUI.foregroundcolor = "darkgreen"
-Write-Host "
-------- Invasive: -------
-harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
-disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, uniqueUserPols, enumerate)
-scriptToTxt (script file type open with notepad) | -Revert, -r
-makeADBackup
-removeIsass
-changeDCMode (changes Domain Mode to Windows2008R2Domain)
-netCease (disable Net Session Enumeration) | -Revert, -r
-cve_0674 (disables jscript.dll) | -Revert, -r
-disableGuest (disables Guest account)
-disableRDP (disables RDP via regedit)
-disableAdminShares (disables Admin share via regedit)
-miscRegedits (many mimikatz cache edits)
-disablePrintSpooler (disables print spooler service)
-disableTeredo  (disables teredo)
-firewallOn (turns on firewall)
-firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
-enableSMB2 (disables SMB1 and enable SMB2 via registry)
-configNTP (ipconfig + set NTP server)
-changePass (Kyle's AD user password script enhanced)
-changePAdmin (input admin password)
-changePBinddn (input admin password)
-passPolicy (enable passwd complexity and length 12)
-uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
-"
-$host.UI.RawUI.foregroundcolor = "darkcyan"
-Write-Host "
-------- Noninvasive: -------
-makeOutDir (makes script output directory on desktop)
-timeStamp (timestamp Script_Output)
-enumerate (startups, formatNetstat, firewallStatus, runningServices, hotFixCheck)
-loopPing (ping all IP addresses in a class C network)
-ports (displays common ports file)
-downloadTools (download relevant tools)
-hotFixCheck (checks list of HotFix KBs against systeminfo)
-pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
-autoDownloadKB (#incomplete)
-startups
-GPTool (opens GP info tool)
-dateChanged
-firewallStatus
-SMBStatus (returns SMB registry info)
-netstatRegex (format/regex netstat -abno, listening, and established > netstat_lsn.txt, netstat_est.txt)
-runningServices
-morePIDInfo (enter a PID for more info)
-serviceInfo (enter a service name for more info)
-NTPStripchart
-plainPass (retreive plaintext password(s) from saved ciphertext file)
-readOutput (provide function output to console)
-avail (display this screen)
-"
-$host.UI.RawUI.foregroundcolor = "darkred"
-Write-Host "
-------- Injects: -------
-firewallStatus
-configNTP
-firewallRules (opt. 1) - Open RDP for an IP address
-`n"
-$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "green"
+    Write-Host "`nAvailable Functions:"
+    $host.UI.RawUI.foregroundcolor = "darkgreen"
+    Write-Host "
+    ------- Invasive: -------
+    harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
+    disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, uniqueUserPols, enumerate)
+    scriptToTxt (script file type open with notepad) | -Revert, -r
+    makeADBackup
+    removeIsass
+    changeDCMode (changes Domain Mode to Windows2008R2Domain)
+    netCease (disable Net Session Enumeration) | -Revert, -r
+    cve_0674 (disables jscript.dll) | -Revert, -r
+    disableGuest (disables Guest account)
+    disableRDP (disables RDP via regedit)
+    disableAdminShares (disables Admin share via regedit)
+    miscRegedits (many mimikatz cache edits)
+    disablePrintSpooler (disables print spooler service)
+    disableTeredo  (disables teredo)
+    firewallOn (turns on firewall)
+    firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
+    enableSMB2 (disables SMB1 and enable SMB2 via registry)
+    configNTP (ipconfig + set NTP server)
+    changePass (Kyle's AD user password script enhanced)
+    changePAdmin (input admin password)
+    changePBinddn (input admin password)
+    passPolicy (enable passwd complexity and length 12)
+    uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
+    "
+    $host.UI.RawUI.foregroundcolor = "darkcyan"
+    Write-Host "
+    ------- Noninvasive: -------
+    makeOutDir (makes script output directory on desktop)
+    timeStamp (timestamp Script_Output)
+    enumerate (startups, formatNetstat, firewallStatus, runningServices, hotFixCheck)
+    loopPing (ping all IP addresses in a class C network)
+    ports (displays common ports file)
+    downloadTools (download relevant tools)
+    hotFixCheck (checks list of HotFix KBs against systeminfo)
+    pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
+    autoDownloadKB (#incomplete)
+    startups
+    GPTool (opens GP info tool)
+    dateChanged
+    firewallStatus
+    SMBStatus (returns SMB registry info)
+    netstatRegex (format/regex netstat -abno, listening, and established > netstat_lsn.txt, netstat_est.txt)
+    runningServices
+    morePIDInfo (enter a PID for more info)
+    serviceInfo (enter a service name for more info)
+    NTPStripchart
+    plainPass (retreive plaintext password(s) from saved ciphertext file)
+    readOutput (provide function output to console)
+    avail (display this screen)
+    "
+    $host.UI.RawUI.foregroundcolor = "darkred"
+    Write-Host "
+    ------- Injects: -------
+    firewallStatus
+    configNTP
+    firewallRules (opt. 1) - Open RDP for an IP address
+    `n"
+    $host.UI.RawUI.foregroundcolor = "white"
 }
 avail
 
