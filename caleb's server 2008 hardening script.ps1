@@ -416,9 +416,9 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
     #>
     if($reset){
         $host.UI.RawUI.foregroundcolor = "darkgray"
-        Write-Host -ForegroundColor Cyan "Reseting fireall"
+        Write-Host -ForegroundColor Cyan "Resetting firewall"
         netsh advfirewall reset
-        Write-Host -ForegroundColor "Disabling all default previous rules"
+        Write-Host -ForegroundColor Cyan "Disabling all default previous rules"
         netsh advfirewall firewall set rule name="all" new enable=No
         <#        
             Write-Host "Deleteing all previous rules"
@@ -1382,10 +1382,10 @@ function makeADBackup {
 # --------- active processes ---------
 function processes{
     #at.exe
-    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userproile\desktop\Script_Output\tasklist.txt -Append
-    tasklist | Out-File $env:userproile\desktop\Script_Output\tasklist.txt -Append #session
-    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userproile\desktop\Script_Output\schtasks.txt -Append
-    schtasks | Out-File $env:userproile\desktop\Script_Output\schtasks.txt -Append
+    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append
+    tasklist | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append #session
+    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
+    schtasks | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
 }
 # --------- loop ping ---------
 function loopPing{
