@@ -1749,7 +1749,9 @@ function hotFixCheck{
 
     #compare systeminfo to KB hashtable master list
     $host.UI.RawUI.foregroundcolor = "cyan"
-    $system_info = systeminfo
+    $Host.UI.RawUI.FlushInputBuffer()
+    $system_info = systeminfo | Out-String
+    $Host.UI.RawUI.FlushInputBuffer()
     $host.UI.RawUI.foregroundcolor = "darkgray"
     #region OS detect
     if (($system_info | Out-String).Contains("x64-based PC")){ #64-bit PCs
