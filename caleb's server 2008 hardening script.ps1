@@ -47,7 +47,9 @@ function downloadTools{
         #PSBouncyCastle_psm1 = "https://raw.githubusercontent.com/rlipscombe/PSBouncyCastle/master/PSBouncyCastle.psm1"
         #file_crypt_psm1 = "https://gallery.technet.microsoft.com/EncryptDecrypt-files-use-65e7ae5d/file/165403/14/FileCryptography.psm1"
         EMET_msi = "https://download.microsoft.com/download/F/3/6/F366901C-F3CB-4A94-B377-5611740B8B19/EMET%20Setup.msi" #Enhanced Mitigation Experience Toolkit 
-        dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
+        #dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
+        #dotNet_4_5_1_exe = "https://download.microsoft.com/download/1/6/7/167F0D79-9317-48AE-AEDB-17120579F8E2/NDP451-KB2858728-x86-x64-AllOS-ENU.exe"
+        dotNet_4_5_2_exe = "https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
         WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip" #Windows Managment Framework 5.1 (PS 5.1)
         #NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
         seven_ZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
@@ -77,7 +79,8 @@ function downloadTools{
                 Write-Host -ForegroundColor Yellow $_ "The URL below has been copied to the clipboard"
                 $url | clip
                 Write-Host -ForegroundColor Yellow $url
-                cmd /c pause
+                Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+                $HOST.UI.RawUI.Flushinputbuffer()
             }
         }
         Write-Host "All relevant tools downloaded"
@@ -216,10 +219,10 @@ function downloadTools{
     #install dotNet_4.5
     function installDotNet{
         $host.UI.RawUI.foregroundcolor = "cyan"
-        if(Test-Path -Path "$env:USERPROFILE\downloads\tools\dotNet_4_5.exe"){
-        Write-Host "Installing dotNet_4.5"
-        cmd /c C:\Users\Administrator\downloads\tools\dotNet_4_5.exe /passive /showfinalerror /showrmui
-        }else{Write-Host "dotNet_4.5 has not been downloaded yet"}
+        if(Test-Path -Path "$env:USERPROFILE\downloads\tools\dotNet_4_5_2.exe"){
+        Write-Host "Installing dotNet_4.5.2"
+        cmd /c C:\Users\Administrator\downloads\tools\dotNet_4_5_2.exe /passive /promptrestart
+        }else{Write-Host "dotNet_4.5.2 has not been downloaded yet"}
     }
     #install WMF_5.1
     function installWMF{
@@ -282,8 +285,10 @@ function downloadTools{
         installSublime
     }        
     $host.UI.RawUI.foregroundcolor = "white"
-    cmd /c pause
+    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer()
 }
+
 # --------- group policy tool ---------
 function GPTool{
     Write-Host -ForegroundColor Green "Opening GP Tool"
