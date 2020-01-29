@@ -1746,19 +1746,17 @@ function hotFixCheck{
     Write-Host "`nComparing systeminfo HotFix list against HotFix master-list"
     #manual page
     #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
-
-    #compare systeminfo to KB hashtable master list
+    #compile systeminfo
     $host.UI.RawUI.foregroundcolor = "cyan"
-    $Host.UI.RawUI.FlushInputBuffer()
-    $system_info = systeminfo | Out-String
-    $Host.UI.RawUI.FlushInputBuffer()
+    $system_info = systeminfo
+
     $host.UI.RawUI.foregroundcolor = "darkgray"
     #region OS detect
     if (($system_info | Out-String).Contains("x64-based PC")){ #64-bit PCs
         if (($system_info | Out-String).Contains("Windows Server 2008")){ #2008
             if (($system_info | Out-String).Contains("R2")){
                 if (($system_info | Out-String).Contains("Service Pack 1")){ #2008 R2 64-bit SP1
-                    Write-Host "The system is 2008 64-bit R2 and SP1 is installed. These HotFixes should be installed:"
+                    Write-Host "The system is 2008 64-bit R2 and SP1 is installed."
                     $auto_download_KBs = @{
                         #KB975517 = "https://bit.ly/2rArzrt" # 6.0 x86
                         KB2393802 = "http://bit.ly/2kodsxw" # after SP1
@@ -1790,7 +1788,7 @@ function hotFixCheck{
                     }
                 }
                 else{ #2008 R2 64-bit pre-SP1
-                    Write-Host "The system is 2008 64-bit R2 and SP1 is not installed. These HotFixes can be installed:"
+                    Write-Host "The system is 2008 64-bit R2 and SP1 is not installed."
                     $auto_download_KBs = @{
                         KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
                         KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
@@ -1908,43 +1906,110 @@ function hotFixCheck{
         }        
     }
     #endregion OS detect
-    #creates list of installed HotFixes from systeminfo, then parses just the KB from that, then removes those from $auto_download_KBs
-    #if there is no match (nothing is installed) then skipps parsing the junk
-    $kb_list = Foreach ($KB in $auto_download_KBs.GetEnumerator()){$KB.Name}
-    $installed = $system_info | Select-String $kb_list
+
+    #compile only KB name from db
+    $kb_db = Foreach ($KB in $auto_download_KBs.GetEnumerator()){$KB.Name}
+    #select only installed KBs from db
+    $installed = $system_info | Select-String $kb_db
+    #(error handle) if nothing is installed skip parsing KB name from installed and removing installed from db
     if ($null -ne $installed){
         $installed = $installed -replace '(?m)^\s{27,}\[[0-9]\w\]\:\s',''
         $installed | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} | ForEach-Object {$auto_download_KBs.Remove($c)}
     }
-    #export applicable list and provide output to console
+    #export db for use in pickAKB
     $host.UI.RawUI.foregroundcolor = "cyan"
     $auto_download_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
     Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
-    #download and install logic
-    if($auto_download_KBs.Count -gt 0){
-        #remove what has already been downloaded from database
-        try{
-            $files = Get-ChildItem "$env:userprofile\downloads\updates"
+    #compile already downloaded
+    function files{
+        $files = Get-ChildItem "$env:userprofile\downloads\updates"
+        <# compile full filename if $files more than 1
+        if($files.Count -gt 1){
             $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
-            $kb_list = $files -replace '(?m).{4}$',''
-            foreach($kb in $kb_list){$auto_download_KBs.Remove($kb)}
         }
-        catch{Write-Host "No HotFixes have been downloaded yet."}
-        finally{
+        #>
+        #parse KB name from $files
+        $files = $files -replace '(?m).{4}$',''
+        return $files
+    }
+    function install{
+        $files = files
+        #remove already installed from files
+        if($files.count -gt 1){
+            [System.Collections.ArrayList]$install = $files
+            foreach($a in $files){
+                foreach($b in $installed){
+                    if($a -eq $b){
+                        $install.remove($b)
+                    }
+                }
+            }
+        }elseif($installed.count -le 1 -and $files.count -le 1){
+            <# $host.UI.RawUI.foregroundcolor = "cyan"
+            Write-Warning "both installed and files are strings:"
+            Write-Host "this is files type:" $files.GetType()
+            Write-Host "this is files value:" $files
+            Write-Host "this is installed type:" $installed.GetType()
+            Write-Host "this is installed value:" $installed #>
+            $install = $files
+        }elseif($installed.count -le 1){
+            <# $host.UI.RawUI.foregroundcolor = "cyan"
+            Write-Warning "installed is a string"
+            Write-Host "this is files type:" $files.GetType()
+            Write-Host "this is files value:" $files
+            Write-Host "this is installed type:" $installed.GetType()
+            Write-Host "this is installed value:" $installed #>
+        }elseif($files.count -le 1){
+            <# $host.UI.RawUI.foregroundcolor = "cyan"
+            Write-Warning "files is a string"
+            Write-Host "this is files type:" $files.GetType()
+            Write-Host "this is files value:" $files
+            Write-Host "this is installed type:" $installed.GetType()
+            Write-Host "this is installed value:" $installed #>
+            $install = $files
+        }
+
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        $install
+        if($install.count -gt 0 -or $install.Length -gt 0){
+            Write-Host -ForegroundColor Cyan "The" $install.count "hotfix(s) above are downloaded but not installed. " -NoNewline
+            Write-Host -ForegroundColor Magenta "Would you like to install them now? (y, n): " -NoNewline
+            $yes = Read-Host
+            $host.UI.RawUI.foregroundcolor = "cyan"                        
+            #install loop 
+            if ($yes -eq 'y'){
+                foreach ($f in $install){
+                    Write-Host "Installing $f"
+                    Start-Process wusa -ArgumentList ("$env:userprofile\downloads\updates\$f.msu", '/quiet', '/norestart') -Wait
+                }
+                Write-Host "Finished installing updates."
+            }else{
+                $host.UI.RawUI.foregroundcolor = "magenta"
+                $pick = Read-Host "`nWould you like to pick `'one`' Hotfix from the list? (y, n)"
+                if ($pick -eq 'y'){
+                    pickAKB
+                }
+            }
+        }else{Write-Host "Everything has been installed."}
+    }
+    function download{
+        $files = files
+        #remove already downloaded from db
+        foreach($kb in $files){$auto_download_KBs.Remove($kb)}
+        if($auto_download_KBs.count -gt 0){
             $host.UI.RawUI.foregroundcolor = "darkgray"
             $auto_download_KBs
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $yes = Read-Host "`nWould you like to downlad the" $auto_download_KBs.count "above HotFixes applicable to your system now? (y, n)"    
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            Write-Host "`nThe" $auto_download_KBs.count "HotFixe(s) above have not been downloaded or installed."
+            Write-Host -ForegroundColor Magenta "Would you like to download them now? (y, n): " -NoNewline
+            $yes = Read-Host
             if ($yes -eq 'y'){
-                $host.UI.RawUI.foregroundcolor = "cyan"
-                Write-Host "The following" $auto_download_KBs.count "hotfixes below will be downloaded."
-                $host.UI.RawUI.foregroundcolor = "darkgray"
-                $auto_download_KBs
-                $host.UI.RawUI.foregroundcolor = "cyan"
-                Write-Host "Importing BitsTransfer module"
+                Write-Host -ForegroundColor Cyan "The hotfix(s) above will now be downloaded."
+                Write-Host -ForegroundColor Cyan "Importing BitsTransfer module"
                 Import-Module BitsTransfer            
                 #download loop
                 foreach ($key in $auto_download_KBs.GetEnumerator()) {
+                    $host.UI.RawUI.foregroundcolor = "cyan"
                     "Downloading $($key.Name) from $($key.Value)"
                     $KB = $($key.Name)
                     $url = $auto_download_KBs.$KB
@@ -1954,41 +2019,24 @@ function hotFixCheck{
                         Write-Host -ForegroundColor Yellow $_ "The URL below has been copied to the clipboard"
                         $url | clip
                         Write-Host -ForegroundColor Yellow $url
-                        Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-                        $HOST.UI.RawUI.Flushinputbuffer()
+                        cmd /c pause
                     }
                 }
                 Write-Host "Downloading complete."
-                #from downloaded what is still applicable to install
-                $files = Get-ChildItem "$env:userprofile\downloads\updates"
-                $files = Foreach ($KB in $files.GetEnumerator()){$KB.Name}
-                $kb_list = $files -replace '(?m).{4}$',''
-                $install = $files | Where-Object { $_ -notmatch $installed }
-                $host.UI.RawUI.foregroundcolor = "darkgray"
-                $install
-                $host.UI.RawUI.foregroundcolor = "magenta"
-                $yes = Read-Host "Would you like to install the above" $install.count "remaining HotFixes applicable to your system now? (y, n)"
-                $host.UI.RawUI.foregroundcolor = "cyan"                        
-                #install loop 
-                if ($yes -eq 'y'){
-                    foreach ($f in $install){ 
-                        Write-Host "Installing $f"
-                        Start-Process wusa -ArgumentList ("$env:userprofile\downloads\updates\$f", '/quiet', '/norestart') -Wait
-                    }
-                    Write-Host "Finished installing updates."
-                }
+                install                 
             } else {
                 $host.UI.RawUI.foregroundcolor = "magenta"
-                $pick = Read-Host "`nWould you like to pick a specific Hotfix from the list to download? (y, n)"
+                $pick = Read-Host "`nWould you like to pick a specific HotFix from the list? (y, n)"
                 if ($pick -eq 'y'){
                     pickAKB
-                }else{Write-Host -ForegroundColor Cyan "No updates from the database will be installed."}
+                }else{install}
             }
-        }   
-    }else{Write-Host "All of the HotFixes in the database applicable to your system have already been installed."}
+        }else{Write-Host -ForegroundColor Cyan "Everything has been downloaded."; install}
+    }
+    download
+    
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    cmd /c pause
 }
 if($hotFixCheck){
     hotFixCheck
