@@ -80,6 +80,7 @@ function downloadTools{
     Import-Module BitsTransfer    
     #master tools list
     $downloads = @{
+        m_netMon_exe = "https://download.microsoft.com/download/7/1/0/7105C7FF-768E-4472-AFD5-F29108D1E383/NM34_x64.exe"
         splunkUF7_2_msi = 'https://www.splunk.com/page/download_track?file=7.2.0/windows/splunkforwarder-7.2.0-8c86330ac18-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.2.0&product=universalforwarder&typed=release'
         winSCP_exe = "https://cdn.winscp.net/files/WinSCP-5.15.9-Setup.exe?secure=crToMdPESi8axxxbub8Y0Q==,1579143049"
         #malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
@@ -1529,18 +1530,18 @@ if($removeIsass){
 }
 # --------- CVE-2020-0674 ---------
 function cve_0674{
-    Write-Host -ForegroundColor Green "`nDisables jscript.dll (-r to revert)"
-    Write-Host -ForegroundColor Cyan "1) revert`n2) disable jscript.dll"
+    Write-Host -ForegroundColor Green "`nDisables jscript.dll CVE-2020-0674 (-r to revert)"
+    Write-Host -ForegroundColor Cyan "1) disable jscript.dll`n2) revert"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
     $input = Read-Host
     switch($input){
-        1{
+        2{
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Reverting"
         cmd /c "cacls %windir%\system32\jscript.dll /E /R everyone"
         cmd /c "cacls %windir%\syswow64\jscript.dll /E /R everyone"
         }
-        2{
+        1{
         cmd /c "takeown /f %windir%\system32\jscript.dll"
         cmd /c "cacls %windir%\system32\jscript.dll /E /P everyone:N"
         cmd /c "takeown /f %windir%\syswow64\jscript.dll"
@@ -1557,11 +1558,11 @@ if($cve_0674){
 # --------- sets script extensions to open notepad ---------
 function scriptToTxt{
     Write-Host -ForegroundColor Green "Associates notepad with script extensions"
-    Write-Host -ForegroundColor Cyan "1) reset to default`n2) disable all script extensions"
+    Write-Host -ForegroundColor Cyan "1) associate scripts to txt`n2) reset to default"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
     $input = Read-Host
     switch($input){
-        1{
+        2{
         Write-Host -ForegroundColor Green "`nReverting script extensions association to default"
         $host.UI.RawUI.foregroundcolor = "cyan"
         cmd /c assoc .bat=batfile
@@ -1571,8 +1572,9 @@ function scriptToTxt{
         cmd /c assoc .vbs=VBSFile
         cmd /c assoc .wsf=WSFFile
         cmd /c assoc .wsh=WSHFile
+        cmd /c assoc .py=Python.File
         }
-        2{
+        1{
             Write-Host -ForegroundColor Green "`nAssociating script extensions to open with notepad (-r to revert)"
             $host.UI.RawUI.foregroundcolor = "cyan"
             cmd /c assoc .bat=txtfile
@@ -1582,6 +1584,7 @@ function scriptToTxt{
             cmd /c assoc .vbs=txtfile
             cmd /c assoc .wsf=txtfile
             cmd /c assoc .wsh=txtfile
+            cmd /c assoc .py=txtfile
         }
     }
     $host.UI.RawUI.foregroundcolor = "white"
@@ -1613,10 +1616,17 @@ if($makeADBackup){
 # --------- active processes ---------
 function processes{
     #at.exe
-    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append
+    Write-Host -ForegroundColor "Enumerating processes"
+    cmd /c echo tasklist %time% >> $env:userprofile\desktop\Script_Output\tasklist.txt
+    #Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append
     tasklist | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append #session
-    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
+    cmd /c echo tasklist %time% schtasks >> $env:userprofile\desktop\Script_Output\schtasks.txt
+    #Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
     schtasks | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    Get-Content $env:userprofile\desktop\Script_Output\tasklist.txt
+    Get-Content $env:userprofile\desktop\Script_Output\schtasks.txt
+
 }
 if($processes){
     processes
@@ -1652,8 +1662,8 @@ function startups {
     $host.UI.RawUI.foregroundcolor = "cyan"
     #wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt    
     if(Test-Path -Path "C:\tools"){
-        Write-Host -ForegroundColor Green "Startup enumeration using `'autorunsc`'"
-        Write-Host -ForegroundColor Cyan "1) enumerate with vt`n2) normal enumerate"
+        Write-Host -ForegroundColor Green "Startup programs etc. enumeration"
+        Write-Host -ForegroundColor Cyan "1) `'autorunsc`' with vt`n2) normal `'autorunsc`'"
         Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
         $input = Read-Host
         switch($input){
@@ -2064,7 +2074,6 @@ if($SMBStatus){
     SMBStatus
 }
 # --------- provide script output to the console ---------
-
 function readOutput{
     #output netstat -abno
     $host.UI.RawUI.foregroundcolor = "green"
@@ -2164,16 +2173,17 @@ if($readOutput){
     readOutput
 }
 # --------- run enumeration functions ---------
-
 function enumerate{
+    makeOutDir
     Write-Host -ForegroundColor Green "Running enumeration functions"
-    formatNetstat
-    firewallStatus
-    runningServices
+    processes
     startups
+    #icass
+    firewallStatus
+    formatNetstat    
+    runningServices
     hotFixCheck
     SMBStatus
-    processes
 }
 if($enumerate){
     enumerate
@@ -2183,41 +2193,40 @@ if($enumerate){
 # --------- run all hardening functions ---------
 function harden{
     Write-Host -ForegroundColor Green "Hardening . . ."
-    makeOutDir
+    enumerate #formatNetstat, firewallStatus, runningServices, startups, hotFixCheck, SMBStatus
     firewallOn
     firewallRules -reset
-    enumerate #formatNetstat, firewallStatus, runningServices, startups, hotFixCheck, SMBStatus
-    downloadTools
     removeIsass
-    uniqueUserPols
+    cve_0674
+    scriptToTxt
     disableTeredo
     enableSMB2
     disableRDP
+    disablePrintSpooler
     disableAdminShares
     Write-Host -ForegroundColor Cyan "Here is netCease"; netCease #script kitty-ing netCease (-r to revert changes)
     miscRegedits
-    disablePrintSpooler
+    uniqueUserPols
     disableGuest
     changePAdmin
     changePBinddn
     passPolicy
     changePass
-    cve_0674
-    scriptToTxt
+    <# open taskschd GUI  
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nOpening Task Scheduler"
     taskschd.msc
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Manually examine scheduled tasks"
-    $host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "white" 
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
     $HOST.UI.RawUI.Flushinputbuffer()
+    #>
     GPTool
-    #timestamp
     timeStamp
+    downloadTools
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nAll hardening functions are finished. Restart computer?"
+    Write-Host "`nAll hardening functions are finished. Restart computer?`n"
     $host.UI.RawUI.foregroundcolor = "white"
     restart-computer -Confirm
 }
