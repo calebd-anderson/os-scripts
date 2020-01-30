@@ -39,6 +39,7 @@ function downloadTools{
         nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
         npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
         gmer_zip = "http://www2.gmer.net/gmer.zip" #malware tool
+        m_netMon_exe = "https://download.microsoft.com/download/7/1/0/7105C7FF-768E-4472-AFD5-F29108D1E383/NM34_x64.exe"
         sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe" #text editor
         #bccrypto_zip = "https://www.bouncycastle.org/csharp/download/bccrypto-csharp-1.8.5-bin.zip"
         #new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip" #kerberos reset ps script
