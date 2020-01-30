@@ -1707,6 +1707,7 @@ function hotFixCheck{
             Write-Host "this is installed value:" $installed #>
             $install = $files
         }elseif($installed.count -le 1){
+            #I've probably already handled this somewhere
             $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Warning "installed is a string"
             Write-Host "this is files type:" $files.GetType()
@@ -1722,7 +1723,7 @@ function hotFixCheck{
             Write-Host "this is installed value:" $installed #>
             $install = $files
         }
-
+        
         $host.UI.RawUI.foregroundcolor = "darkgray"
         $install
         if($install.count -gt 0 -or $install.Length -gt 0){
