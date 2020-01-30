@@ -2290,6 +2290,9 @@ function avail{
     `n"
     $host.UI.RawUI.foregroundcolor = "white"
 }
+if($avail){
+    avail
+}
 avail
 
 #Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL

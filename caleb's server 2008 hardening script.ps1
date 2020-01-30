@@ -7,7 +7,7 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     }
 }
 #>
-
+#region misc
 # --------- create output directory on desktop ---------
 function makeOutDir{
 if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output)){
@@ -387,6 +387,8 @@ function timeStamp {
         }
     }
 }
+#endregion misc
+
 #region Firewall
 # --------- turn firewall on ---------
 function firewallOn{
