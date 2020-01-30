@@ -1705,12 +1705,12 @@ function hotFixCheck{
             Write-Host "this is installed value:" $installed #>
             $install = $files
         }elseif($installed.count -le 1){
-            <# $host.UI.RawUI.foregroundcolor = "cyan"
+            $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Warning "installed is a string"
             Write-Host "this is files type:" $files.GetType()
             Write-Host "this is files value:" $files
             Write-Host "this is installed type:" $installed.GetType()
-            Write-Host "this is installed value:" $installed #>
+            Write-Host "this is installed value:" $installed
         }elseif($files.count -le 1){
             <# $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Warning "files is a string"
