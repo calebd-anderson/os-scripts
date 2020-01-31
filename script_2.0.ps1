@@ -255,8 +255,8 @@ function downloadTools{
                             $env:Path += ";$7z_installed"
                             cmd /c "7z e `"C:\Users\Administrator\downloads\tools\Sysinternals_suite.zip`" -o`"C:\Tools\sysinternals`"" | Out-Null
                             Write-Host "Adding `"C:\Tools\sysinternals`" to machine environment path variable"
-                            $env:Path += ";C:\tools"
-                            cmd /c "setx /m path `"%path%;C:\tools`"" | Out-Null
+                            $env:Path += ";C:\tools\sysinternals"
+                            cmd /c "setx /m path `"%path%;C:\tools\sysinternals`"" | Out-Null
                         }else{Write-Host "Nothing is available to programatically extract Sysinternals_suite.zip"; return}
                     }else{
                         Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
