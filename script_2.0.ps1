@@ -31,6 +31,7 @@ Param(
     [switch]$serviceInfo,
     [switch]$hotFixCheck,
     [switch]$pickAKB,
+    [switch]$autoDownloadKB, #(Incomplete)
     [switch]$enableSMB2,
     [switch]$SMBStatus,
     [switch]$disableRDP,
@@ -422,7 +423,7 @@ function GPTool{
     $main_form.Controls.Add($Button3)
     $Button3.Add_Click({secpol.msc})
     #endregion buttons
-    $main_form.ShowDialog() | Out-Null
+    $main_form.ShowDialog()
     Write-Host -ForegroundColor Cyan "Ending GP tool"
     Write-Host -ForegroundColor Cyan "Forcing GP update"
     gpupdate /force
@@ -736,9 +737,7 @@ function netCease {
     Write-Host "Permissions successfully updated"
     Write-Host "In order for the hardening to take effect, please restart the Server service" 
         }
-    }
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+}
 }
 if($netcease){
     netCease
@@ -1637,12 +1636,11 @@ if($processes){
 }
 # --------- loop ping ---------
 function loopPing{
-    Write-Host -ForegroundColor Green "`nEnumerates a class C subnet"
+    Write-Host -ForegroundColor Green "`nEnumerates subnet"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     ipconfig /all
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $network = Read-Host "Enter the class C subnet (255.255.255) portion you would like to loop ping (<255.255.255>.[loop])"
-    $host.UI.RawUI.foregroundcolor = "darkgray"
+    $network = Read-Host "Enter the class C subnet (255.255.255) portion you would like to loop ping (<255.255.255>.[loop]):"
     cmd /c "for /L %I in (1,1,254) do ping -w 30 -n 1 $network.%I | find `"Reply`" >> `"$env:USERPROFILE\desktop\$network`_ping_loop.txt`""
 }
 if($loopPing){
@@ -1834,9 +1832,9 @@ function hotFixCheck{
                 }else{ #2012 R2 64-bit pre-SP1
                     Write-Host "The system is 2012 R2 64-bit and SP1 is not installed. These HotFixes can be installed:"
                     $auto_download_KBs = @{
-                        KB4012217 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/03/windows8-rt-kb4012217-x64_96635071602f71b4fb2f1a202e99a5e21870bc93.msu" #eternal blue
-                        KB3177186 = "https://download.microsoft.com/download/1/A/A/1AA2F953-BE36-490E-A2B6-812659189AE1/Windows8-RT-KB3177186-x64.msu" #smb 1 remote exectution
-                        KB2973501 = "https://download.microsoft.com/download/E/A/8/EA8194AA-524B-46FA-B2CC-6CAB856F2468/Windows8-RT-KB2973501-x64.msu" #mimikatz
+                        KB4012217 = "https://bit.ly/2JcsYfW" #eternal blue
+                        KB3177186 = "https://bit.ly/2Je9p72" #smb 1 remote exectution
+                        KB2973501 = "https://bit.ly/2u9NTpK" #mimikatz
                         <#
                         KB2959936 = ""
                         KB2896496 = ""
@@ -2034,8 +2032,7 @@ function hotFixCheck{
                         Write-Host -ForegroundColor Yellow $_ "The URL below has been copied to the clipboard"
                         $url | clip
                         Write-Host -ForegroundColor Yellow $url
-                        Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-                        $HOST.UI.RawUI.Flushinputbuffer()
+                        cmd /c pause
                     }
                 }
                 Write-Host "Downloading complete."
@@ -2049,10 +2046,10 @@ function hotFixCheck{
             }
         }else{Write-Host -ForegroundColor Cyan "Everything has been downloaded."; install}
     }
-    download    
+    download
+    
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    cmd /c pause
 }
 if($hotFixCheck){
     hotFixCheck
@@ -2281,6 +2278,7 @@ function avail{
     downloadTools (download relevant tools)
     hotFixCheck (checks list of HotFix KBs against systeminfo)
     pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
+    autoDownloadKB (#incomplete)
     startups
     GPTool (opens GP info tool)
     dateChanged
@@ -2312,3 +2310,4 @@ avail
 #Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
 #$HOST.UI.RawUI.Flushinputbuffer()
 #cmd /c pause
+$HOST.UI.RawUI.Flushinputbuffer()
