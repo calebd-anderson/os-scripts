@@ -224,7 +224,7 @@ function downloadTools{
     #install Sysinternals
     function installSysinternals {
         #extract with 7-zip
-        if(!(Test-Path -Path "C:\Tools")) {
+        if(!(Test-Path -Path "C:\Tools\sysinternals")) {
             $sys_zip_path = "$env:userprofile\downloads\tools\Sysinternals_suite.zip"
             $7z_installed = "C:\Program Files\7-Zip"
             if(!(Test-Path -Path $sys_zip_path)){
@@ -251,22 +251,25 @@ function downloadTools{
                         }
                         if(Test-Path -Path $7z_installed){
                             $host.UI.RawUI.foregroundcolor = "cyan"                          
-                            Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
+                            Write-Host "Extracting Sysinternals to `'C:\Tools\sysinternals`' with 7-Zip"
                             $env:Path += ";$7z_installed"
-                            cmd /c "7z e `"C:\Users\Administrator\downloads\tools\Sysinternals_suite.zip`" -o`"C:\Tools`"" | Out-Null
-                            Write-Host "Adding `"C:\Tools` to machine environment path variable"
+                            cmd /c "7z e `"C:\Users\Administrator\downloads\tools\Sysinternals_suite.zip`" -o`"C:\Tools\sysinternals`"" | Out-Null
+                            Write-Host "Adding `"C:\Tools\sysinternals`" to machine environment path variable"
                             $env:Path += ";C:\tools"
-                            cmd /c "setx /m path `"%path%;C:\tools`"" | Out-Null                          
+                            cmd /c "setx /m path `"%path%;C:\tools`"" | Out-Null
                         }else{Write-Host "Nothing is available to programatically extract Sysinternals_suite.zip"; return}
                     }else{
                         Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
-                        Expand-Archive -LiteralPath $sys_zip_path -DestinationPath "C:\Tools" -Force
+                        Expand-Archive -LiteralPath $sys_zip_path -DestinationPath "C:\Tools\sysinternals" -Force
                         $env:Path += ";C:\tools"
                         cmd /c "setx /m path `"%path%;C:\tools\`"" | Out-Null
                     }
                 }
             }
-        }else{Write-Host "Sysinternals is already installed to `"C:\Tools`""}
+        }else{Write-Host "Sysinternals is already installed to `"C:\Tools\sysinternals`""}
+        #format to display sysinternals commands
+        #$commands = 'accesschk.exe, accesschk64.exe, AccessEnum.exe, ADExplorer.exe, ADInsight.exe, adrestore.exe, Autologon.exe, Autoruns.exe, Autoruns64.exe, autorunsc.exe, autorunsc64.exe, Bginfo.exe, Bginfo64.exe, Cacheset.exe, Clockres.exe, Clockres64.exe, Contig.exe, Contig64.exe, Coreinfo.exe, CPUSTRES.EXE, CPUSTRES64.EXE, ctrl2cap.exe, Dbgview.exe, Desktops.exe, disk2vhd.exe, diskext.exe, diskext64.exe, Diskmon.exe, DiskView.exe, du.exe, du64.exe, efsdump.exe, FindLinks.exe, FindLinks64.exe, handle.exe, handle64.exe, hex2dec.exe, hex2dec64.exe, junction.exe, junction64.exe, ldmdump.exe, Listdlls.exe, Listdlls64.exe, livekd.exe, livekd64.exe, LoadOrd.exe, LoadOrd64.exe, LoadOrdC.exe, LoadOrdC64.exe, logonsessions.exe, logonsessions64.exe, movefile.exe, movefile64.exe, notmyfault.exe, notmyfault64.exe, notmyfaultc.exe, notmyfaultc64.exe, ntfsinfo.exe, ntfsinfo64.exe, pagedfrg.exe, pendmoves.exe, pendmoves64.exe, pipelist.exe, pipelist64.exe, portmon.exe, procdump.exe, procdump64.exe, procexp.exe, procexp64.exe, Procmon.exe, Procmon64.exe, PsExec.exe, PsExec64.exe, psfile.exe, psfile64.exe, PsGetsid.exe, PsGetsid64.exe, PsInfo.exe, PsInfo64.exe, pskill.exe, pskill64.exe, pslist.exe, pslist64.exe, PsLoggedon.exe, PsLoggedon64.exe, psloglist.exe, psloglist64.exe, pspasswd.exe, pspasswd64.exe, psping.exe, psping64.exe, PsService.exe, PsService64.exe, psshutdown.exe, pssuspend.exe, pssuspend64.exe, RAMMap.exe, RegDelNull.exe, RegDelNull64.exe, regjump.exe, ru.exe, ru64.exe, sdelete.exe, sdelete64.exe, ShareEnum.exe, ShellRunas.exe, sigcheck.exe, sigcheck64.exe, streams.exe, streams64.exe, strings.exe, strings64.exe, sync.exe, sync64.exe, Sysmon.exe, Sysmon64.exe, Tcpvcon.exe, Tcpview.exe, Testlimit.exe, Testlimit64.exe, vmmap.exe, Volumeid.exe, Volumeid64.exe, whois.exe, whois64.exe, Winobj.exe, ZoomIt.exe'
+        Start-Process -WorkingDirectory 'c:\tools\sysinternals' cmd -ArgumentList '/k', 'echo', 'Enter sysinternals commands here:'
     }
     #install dotNet_4.5
     function installDotNet{
