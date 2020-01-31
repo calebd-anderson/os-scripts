@@ -79,6 +79,7 @@ function downloadTools{
     Import-Module BitsTransfer    
     #master tools list
     $downloads = @{
+        m_netMon_exe = "https://download.microsoft.com/download/7/1/0/7105C7FF-768E-4472-AFD5-F29108D1E383/NM34_x64.exe"
         splunkUF7_2_msi = 'https://www.splunk.com/page/download_track?file=7.2.0/windows/splunkforwarder-7.2.0-8c86330ac18-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.2.0&product=universalforwarder&typed=release'
         winSCP_exe = "https://cdn.winscp.net/files/WinSCP-5.15.9-Setup.exe?secure=crToMdPESi8axxxbub8Y0Q==,1579143049"
         #malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
@@ -222,7 +223,7 @@ function downloadTools{
     #install Sysinternals
     function installSysinternals {
         #extract with 7-zip
-        if(!(Test-Path -Path "C:\Tools")) {
+        if(!(Test-Path -Path "C:\Tools\sysinternals")) {
             $sys_zip_path = "$env:userprofile\downloads\tools\Sysinternals_suite.zip"
             $7z_installed = "C:\Program Files\7-Zip"
             if(!(Test-Path -Path $sys_zip_path)){
@@ -249,22 +250,25 @@ function downloadTools{
                         }
                         if(Test-Path -Path $7z_installed){
                             $host.UI.RawUI.foregroundcolor = "cyan"                          
-                            Write-Host "Extracting Sysinternals to C:\Tools with 7-Zip"
+                            Write-Host "Extracting Sysinternals to `'C:\Tools\sysinternals`' with 7-Zip"
                             $env:Path += ";$7z_installed"
-                            cmd /c "7z e `"C:\Users\Administrator\downloads\tools\Sysinternals_suite.zip`" -o`"C:\Tools`"" | Out-Null
-                            Write-Host "Adding `"C:\Tools` to machine environment path variable"
-                            $env:Path += ";C:\tools"
-                            cmd /c "setx /m path `"%path%;C:\tools`"" | Out-Null                          
+                            cmd /c "7z e `"C:\Users\Administrator\downloads\tools\Sysinternals_suite.zip`" -o`"C:\Tools\sysinternals`"" | Out-Null
+                            Write-Host "Adding `"C:\Tools\sysinternals`" to machine environment path variable"
+                            $env:Path += ";C:\tools\sysinternals"
+                            cmd /c "setx /m path `"%path%;C:\tools\sysinternals`"" | Out-Null
                         }else{Write-Host "Nothing is available to programatically extract Sysinternals_suite.zip"; return}
                     }else{
                         Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
-                        Expand-Archive -LiteralPath $sys_zip_path -DestinationPath "C:\Tools" -Force
+                        Expand-Archive -LiteralPath $sys_zip_path -DestinationPath "C:\Tools\sysinternals" -Force
                         $env:Path += ";C:\tools"
                         cmd /c "setx /m path `"%path%;C:\tools\`"" | Out-Null
                     }
                 }
             }
-        }else{Write-Host "Sysinternals is already installed to `"C:\Tools`""}
+        }else{Write-Host "Sysinternals is already installed to `"C:\Tools\sysinternals`""}
+        #format to display sysinternals commands
+        #$commands = 'accesschk.exe, accesschk64.exe, AccessEnum.exe, ADExplorer.exe, ADInsight.exe, adrestore.exe, Autologon.exe, Autoruns.exe, Autoruns64.exe, autorunsc.exe, autorunsc64.exe, Bginfo.exe, Bginfo64.exe, Cacheset.exe, Clockres.exe, Clockres64.exe, Contig.exe, Contig64.exe, Coreinfo.exe, CPUSTRES.EXE, CPUSTRES64.EXE, ctrl2cap.exe, Dbgview.exe, Desktops.exe, disk2vhd.exe, diskext.exe, diskext64.exe, Diskmon.exe, DiskView.exe, du.exe, du64.exe, efsdump.exe, FindLinks.exe, FindLinks64.exe, handle.exe, handle64.exe, hex2dec.exe, hex2dec64.exe, junction.exe, junction64.exe, ldmdump.exe, Listdlls.exe, Listdlls64.exe, livekd.exe, livekd64.exe, LoadOrd.exe, LoadOrd64.exe, LoadOrdC.exe, LoadOrdC64.exe, logonsessions.exe, logonsessions64.exe, movefile.exe, movefile64.exe, notmyfault.exe, notmyfault64.exe, notmyfaultc.exe, notmyfaultc64.exe, ntfsinfo.exe, ntfsinfo64.exe, pagedfrg.exe, pendmoves.exe, pendmoves64.exe, pipelist.exe, pipelist64.exe, portmon.exe, procdump.exe, procdump64.exe, procexp.exe, procexp64.exe, Procmon.exe, Procmon64.exe, PsExec.exe, PsExec64.exe, psfile.exe, psfile64.exe, PsGetsid.exe, PsGetsid64.exe, PsInfo.exe, PsInfo64.exe, pskill.exe, pskill64.exe, pslist.exe, pslist64.exe, PsLoggedon.exe, PsLoggedon64.exe, psloglist.exe, psloglist64.exe, pspasswd.exe, pspasswd64.exe, psping.exe, psping64.exe, PsService.exe, PsService64.exe, psshutdown.exe, pssuspend.exe, pssuspend64.exe, RAMMap.exe, RegDelNull.exe, RegDelNull64.exe, regjump.exe, ru.exe, ru64.exe, sdelete.exe, sdelete64.exe, ShareEnum.exe, ShellRunas.exe, sigcheck.exe, sigcheck64.exe, streams.exe, streams64.exe, strings.exe, strings64.exe, sync.exe, sync64.exe, Sysmon.exe, Sysmon64.exe, Tcpvcon.exe, Tcpview.exe, Testlimit.exe, Testlimit64.exe, vmmap.exe, Volumeid.exe, Volumeid64.exe, whois.exe, whois64.exe, Winobj.exe, ZoomIt.exe'
+        Start-Process -WorkingDirectory 'c:\tools\sysinternals' cmd -ArgumentList '/k', 'echo', 'Enter sysinternals commands here. "dir /B *.exe" lists programs:'
     }
     #install dotNet_4.5
     function installDotNet{
@@ -1530,18 +1534,18 @@ if($removeIsass){
 }
 # --------- CVE-2020-0674 ---------
 function cve_0674{
-    Write-Host -ForegroundColor Green "`nDisables jscript.dll (-r to revert)"
-    Write-Host -ForegroundColor Cyan "1) revert`n2) disable jscript.dll"
+    Write-Host -ForegroundColor Green "`nDisables jscript.dll CVE-2020-0674 (-r to revert)"
+    Write-Host -ForegroundColor Cyan "1) disable jscript.dll`n2) revert"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
     $input = Read-Host
     switch($input){
-        1{
+        2{
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Reverting"
         cmd /c "cacls %windir%\system32\jscript.dll /E /R everyone"
         cmd /c "cacls %windir%\syswow64\jscript.dll /E /R everyone"
         }
-        2{
+        1{
         cmd /c "takeown /f %windir%\system32\jscript.dll"
         cmd /c "cacls %windir%\system32\jscript.dll /E /P everyone:N"
         cmd /c "takeown /f %windir%\syswow64\jscript.dll"
@@ -1558,11 +1562,11 @@ if($cve_0674){
 # --------- sets script extensions to open notepad ---------
 function scriptToTxt{
     Write-Host -ForegroundColor Green "Associates notepad with script extensions"
-    Write-Host -ForegroundColor Cyan "1) reset to default`n2) disable all script extensions"
+    Write-Host -ForegroundColor Cyan "1) associate scripts to txt`n2) reset to default"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
     $input = Read-Host
     switch($input){
-        1{
+        2{
         Write-Host -ForegroundColor Green "`nReverting script extensions association to default"
         $host.UI.RawUI.foregroundcolor = "cyan"
         cmd /c assoc .bat=batfile
@@ -1572,8 +1576,9 @@ function scriptToTxt{
         cmd /c assoc .vbs=VBSFile
         cmd /c assoc .wsf=WSFFile
         cmd /c assoc .wsh=WSHFile
+        cmd /c assoc .py=Python.File
         }
-        2{
+        1{
             Write-Host -ForegroundColor Green "`nAssociating script extensions to open with notepad (-r to revert)"
             $host.UI.RawUI.foregroundcolor = "cyan"
             cmd /c assoc .bat=txtfile
@@ -1583,6 +1588,7 @@ function scriptToTxt{
             cmd /c assoc .vbs=txtfile
             cmd /c assoc .wsf=txtfile
             cmd /c assoc .wsh=txtfile
+            cmd /c assoc .py=txtfile
         }
     }
     $host.UI.RawUI.foregroundcolor = "white"
@@ -1614,10 +1620,17 @@ if($makeADBackup){
 # --------- active processes ---------
 function processes{
     #at.exe
-    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append
+    Write-Host -ForegroundColor "Enumerating processes"
+    cmd /c echo tasklist %time% >> $env:userprofile\desktop\Script_Output\tasklist.txt
+    #Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append
     tasklist | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append #session
-    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
+    cmd /c echo tasklist %time% schtasks >> $env:userprofile\desktop\Script_Output\schtasks.txt
+    #Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
     schtasks | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    Get-Content $env:userprofile\desktop\Script_Output\tasklist.txt
+    Get-Content $env:userprofile\desktop\Script_Output\schtasks.txt
+
 }
 if($processes){
     processes
@@ -1654,8 +1667,8 @@ function startups {
     $host.UI.RawUI.foregroundcolor = "cyan"
     #wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt    
     if(Test-Path -Path "C:\tools"){
-        Write-Host -ForegroundColor Green "Startup enumeration using `'autorunsc`'"
-        Write-Host -ForegroundColor Cyan "1) enumerate with vt`n2) normal enumerate"
+        Write-Host -ForegroundColor Green "Startup programs etc. enumeration"
+        Write-Host -ForegroundColor Cyan "1) `'autorunsc`' with vt`n2) normal `'autorunsc`'"
         Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
         $input = Read-Host
         switch($input){
@@ -2067,7 +2080,6 @@ if($SMBStatus){
     SMBStatus
 }
 # --------- provide script output to the console ---------
-
 function readOutput{
     #output netstat -abno
     $host.UI.RawUI.foregroundcolor = "green"
@@ -2167,16 +2179,17 @@ if($readOutput){
     readOutput
 }
 # --------- run enumeration functions ---------
-
 function enumerate{
+    makeOutDir
     Write-Host -ForegroundColor Green "Running enumeration functions"
-    formatNetstat
-    firewallStatus
-    runningServices
+    processes
     startups
+    #icass
+    firewallStatus
+    formatNetstat    
+    runningServices
     hotFixCheck
     SMBStatus
-    processes
 }
 if($enumerate){
     enumerate
@@ -2186,41 +2199,40 @@ if($enumerate){
 # --------- run all hardening functions ---------
 function harden{
     Write-Host -ForegroundColor Green "Hardening . . ."
-    makeOutDir
+    enumerate #formatNetstat, firewallStatus, runningServices, startups, hotFixCheck, SMBStatus
     firewallOn
     firewallRules -reset
-    enumerate #formatNetstat, firewallStatus, runningServices, startups, hotFixCheck, SMBStatus
-    downloadTools
     removeIsass
-    uniqueUserPols
+    cve_0674
+    scriptToTxt
     disableTeredo
     enableSMB2
     disableRDP
+    disablePrintSpooler
     disableAdminShares
     Write-Host -ForegroundColor Cyan "Here is netCease"; netCease #script kitty-ing netCease (-r to revert changes)
     miscRegedits
-    disablePrintSpooler
+    uniqueUserPols
     disableGuest
     changePAdmin
     changePBinddn
     passPolicy
     changePass
-    cve_0674
-    scriptToTxt
+    <# open taskschd GUI  
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nOpening Task Scheduler"
     taskschd.msc
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Manually examine scheduled tasks"
-    $host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "white" 
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
     $HOST.UI.RawUI.Flushinputbuffer()
+    #>
     GPTool
-    #timestamp
     timeStamp
+    downloadTools
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nAll hardening functions are finished. Restart computer?"
+    Write-Host "`nAll hardening functions are finished. Restart computer?`n"
     $host.UI.RawUI.foregroundcolor = "white"
     restart-computer -Confirm
 }
