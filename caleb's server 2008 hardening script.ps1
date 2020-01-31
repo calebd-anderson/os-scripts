@@ -2002,7 +2002,6 @@ function avail{
     downloadTools (download relevant tools)
     hotFixCheck (checks list of HotFix KBs against systeminfo)
     pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
-    autoDownloadKB (#incomplete)
     startups
     GPTool (opens GP info tool)
     dateChanged
