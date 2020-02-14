@@ -8,8 +8,10 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 #>
 Param(
+    [switch]$eternalBlue,
+    [switch]$events,
     [switch]$makeOutDir,
-    [switch]$downloadTools,
+    [switch]$getTools,
     [switch]$firewallOn,
     [switch]$firewallRules,
     [switch]$removeIsass,
@@ -44,7 +46,7 @@ Param(
     [switch]$changePAdmin,
     [switch]$changePBinddn,
     [switch]$passPolicy,
-    [switch]$uniqueUserPols,
+    [switch]$userPols,
     [switch]$GPTool,
     [switch]$readOutput,
     [switch]$harden,
@@ -57,11 +59,15 @@ Param(
 #region misc
 # --------- create output directory on desktop ---------
 function makeOutDir{
-    if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output)){
+    if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output)){        
         Write-Host -ForegroundColor Green "Creating the output directory `"Script_Output`" on the desktop`n"
         New-Item -Path "$env:USERPROFILE\desktop\Script_Output" -ItemType Directory | Out-Null
-        New-Item -Path "$env:USERPROFILE\downloads\tools" -ItemType Directory | Out-Null
-        New-Item -Path "$env:USERPROFILE\downloads\updates" -ItemType Directory | Out-Null
+        try{
+            New-Item -Path "$env:USERPROFILE\downloads\tools" -ItemType Directory | Out-Null
+            New-Item -Path "$env:USERPROFILE\downloads\updates" -ItemType Directory | Out-Null
+        }catch{
+            Write-Host -ForegroundColor DarkGray "tools and updates folders already exist"
+        }
     }
     else{
         Write-Host -ForegroundColor DarkGray "`n`"Script_Output`" already exists"
@@ -72,70 +78,66 @@ if($makeOutDir){
     makeOutDir
 }
 # --------- downloads relevant tools ---------
-function downloadTools{
+function getTools{
     makeOutDir
     Write-Host -ForegroundColor Green "`nDownloading relevant tools"
     Write-Host -ForegroundColor Cyan "Importing BitsTransfer"
-    Import-Module BitsTransfer    
+    Import-Module BitsTransfer
     #master tools list
     $downloads = @{
-        m_netMon_exe = "https://download.microsoft.com/download/7/1/0/7105C7FF-768E-4472-AFD5-F29108D1E383/NM34_x64.exe"
-        splunkUF7_2_msi = 'https://www.splunk.com/page/download_track?file=7.2.0/windows/splunkforwarder-7.2.0-8c86330ac18-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.2.0&product=universalforwarder&typed=release'
-        winSCP_exe = "https://cdn.winscp.net/files/WinSCP-5.15.9-Setup.exe?secure=crToMdPESi8axxxbub8Y0Q==,1579143049"
-        #malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
-        firefox_installer_exe = "https://mzl.la/35e3KDv"
-        sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
         mbsacli_2_1_1_msi = "https://download.microsoft.com/download/A/1/0/A1052D8B-DA8D-431B-8831-4E95C00D63ED/MBSASetup-x64-EN.msi" #baseline security analyzer
-        fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe" #hash tool
-        nmap_exe = "https://nmap.org/dist/nmap-7.80-setup.exe"
-        npcap_exe = "https://nmap.org/npcap/dist/npcap-0.9986.exe"
-        gmer_zip = "http://www2.gmer.net/gmer.zip" #malware tool
-        sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe" #text editor
-        #bccrypto_zip = "https://www.bouncycastle.org/csharp/download/bccrypto-csharp-1.8.5-bin.zip"
-        #new_ctm_krb_zip = "https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51/file/142338/1/New-CtmADKrbtgtKeys.zip" #kerberos reset ps script
-        #encryption_examples_zip = "https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87/file/108341/2/EncryptionExamples.zip"
-        #protectedData_zip = "https://gallery.technet.microsoft.com/scriptcenter/Share-encrypted-data-2f91fd3f/file/129591/1/ProtectedData.zip"
-        #PSBouncyCastle_psm1 = "https://raw.githubusercontent.com/rlipscombe/PSBouncyCastle/master/PSBouncyCastle.psm1"
-        #file_crypt_psm1 = "https://gallery.technet.microsoft.com/EncryptDecrypt-files-use-65e7ae5d/file/165403/14/FileCryptography.psm1"
         EMET_msi = "https://download.microsoft.com/download/F/3/6/F366901C-F3CB-4A94-B377-5611740B8B19/EMET%20Setup.msi" #Enhanced Mitigation Experience Toolkit 
-        #dotNet_4_5_exe = "https://download.microsoft.com/download/B/A/4/BA4A7E71-2906-4B2D-A0E1-80CF16844F5F/dotNetFx45_Full_setup.exe"
-        #dotNet_4_5_1_exe = "https://download.microsoft.com/download/1/6/7/167F0D79-9317-48AE-AEDB-17120579F8E2/NDP451-KB2858728-x86-x64-AllOS-ENU.exe"
         dotNet_4_5_2_exe = "https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
+        #dotNet_4_6_exe = "https://download.microsoft.com/download/C/3/A/C3A5200B-D33C-47E9-9D70-2F7C65DAAD94/NDP46-KB3045557-x86-x64-AllOS-ENU.exe"        
         WMF_5_1_zip = "https://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/Win7AndW2K8R2-KB3191566-x64.zip" #Windows Managment Framework 5.1 (PS 5.1)
-        #NetCease_zip = "https://gallery.technet.microsoft.com/Net-Cease-Blocking-Net-1e8dcb5b/file/165596/1/NetCease.zip" # prevents unprivileged session enumeration
+        m_netMon_exe = "https://download.microsoft.com/download/7/1/0/7105C7FF-768E-4472-AFD5-F29108D1E383/NM34_x64.exe" #Microsoft NetMon
+        #fciv_exe = "http://download.microsoft.com/download/c/f/4/cf454ae0-a4bb-4123-8333-a1b6737712f7/windows-kb841290-x86-enu.exe" #hash tool maybe use a baseline
+        #splunkUF7_2_msi = 'https://www.splunk.com/page/download_track?file=7.2.0/windows/splunkforwarder-7.2.0-8c86330ac18-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.2.0&product=universalforwarder&typed=release'
+        #splunkUF7_2_9_1_msi = "https://www.splunk.com/page/download_track?file=7.2.9.1/windows/splunkforwarder-7.2.9.1-605df3f0dfdd-x64-release.msi&ac=&wg&name=wget&platform=Windows&architecture=x86_64&version=7.2.9.1&product=universalforwarder&typed=release"
+        splunkUF8_0_1_msi = "https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=windows&version=8.0.1&product=universalforwarder&filename=splunkforwarder-8.0.1-6db836e2fb9e-x64-release.msi&wget=true"
+        TimelineExplorer_zip = "https://f001.backblazeb2.com/file/EricZimmermanTools/TimelineExplorer.zip" #View CSV and Excel files, filter, group, sort, etc. with ease
+        #csv_viewer_zip = "https://www.lo4d.com/get-file/csvfileview/35aa4e910d03353e5bffb2bdac9be578/"
+        #winSCP_exe = "https://cdn.winscp.net/files/WinSCP-5.15.9-Setup.exe?secure=crToMdPESi8axxxbub8Y0Q==,1579143049"
+        #malwarebytes_exe = "https://downloads.malwarebytes.com/file/mb-windows"
+        #firefox_installer_exe = "https://mzl.la/35e3KDv"
+        sysinternals_suite_zip = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
+        gmer_zip = "http://www2.gmer.net/gmer.zip" #malware and hidden rootkit kill tool
+        sublime_exe = "https://download.sublimetext.com/Sublime%20Text%20Build%203211%20x64%20Setup.exe" #text editor
         seven_ZIP_exe = "https://www.7-zip.org/a/7z1900-x64.exe"
     }
     #remove what has already been downloaded from database
     $files = Get-ChildItem "$env:userprofile\downloads\tools"
     try {$files = Foreach ($tool in $files.GetEnumerator()){$tool.Name}}
     catch [System.Management.Automation.RuntimeException]{Write-host -ForegroundColor Cyan "The `"%userprofile%\downloads\tools`" folder is empty."}
-    $tool_list = $files -replace '\.', '_' #'(?m).{4}$','' - '_(?!.*_)', '.' 
+    $tool_list = $files -replace '\.', '_' #'(?m).{4}$','' - '_(?!.*_)', '.'
     foreach($tool in $tool_list){$downloads.Remove($tool)}
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    $downloads
-    #download all?
-    $host.UI.RawUI.foregroundcolor = "magenta"
-    $yes = Read-Host "Would you like to download all above" $downloads.count "jobs now? (y, n)"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    if ($yes -eq 'y'){
-        #download loop
-        foreach ($key in $downloads.GetEnumerator()) {
-            "Downloading $($key.Name) from $($key.Value)"
-            $filename = $($key.Name)
-            $url = $downloads.$filename
-            $filename = $filename -replace '_(?!.*_)', '.' #Lookahead and Lookbehind Zero-Length Assertions
-            $output = "$env:USERPROFILE\downloads\tools\$filename"           
-            try{Start-BitsTransfer -Source $url -Destination $output -ErrorAction Stop}
-            catch{
-                Write-Host -ForegroundColor Yellow $_ "The URL below has been copied to the clipboard"
-                $url | clip
-                Write-Host -ForegroundColor Yellow $url
-                Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-                $HOST.UI.RawUI.Flushinputbuffer()
+    if(!$downloads.Count -eq 0){
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        $downloads
+        #download all?
+        $host.UI.RawUI.foregroundcolor = "magenta"
+        $yes = Read-Host "Would you like to download all above" $downloads.count "jobs now? (y, n)"
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        if ($yes -eq 'y'){
+            #download loop
+            foreach ($key in $downloads.GetEnumerator()) {
+                "Downloading $($key.Name) from $($key.Value)"
+                $filename = $($key.Name)
+                $url = $downloads.$filename
+                $filename = $filename -replace '_(?!.*_)', '.' #Lookahead and Lookbehind Zero-Length Assertions
+                $output = "$env:USERPROFILE\downloads\tools\$filename"           
+                try{Start-BitsTransfer -Source $url -Destination $output -ErrorAction Stop}
+                catch{
+                    Write-Host -ForegroundColor Yellow $_ "The URL below has been copied to the clipboard"
+                    $url | clip
+                    Write-Host -ForegroundColor Yellow $url
+                    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+                    $HOST.UI.RawUI.Flushinputbuffer()
+                }
             }
+            #Write-Host "All relevant tools downloaded"
         }
-        Write-Host "All relevant tools downloaded"
-    }    
+    }else{Write-Host -ForegroundColor Cyan "All tools downloaded"}
     #install sublime text editor?
     function installSublime{
         if(-not (Test-Path "C:\Program Files\Sublime Text 3")){
@@ -175,6 +177,7 @@ function downloadTools{
                 }
             }
         }else{Write-Host -ForegroundColor Cyan "Sublime is already installed"}
+        Write-Host -ForegroundColor Cyan "Finished downloading tools"
     }
     #install SP1?
     function installSP1{
@@ -184,15 +187,15 @@ function downloadTools{
         if ($yes -eq 'y'){
             $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Host "Installing SP1"
-            cmd /c C:\Users\Administrator\desktop\Script_Output\tools\windows6.1-KB976932-X64.exe /unattend /norestart
+            cmd /c C:\Users\Administrator\downloads\tools\windows6.1-KB976932-X64.exe /quiet /promptrestart #/unattend
         }
     }
-    #install 7-Zip($host.Version.Major -lt 3)
+    #install 7-Zip($PSVersionTable.PSVersion.Major -lt 3)
     function install7Zip {
         $host.UI.RawUI.foregroundcolor = "cyan"
         $path_to_exe = "$env:userprofile\downloads\tools\seven_ZIP.exe"
         $path_to_installed = "C:\Program Files\7-Zip"
-        if($host.Version.Major -lt 3){
+        if($PSVersionTable.PSVersion.Major -lt 3){
             if(!(Test-Path -LiteralPath $path_to_exe) -and !(Test-Path -Path $path_to_installed)){
                 Write-Host "7-Zip has not been downloaded yet." -NoNewline
                 Write-Host -ForegroundColor Magenta " Would you like to download it now? (y, n): " -NoNewline
@@ -227,8 +230,8 @@ function downloadTools{
             $sys_zip_path = "$env:userprofile\downloads\tools\Sysinternals_suite.zip"
             $7z_installed = "C:\Program Files\7-Zip"
             if(!(Test-Path -Path $sys_zip_path)){
-                Write-Host "`"Sysinternals_suite.zip`" has not been downloaded yet. " -NoNewline
-                Write-Host -ForegroundColor magenta "Would you like to download it now? (y, n): " -NoNewline
+                Write-Host "`"Sysinternals_suite.zip`" has not been downloaded. " -NoNewline
+                Write-Host -ForegroundColor magenta "Would you like to get it now? (y, n): " -NoNewline
                 $yes = Read-Host
                 if($yes -eq 'y'){
                     $source = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
@@ -237,11 +240,11 @@ function downloadTools{
                 } else{return}
             }if(Test-Path -Path $sys_zip_path){
                 Write-Host -ForegroundColor Cyan "Sysinternals_suite.zip is downloaded but not installed. " -NoNewline
-                Write-Host -ForegroundColor Magenta "Would you like to extract it to `"C:\Tools`" now? (y, n): " -NoNewline
+                Write-Host -ForegroundColor Magenta "Would you like to extract it to `"C:\Tools\sysinternals`" now? (y, n): " -NoNewline
                 $yes = Read-Host
                 if($yes -eq 'y'){
                     #install7Zip               
-                    if($host.Version.Major -lt 3){
+                    if($PSVersionTable.PSVersion.Major -lt 3){
                         if(!(Test-Path -Path $7z_installed)){
                             Write-Host -ForegroundColor Cyan "7-Zip needs to be installed in order to programatically extract Sysinternals_sute.zip. " -NoNewline
                             Write-Host -ForegroundColor Magenta "Would you like to set that up now? (y, n): " -NoNewline
@@ -260,15 +263,21 @@ function downloadTools{
                     }else{
                         Write-Host "Extracting Sysinternals to C:\Tools with PS CmdLet"
                         Expand-Archive -LiteralPath $sys_zip_path -DestinationPath "C:\Tools\sysinternals" -Force
-                        $env:Path += ";C:\tools"
-                        cmd /c "setx /m path `"%path%;C:\tools\`"" | Out-Null
+                        $env:Path += ";C:\tools\sysinternals"
+                        cmd /c "setx /m path `"%path%;C:\tools\sysinternals\`"" | Out-Null
                     }
                 }
             }
-        }else{Write-Host "Sysinternals is already installed to `"C:\Tools\sysinternals`""}
+        }else{
+            Write-Host "Sysinternals is already installed to `"C:\Tools\sysinternals`""
+            Start-Process -WorkingDirectory 'c:\tools\sysinternals' cmd -ArgumentList '/k', 'echo', 'Enter sysinternals commands here. "dir /B *.exe" lists programs:'
+            return
+        }
+        if(Test-Path -Path "C:\Tools\sysinternals"){
+            Start-Process -WorkingDirectory 'c:\tools\sysinternals' cmd -ArgumentList '/k', 'echo', 'Enter sysinternals commands here. "dir /B *.exe" lists programs:'
+        }
         #format to display sysinternals commands
         #$commands = 'accesschk.exe, accesschk64.exe, AccessEnum.exe, ADExplorer.exe, ADInsight.exe, adrestore.exe, Autologon.exe, Autoruns.exe, Autoruns64.exe, autorunsc.exe, autorunsc64.exe, Bginfo.exe, Bginfo64.exe, Cacheset.exe, Clockres.exe, Clockres64.exe, Contig.exe, Contig64.exe, Coreinfo.exe, CPUSTRES.EXE, CPUSTRES64.EXE, ctrl2cap.exe, Dbgview.exe, Desktops.exe, disk2vhd.exe, diskext.exe, diskext64.exe, Diskmon.exe, DiskView.exe, du.exe, du64.exe, efsdump.exe, FindLinks.exe, FindLinks64.exe, handle.exe, handle64.exe, hex2dec.exe, hex2dec64.exe, junction.exe, junction64.exe, ldmdump.exe, Listdlls.exe, Listdlls64.exe, livekd.exe, livekd64.exe, LoadOrd.exe, LoadOrd64.exe, LoadOrdC.exe, LoadOrdC64.exe, logonsessions.exe, logonsessions64.exe, movefile.exe, movefile64.exe, notmyfault.exe, notmyfault64.exe, notmyfaultc.exe, notmyfaultc64.exe, ntfsinfo.exe, ntfsinfo64.exe, pagedfrg.exe, pendmoves.exe, pendmoves64.exe, pipelist.exe, pipelist64.exe, portmon.exe, procdump.exe, procdump64.exe, procexp.exe, procexp64.exe, Procmon.exe, Procmon64.exe, PsExec.exe, PsExec64.exe, psfile.exe, psfile64.exe, PsGetsid.exe, PsGetsid64.exe, PsInfo.exe, PsInfo64.exe, pskill.exe, pskill64.exe, pslist.exe, pslist64.exe, PsLoggedon.exe, PsLoggedon64.exe, psloglist.exe, psloglist64.exe, pspasswd.exe, pspasswd64.exe, psping.exe, psping64.exe, PsService.exe, PsService64.exe, psshutdown.exe, pssuspend.exe, pssuspend64.exe, RAMMap.exe, RegDelNull.exe, RegDelNull64.exe, regjump.exe, ru.exe, ru64.exe, sdelete.exe, sdelete64.exe, ShareEnum.exe, ShellRunas.exe, sigcheck.exe, sigcheck64.exe, streams.exe, streams64.exe, strings.exe, strings64.exe, sync.exe, sync64.exe, Sysmon.exe, Sysmon64.exe, Tcpvcon.exe, Tcpview.exe, Testlimit.exe, Testlimit64.exe, vmmap.exe, Volumeid.exe, Volumeid64.exe, whois.exe, whois64.exe, Winobj.exe, ZoomIt.exe'
-        Start-Process -WorkingDirectory 'c:\tools\sysinternals' cmd -ArgumentList '/k', 'echo', 'Enter sysinternals commands here. "dir /B *.exe" lists programs:'
     }
     #install dotNet_4.5
     function installDotNet{
@@ -301,10 +310,10 @@ function downloadTools{
         }
     }
     $BuildVersion = [System.Environment]::OSVersion.Version
-    if($BuildVersion.Revision -eq '0'){
+    if($BuildVersion.Build -lt '7601'){
         if(! (Test-Path -LiteralPath $env:USERPROFILE\downloads\tools\windows6.1-KB976932-X64.exe)){
             Write-Host -ForegroundColor Cyan "windows6.1-KB976932-X64 does not exist. " -NoNewline
-            Write-Host -ForegroundColor Magenta "Would you like to download SP1 R2 X64 now? (y, n): " -NoNewline
+            Write-Host -ForegroundColor Magenta "Would you like to download Win2008 SP1 R2 X64 now? (y, n): " -NoNewline
             $yes = Read-Host 
             if ($yes -eq 'y'){
                 $url = "https://download.microsoft.com/download/0/A/F/0AFB5316-3062-494A-AB78-7FB0D4461357/windows6.1-KB976932-X64.exe"
@@ -324,7 +333,7 @@ function downloadTools{
         installSublime
     }
     #install WMF 5.1? if SP1 and WMF not already installed
-    elseif($host.Version.Major -lt 5){
+    elseif($PSVersionTable.PSVersion.Major -lt 5){
         $host.UI.RawUI.foregroundcolor = "magenta"
         $yes = Read-Host "Would you like to install Windows Managemnt Framework 5.1 now? (y, n)"
         if ($yes -eq 'y'){
@@ -342,8 +351,8 @@ function downloadTools{
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($downloadTools){
-    downloadTools
+if($getTools){
+    getTools
 }
 # --------- group policy tool ---------
 function GPTool{
@@ -366,26 +375,28 @@ function GPTool{
     
     #hashtable Name:Value
     $GPO_EDITS = @{
-    PS_Script_Execution = "Comp Config\Policies\Administrative Templates\Windows Components\Windows PowerShell\ -> `"Turn on script execution`"
-    User Config - Policies - Admin Templates - Windows Components - Windows Powershell - Turn on Script Execution `"Disabled`""
-    Kerberos_Encryption = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Config encrypt types (...) Kerberos\ `"AES256`""
-    LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`""
-    LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"?Refuse All`""
-    Win32_Conficker = "Comp Config\Policies\Administrative Templates\Windows Components\Autoplay Policies -> Turn off Autoplay\ `"ENABLE`""
-    Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)`nUser Config\Windows Settings\Scripts (Startup/Shutdown)"
-    Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE . . .`""
-    Passwd_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
-    Add_Comp_Pol = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`""
-    Deny_User_Rights = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignments\ -> `"MANY w/ Deny`""
-    Restricted_Groups = "CompConfig\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
-    Harden_UNC = "ComConfig\Administrative Templates\Network\Network Provider -> `"Hardened UNC Paths`""
-    Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
-    RDP = "Comp Config\Administrative Templates\Windows Components\Remote Desktop Services\Remote Desktop Session Host\Connections.
-    Allow users to connect remotely using Remote Desktop Services (enable or disable)"
-    Block_APP = "User Config\Policies\Admin Templates\System\Don't run specified Windows applications `"Enable`" powershell.exe, Isass.exe
-    Comp Config\Policies\Sec Settings\App Control Policies\AppLocker\Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`""
-    Banner = "CompConfig\Policies\Windows Settings\Sec Settings\Local Policies\Sec Options\`"Interactive logon: Message text for users attempting to log on`"
-    CompConfig\Policies\Windows Settings\Sec Settings\Local Policies\Sec Options\`"Interactive logon: Message title for users attempting to log on`""
+        PS_Script_Execution = "Comp Config\Policies\Administrative Templates\Windows Components\Windows PowerShell\ -> `"Turn on script execution`"
+        User Config - Policies - Admin Templates - Windows Components - Windows Powershell - Turn on Script Execution `"Disabled`""
+        Kerberos_Encryption = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Config encrypt types (...) Kerberos\ `"AES256`""
+        LAN_MGR_Hash = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: Do not store LAN MGR hash (...) pswd change\ `"ENABLE`""
+        LAN_MGR_Auth = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\Security Options -> Network Security: LAN MGR Auth LVL\ `"NTLM2 Only`""
+        Win32_Conficker = "Comp Config\Policies\Administrative Templates\Windows Components\Autoplay Policies -> Turn off Autoplay\ `"ENABLE`""
+        Startup_Scripts = "Comp Config\Windows Settings\Scripts (Startup/Shutdown)`nUser Config\Windows Settings\Scripts (Startup/Shutdown)"
+        Audit_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\ -> `"MANY HERE . . .`""
+        Passwd_Policy = "Comp Config\Policies\Windows Settings\Security Settings\Account Policies\Password Policy\ -> Store passwords using reversible encryption\ `"Disabled`", `"MANY HERE ???`""
+        Add_Comp_Pol = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignment\ -> Add workstations to Domain\ `"0`""
+        Deny_User_Rights = "Comp Config\Policies\Windows Settings\Security Settings\Local Policies\User Rights Assignments\ -> `"MANY w/ Deny`""
+        Restricted_Groups = "CompConfig\Policies\Windows Settings\Security Settings\Restricted Groups -> Remove All"
+        Harden_UNC = "ComConfig\Administrative Templates\Network\Network Provider -> `"Hardened UNC Paths`""
+        Guest_Account = "Go to Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options. In the right-side pane, double click on Accounts: Guest account status."
+        RDP = "Comp Config\Administrative Templates\Windows Components\Remote Desktop Services\Remote Desktop Session Host\Connections.
+        Allow users to connect remotely using Remote Desktop Services (enable or disable)"
+        Block_APP = "User Config\Policies\Admin Templates\System\Don't run specified Windows applications `"Enable`" powershell.exe, Isass.exe
+        Comp Config\Policies\Sec Settings\App Control Policies\AppLocker\Executable Rules `"Deny, Users, C:\Windows\System32\powershell.exe`"
+        SC QUERYEX AppIDSvc
+        sc config `"AppIDSvc`" start=auto & net start `"AppIDSvc`""
+        Banner = "CompConfig\Policies\Windows Settings\Sec Settings\Local Policies\Sec Options\`"Interactive logon: Message text for users attempting to log on`"
+        CompConfig\Policies\Windows Settings\Sec Settings\Local Policies\Sec Options\`"Interactive logon: Message title for users attempting to log on`""
     }    
     #region buttons
     Foreach ($GPO in $GPO_EDITS.GetEnumerator()){$ComboBox.Items.Add($($GPO.Name)) | Out-Null}
@@ -427,8 +438,9 @@ function GPTool{
     Write-Host -ForegroundColor Cyan "Forcing GP update"
     gpupdate /force
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    Start-Sleep -s 1
+    # Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    # $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($GPTool){
     GPTool
@@ -439,8 +451,8 @@ function timeStamp {
     $time = Read-Host "Timestamp Script_Output? (y, n)"
     if($time -eq 'y'){
         try{
-        $time = Get-Date -format 'yyyy.MM.dd-HH.mm.ss'
-        Rename-Item $env:userprofile\desktop\Script_Output $env:userprofile\desktop\Script_Output_$time -Force
+            $time = Get-Date -format 'yyyy.MM.dd-HH.mm.ss'
+            Rename-Item $env:userprofile\desktop\Script_Output $env:userprofile\desktop\Script_Output_$time -Force
         }
         catch{
             Write-Error "An error occured: Make sure the Script_Output folder window is closed then run timeStamp again"
@@ -461,8 +473,8 @@ function firewallOn{
     $host.UI.RawUI.foregroundcolor = "cyan"
     netsh advfirewall set allprofiles state on
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    <#Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer() #>
 }
 if($firewallOn){
     firewallOn
@@ -497,60 +509,62 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
         Write-Host -ForegroundColor Cyan  "DNS: port 53 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow DNS UDP port 53 IN" protocol=UDP dir=in localport=53 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow DNS TCP port 53 IN" protocol=TCP dir=in localport=53 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow DNS UDP port 53 OUT" protocol=UDP dir=out localport=53 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow DNS TCP port 53 OUT" protocol=TCP dir=out localport=53 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow DNS UDP port 53 OUT" protocol=UDP dir=out localport=53 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow DNS TCP port 53 OUT" protocol=TCP dir=out localport=53 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "RPC endpoint mapper: port 135 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow RPC endpoint mapper UDP port 135 IN" protocol=UDP dir=in localport=135 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow RPC endpoint mapper TCP port 135 IN" protocol=TCP dir=in localport=135 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow RPC endpoint mapper UDP port 135 OUT" protocol=UDP dir=out localport=135 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow RPC endpoint mapper TCP port 135 OUT" protocol=TCP dir=out localport=135 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow RPC endpoint mapper UDP port 135 OUT" protocol=UDP dir=out localport=135 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow RPC endpoint mapper TCP port 135 OUT" protocol=TCP dir=out localport=135 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "NetBIOS name service: port 137 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow NetBIOS name service UDP port 137 IN" protocol=UDP dir=in localport=137 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow NetBIOS name service TCP port 137 IN" protocol=TCP dir=in localport=137 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow NetBIOS name service UDP port 137 OUT" protocol=UDP dir=out localport=137 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow NetBIOS name service TCP port 137 OUT" protocol=TCP dir=out localport=137 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow NetBIOS name service UDP port 137 OUT" protocol=UDP dir=out localport=137 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow NetBIOS name service TCP port 137 OUT" protocol=TCP dir=out localport=137 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "NetBIOS datagram service: port 138 UDP"
         netsh advfirewall firewall add rule name="Allow NetBIOS datagram service UDP port 138 IN" protocol=UDP dir=in localport=138 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="NetBIOS datagram service UDP port 138 OUT" protocol=UDP dir=out localport=138 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="NetBIOS datagram service UDP port 138 OUT" protocol=UDP dir=out localport=138 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "NetBIOS session service: port 139 TCP"
         netsh advfirewall firewall add rule name="Allow NetBIOS session service UDP port 139 IN" protocol=TCP dir=in localport=139 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow NetBIOS session service UDP port 139 OUT" protocol=TCP dir=out localport=139 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow NetBIOS session service UDP port 139 OUT" protocol=TCP dir=out localport=139 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "SMB over IP (Microsoft-DS): port 445 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) UDP port 445 IN" protocol=UDP dir=in localport=445 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) TCP port 445 IN" protocol=TCP dir=in localport=445 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) UDP port 445 OUT" protocol=UDP dir=out localport=445 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) TCP port 445 OUT" protocol=TCP dir=out localport=445 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) UDP port 445 OUT" protocol=UDP dir=out localport=445 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow SMB over IP (Microsoft-DS) TCP port 445 OUT" protocol=TCP dir=out localport=445 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "LDAP: port 389 TCP, UDP"
         netsh advfirewall firewall add rule name="Allow LDAP: UDP port 389 IN" protocol=UDP dir=in localport=389 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow LDAP: TCP port 389 IN" protocol=TCP dir=in localport=389 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow LDAP: UDP port 389 OUT" protocol=UDP dir=out localport=389 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow LDAP: TCP port 389 OUT" protocol=TCP dir=out localport=389 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow LDAP: UDP port 389 OUT" protocol=UDP dir=out localport=389 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow LDAP: TCP port 389 OUT" protocol=TCP dir=out localport=389 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "LDAP over SSL: port 636 TCP"
         netsh advfirewall firewall add rule name="Allow LDAP over SSL: TCP port 636 IN" protocol=TCP dir=in localport=636 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow LDAP over SSL: TCP port 636 OUT" protocol=TCP dir=out localport=636 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow LDAP over SSL: TCP port 636 OUT" protocol=TCP dir=out localport=636 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "Global catalog LDAP: port 3268 TCP"
         netsh advfirewall firewall add rule name="Allow Global catalog LDAP: TCP port 3268 IN" protocol=TCP dir=in localport=3268 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow Global catalog LDAP: TCP port 3268 OUT" protocol=TCP dir=out localport=3268 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow Global catalog LDAP: TCP port 3268 OUT" protocol=TCP dir=out localport=3268 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "Global catalog LDAP over SSL: port 3269 TCP"
         netsh advfirewall firewall add rule name="Allow Global catalog LDAP over SSL: TCP port 3269 IN" protocol=TCP dir=in localport=3269 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow Global catalog LDAP over SSL: TCP port 3269 OUT" protocol=TCP dir=out localport=3269 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow Global catalog LDAP over SSL: TCP port 3269 OUT" protocol=TCP dir=out localport=3269 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "Kerberos: port 88 TCP, UDP"    
         netsh advfirewall firewall add rule name="Allow Kerberos: UDP port 88 IN" protocol=UDP dir=in localport=88 action=allow | Out-Null
         netsh advfirewall firewall add rule name="Allow Kerberos: TCP port 88 IN" protocol=TCP dir=in localport=88 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow Kerberos: UDP port 88 OUT" protocol=UDP dir=out localport=88 action=allow | Out-Null
-        netsh advfirewall firewall add rule name="Allow Kerberos: TCP port 88 OUT" protocol=TCP dir=out localport=88 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow Kerberos: UDP port 88 OUT" protocol=UDP dir=out localport=88 action=allow | Out-Null
+        # netsh advfirewall firewall add rule name="Allow Kerberos: TCP port 88 OUT" protocol=TCP dir=out localport=88 action=allow | Out-Null
         Write-Host -ForegroundColor Cyan  "Blocking inbound, allowing outbound"
         cmd /c "netsh advfirewall set currentprofile firewallpolicy blockinbound,allowoutbound"
     }    
-    Write-Host -ForegroundColor Green "Changes firewall rules"
+    Write-Host -ForegroundColor Green "Configuring firewall rules"
     if($reset){
-        $host.UI.RawUI.foregroundcolor = "darkgray"
-        Write-Host -ForegroundColor Cyan "Reseting firewall"
-        netsh advfirewall reset
+        # $host.UI.RawUI.foregroundcolor = "darkgray"
+        # Write-Host -ForegroundColor Cyan "Reseting firewall"
+        # netsh advfirewall reset
+        Write-Host -ForegroundColor Cyan "Backing up original firewall to 'script_output\firewall.pol'"
+        netsh advfirewall export $env:USERPROFILE\desktop\script_output\firewall.pol
         Write-Host -ForegroundColor Cyan "Disabling all default previous rules"
         netsh advfirewall firewall set rule name="all" new enable=No
         makeRules
-        Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+        Write-Host -ForegroundColor White "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
         $HOST.UI.RawUI.Flushinputbuffer()
         return
     }else{
@@ -562,13 +576,14 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
             makeRules
             }
             2{
-                Write-Host -ForegroundColor Cyan "1) Enter an IP to allow RDP IN`n2) Disable above RDP IN`n3) Reset to Win default`n4) Delete all rules`n5) Backup fireawll policy`n6) Restore FW from backup"
+                Write-Host -ForegroundColor Cyan "1) Enter an IP to allow RDP IN`n2) Disable above RDP IN`n3) Reset to Win default`n4) Delete all rules`n5) Backup fireawll policy`n6) Restore FW from backup
+7) Open Splunk ports"
                 Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
                 $switch = Read-Host
                 switch ($switch) {
                     1{
                         $host.UI.RawUI.foregroundcolor = "magenta"
-                        $ip = Read-Host "Enter an IP address to allow through RDP"
+                        $ip = Read-Host "Enter an IP address to allow through TCP IN RDP port 3389"
                         netsh advfirewall firewall add rule name="remote desktop (TCP-In-3389)" protocol=TCP dir=in localport=3389 action=allow remoteip=$ip
                     }
                     2{
@@ -586,13 +601,21 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
                     6{
                         netsh advfirewall import $env:USERPROFILE\desktop\Script_Output\firewall.pol
                     }
+                    7{
+                        $host.UI.RawUI.foregroundcolor = "darkgray"
+                        ipconfig
+                        $host.UI.RawUI.foregroundcolor = "magenta"
+                        $rip = Read-Host "What is the Splunk remote IP?"
+                        $lip = Read-Host "What is your IP?"
+                        netsh advfirewall firewall add rule name="Splunk Forwarder TCP" protocol=TCP dir=out localport=9997,8089 remoteport=9997,8089 action=allow remoteip="$rip" localip="$lip"
+                        netsh advfirewall firewall add rule name="Splunk Forwarder UDP" protocol=UDP dir=out localport=9997,8089 remoteport=9997,8089 action=allow remoteip="$rip" localip="$lip"
+                    }                    
                 }
             }
         }
     }
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($firewallRules){
@@ -600,14 +623,20 @@ if($firewallRules){
 }
 # --------- firewall status ---------
 function firewallStatus{
-    Write-Host -ForegroundColor Green "`nGenerating firewall status"
-    netsh firewall show config | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_status.txt
-    netsh advfirewall firewall show rule status=enabled name=all | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_rules_enabled.txt
+    makeOutDir
+    Write-Host -ForegroundColor Green "`nExporting firewall status"
+    cmd /c echo. >> $env:userprofile\desktop\Script_Output\firewall_status.txt
+    cmd /c echo firewall_config %time% >> $env:userprofile\desktop\Script_Output\firewall_status.txt
+    netsh firewall show config | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_status.txt -Append
+    cmd /c echo. >> $env:userprofile\desktop\Script_Output\firewall_rules_enabled.txt
+    cmd /c echo firewall_rules %time% >> $env:userprofile\desktop\Script_Output\firewall_rules_enabled.txt
+    netsh advfirewall firewall show rule status=enabled name=all | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_rules_enabled.txt -Append
     Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\firewall_status.txt`" has fireawll status"
     Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\firewall_rules_enabled.txt`" has list of enabled rules"
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    Start-Sleep -s 2
+    <# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer() #>
 }
 if($firewallStatus){
     firewallStatus
@@ -752,20 +781,24 @@ function disableTeredo{
     $input = Read-Host
     switch($input){
         1{
-        Write-Host -ForegroundColor Green "`nEnabling Teredo"
-        cmd /c echo Before: > desktop\Script_Output\teredo_state.txt
-        netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
-        #$host.UI.RawUI.foregroundcolor = "darkgray"
-        #Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
-        Start-Process cmd -ArgumentList ('/k', 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state enabled{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs') -Wait
-        cmd /c echo After: >> desktop\Script_Output\teredo_state.txt
-        netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
-        $host.UI.RawUI.foregroundcolor = "darkgray"
-        Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
-        Write-Host -ForegroundColor Cyan "`Teredo enabled"
+            Write-Host -ForegroundColor Green "`nEnabling Teredo"
+            #Prefer IPv4 over IPv6
+            #reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" /v DisabledComponents /t REG_DWORD /d 20 /f
+            cmd /c echo Before: > desktop\Script_Output\teredo_state.txt
+            netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
+            #$host.UI.RawUI.foregroundcolor = "darkgray"
+            #Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+            Start-Process cmd -ArgumentList ('/k', 'echo > Desktop\Script_Output\disable_teredo.vbs set shell = CreateObject("WScript.Shell"):shell.SendKeys "netsh{ENTER}interface{ENTER}teredo{ENTER}set state client{ENTER}exit{ENTER}exit{ENTER}" & %userprofile%\desktop\Script_Output\disable_teredo.vbs') -Wait
+            cmd /c echo After: >> desktop\Script_Output\teredo_state.txt
+            netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
+            $host.UI.RawUI.foregroundcolor = "darkgray"
+            Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
+            Write-Host -ForegroundColor Cyan "`Teredo enabled"
         }
         2{
             Write-Host -ForegroundColor Green "`nDisabling Teredo"
+            #Disable IPv6
+            #reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" /v DisabledComponents /t REG_DWORD /d ff /f
             cmd /c echo Before: > desktop\Script_Output\teredo_state.txt
             netsh interface teredo show state | Out-File $env:USERPROFILE\desktop\Script_Output\teredo_state.txt -Append
             #$host.UI.RawUI.foregroundcolor = "darkgray"
@@ -778,48 +811,47 @@ function disableTeredo{
             Write-Host -ForegroundColor Cyan "`Teredo disabled"
         }
     }    
-    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\teredo_state`" has teredo status"
+    Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\teredo_state`" has teredo status"
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
-    $HOST.UI.RawUI.Flushinputbuffer()
+    Start-Sleep -s 1
+    # Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    # $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($disableTeredo){
-
     disableTeredo
 }
 # --------- disable administrative shares via registry ---------
-    function disableAdminShares{
-        Write-Host -ForegroundColor Green "`nDisabling administrative shares via registry"
-        $host.UI.RawUI.foregroundcolor = "darkgray"
-        REG query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
-        $host.UI.RawUI.foregroundcolor = "cyan"
-        REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /v AutoShareServer /t REG_DWORD /d 0 /f
-        <#
-        Write-Host "Restarting the `'Server`' service"
-        #cmd /c "net stop server && net start server"
-        #cmd /c "net start Netlogon && net start dfs"
-        Stop-Service server -Force
-        Start-Service dfs
-        Start-Service netlogon
-        Start-Service server
-        #>
-        Write-Host "Admin shares disabled. Restart required"
-        $host.UI.RawUI.foregroundcolor = "darkgray"
-        reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
-        $host.UI.RawUI.foregroundcolor = "white"
-        Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
-        $HOST.UI.RawUI.Flushinputbuffer()
-    }
+function disableAdminShares{
+    Write-Host -ForegroundColor Green "`nDisabling administrative shares via registry"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    REG query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /v AutoShareServer /t REG_DWORD /d 0 /f
+    <#
+    Write-Host "Restarting the `'Server`' service"
+    #cmd /c "net stop server && net start server"
+    #cmd /c "net start Netlogon && net start dfs"
+    Stop-Service server -Force
+    Start-Service dfs
+    Start-Service netlogon
+    Start-Service server
+    #>
+    Write-Host "Admin shares disabled. Restart required"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
+    $host.UI.RawUI.foregroundcolor = "white"
+    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer()
+}
 if($disableAdminShares){
     disableAdminShares
 }
 # --------- disable cached credentials via registry ---------
 
 function miscRegedits{
-    Write-Host -ForegroundColor Green "`nMiscilanious reg edits"
+    Write-Host -ForegroundColor Green "`nMiscilanious reg edits:`n"
     Write-Host -ForegroundColor Cyan "Disabling cached creds"
+    # diff? reg add HKLM\System\CurrentControlSet\Control\Lsa /f /v NoLMHash /t REG_DWORD /d 1
     REG ADD HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential /t REG_DWORD /d 0
     $host.UI.RawUI.foregroundcolor = "darkgray"
     reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\WDigest /f UseLogonCredential
@@ -840,10 +872,8 @@ function miscRegedits{
     reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /f DisablePasswordCaching
     Write-Host -ForegroundColor Cyan "disableing run once"
     reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
-    reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /v DisableLocalMachineRunOnce /t REG_DWORD /d 1
     reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
-    reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer /f DisableLocalMachineRunOnce
-    Write-Host -ForegroundColor Cyan "Removing RDP via registry"
+    Write-Host -ForegroundColor Cyan "Removing RDP via registry (doesn't actually work I found)"
     Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1 -Force
     reg query "HKLM\System\CurrentControlSet\Control\Terminal Server" /f fDenyTSConnections
     Write-Host -ForegroundColor Cyan "Finished with reg edits"
@@ -858,7 +888,7 @@ if($miscRegedits){
 function enableSMB2{
     $BuildVersion = [System.Environment]::OSVersion.Version
     if($BuildVersion.Revision -ge '0'){
-        Write-Host -ForegroundColor Green "`nDisabling SMB1 and enabling SMB2 via registry"
+        Write-Host -ForegroundColor Green "`nDisabling SMB1 and enabling SMB2 (registry and services)"
         $host.UI.RawUI.foregroundcolor = "cyan"
         #disable SMB1
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force 
@@ -875,7 +905,6 @@ function enableSMB2{
     }
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($enableSMB2){
@@ -884,23 +913,35 @@ if($enableSMB2){
 }
 # --------- disable RDP ---------
 function disableRDP{
-    Write-Host -ForegroundColor Green "`nDisabling RDP (place-holder)"
-    <#
-    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host -ForegroundColor Green "`nDisables or enables RDP services"
     #Write-Host "Opening System Properties dialog box. Remove all Remote Desktop Users"
-    #sysdm.cpl    
-    Write-Host "Stopping RDP Service, also UserMode Port Redirector; and disabling"
-    #net stop "remote desktop services"
-    Stop-Service "Remote Desktop Services" -Force
-    Set-Service "TermService" -StartupType Disabled
-    Set-Service "UmRdpService" -StartupType Disabled
-    #>
+    #sysdm.cpl
+    $input = Read-Host "1) disable RDP`n2) enable RDP services"
+    switch($input){
+        1{
+            Write-Host -ForegroundColor Cyan "Stopping RDP Service, also UserMode Port Redirector; and disabling"
+            #net stop "remote desktop services"
+            Stop-Service "Remote Desktop Services" -Force
+            Set-Service "TermService" -StartupType Disabled
+            Set-Service "UmRdpService" -StartupType Disabled
+        }    
+        2{
+            $host.UI.RawUI.foregroundcolor = "magenta"
+            $yes = Read-Host "Would you like to enable RDP services? (y, n)"
+            if($yes -eq 'y'){
+                Write-Host -ForegroundColor Cyan "Enabling UserMode Port Redirector ('termservice', 'umrdpservice'), and starting RDP Service"
+                #net stop "remote desktop services"        
+                Set-Service "TermService" -StartupType Automatic
+                Set-Service "UmRdpService" -StartupType Automatic
+                Start-Service "Remote Desktop Services"
+            }
+        }
+    }
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($disableRDP){
-
     disableRDP
 }
 function disablePrintSpooler{Param([switch]$revert)
@@ -939,7 +980,7 @@ function passPolicy{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
-    Write-Host "Extracting domain name"
+    Write-Host "Parsing domain name"
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
     Write-Host "Disabling PasswordNeverExpires on `'Domain Users`'" #($_.objectClass -eq "user") -and
@@ -963,7 +1004,7 @@ function passPolicy{
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($passPol){
+if($passPolicy){
     passPolicy
 }
 # --------- Main password changer ---------
@@ -1030,7 +1071,7 @@ function New-CtmADComplexPassword
     #endregion scriptkitty
     #Make sure $OU is accurate
     makeOutDir
-    Write-Host -ForegroundColor Green "`nChanging all DC user passwords"
+    Write-Host -ForegroundColor Green "`nChanging all AD user passwords"
     Write-Host -ForegroundColor Cyan "Importing AD module"
     Import-Module ActiveDirectory
     Write-Host -ForegroundColor Cyan "Creation of hashes used in pass the hash attack reg setting:"
@@ -1040,8 +1081,9 @@ function New-CtmADComplexPassword
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
     $domaina = "$domain".Trim() -replace '.\b\w+', ''
-    $domainb = "$domain".trim() -replace '^\w+\.', ''    
+    $domainb = "$domain".trim() -replace '^\w+\.', ''
     $host.UI.RawUI.foregroundcolor = "magenta"
+    $passLen = Read-Host "How long would you like all domain users passwords to be? (at least 12, enter an int)"
     Write-Host "Press any key to start changing all AD user passwords . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -1049,6 +1091,8 @@ function New-CtmADComplexPassword
     #$list was somewhere in here
     $OU = "CN=Users, DC=$domaina, DC=$domainb"
     $users = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $OU
+    # $users = Get-ADUser -Filter * -Properties sAMAccountName | ft sAMAccountName
+    # $users = Get-ADUser -Identity <samname>
     $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb" #fully qualified name
     #$binddn = "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
     $host.UI.RawUI.foregroundcolor = "darkgray"
@@ -1061,20 +1105,20 @@ function New-CtmADComplexPassword
         Write-Host "Skipping binddn"
         }elseif ($user -match 'krbtgt'){
             #$securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
-            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force
+            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword "$passLen") -AsPlainText -Force
             Write-Host -ForegroundColor Gray "Changing the password of $user"
             Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
             #$securePassword = ConvertTo-SecureString (-join ($list + (65..90) + (97..122) | Get-Random -Count 12 | ForEach-Object {[char]$_})) -AsPlainText -Force
-            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force
+            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword "$passLen") -AsPlainText -Force
             Write-Host -ForegroundColor Gray "Changing the password of $user a second time"
             Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
             $user = "$user".Trim() -replace '[CN=]{3}|[\,].*',''
             $encrypted = ConvertFrom-SecureString -SecureString $securePassword
             Out-File $env:userprofile\desktop\Script_Output\user_passwds_list.txt -Append -InputObject $user, $encrypted,""
-            Write-Host "Adding $user to the hash table"
+            Write-Host "Adding $user to the db table"
             $hashTable.Add($user,$encrypted)
         }else{            
-            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword 12) -AsPlainText -Force            
+            $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword "$passLen") -AsPlainText -Force            
             Write-Host "Changing the password of $user"
             Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
             $encrypted = ConvertFrom-SecureString -SecureString $securePassword
@@ -1086,10 +1130,9 @@ function New-CtmADComplexPassword
     }
     Write-Host -ForegroundColor Cyan "`n`"$env:USERPROFILE\desktop\Script_Output\user_passwds_list.txt`" has list of users and passwords"
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
-    Write-Host -ForegroundColor Cyan "`"%localappdata%\securePasswords.xml`" has AD users .xml hashtable"
+    Write-Host -ForegroundColor Cyan "`"%localappdata%\securePasswords.xml`" has AD users .xml db"
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($changePass){
@@ -1098,15 +1141,15 @@ if($changePass){
 # --------- set the admin password ---------
 function changePAdmin{
     makeOutDir
-    Write-Host -ForegroundColor Green "`nChanges Admin password"
+    Write-Host -ForegroundColor Green "`nChanges Admin password and name"
     Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
-    Write-Host "Extracting the domain name"
+    Write-Host -ForegroundColor Cyan "Parsing the domain name"
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
     $domaina = "$domain".Trim() -replace '.\b\w+', ''
     $domainb = "$domain".trim() -replace '^\w+\.', ''
-    Write-Host "Changing the admin password"
+    Write-Host -ForegroundColor Cyan "Changing the admin password"
     $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb"
     $host.UI.RawUI.foregroundcolor = "magenta"
     $securePassword = Read-Host "`nEnter a new admin password" -AsSecureString
@@ -1123,7 +1166,9 @@ function changePAdmin{
     $hashTable[$admin] = $encrypted
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
     #>
-    Write-Host -ForegroundColor Cyan "admin user password has been changed"
+    Write-Host -ForegroundColor Cyan "admin user password has been updated"
+    # Write-Host -ForegroundColor Cyan "Changing admin username to `'calebTree`'"
+    # Rename-LocalUser -Name Administrator -NewName calebTree
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
@@ -1139,7 +1184,7 @@ function changePBinddn{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
-    Write-Host "Extracting the domain name"
+    Write-Host "Parsing the domain name"
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
     $domaina = "$domain".Trim() -replace '.\b\w+', ''
@@ -1163,7 +1208,7 @@ function changePBinddn{
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
     #>
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "binddn user password has been changed"
+    Write-Host "binddn user password has been updated"
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
@@ -1323,6 +1368,8 @@ function plainPass{
             Write-Host "The $username password is: $UnsecurePassword`n"
         }
         4{
+            Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
+            Import-Module ActiveDirectory
             #region PasteBin ScriptKitty
             function Invoke-Request
             {
@@ -1404,7 +1451,7 @@ function plainPass{
                     Write-Host -ForegroundColor DarkGray "Skipping IWAM_SHAREPEG"
                 }#>
                 elseif($($key.name) -eq "krbtgt"){
-                    Write-Host -ForegroundColor DarkGray "Skipping krbtgt"                
+                    Write-Host -ForegroundColor DarkGray "Skipping krbtgt"
                 }else{
                     $PlainPassword = "$($key.Value)"
                     $SecurePassword = ConvertTo-SecureString $PlainPassword
@@ -1412,17 +1459,23 @@ function plainPass{
                     $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
                     [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
                     #$host.UI.RawUI.foregroundcolor = "darkgray"
-                    $string += "$($key.Name):$UnsecurePassword`n"
+                    #$string += "$($key.Name):$UnsecurePassword`n"
+                    $name = "$($key.Name)"
+                    $name = Get-ADuser -Filter {CN -eq $name}
+                    $string += $name.samaccountname + ":" + "$UnsecurePassword`n"
+                    #$string += "$($name):$UnsecurePassword`n"
                 }
-            }                
-            Write-Host -ForegroundColor Cyan "All CCDC_Scoring user creds saved at URL below. URL copied to clib-board"
-            $host.UI.RawUI.foregroundcolor = "yellow"
-            Create-NewPaste -DevKey 7a94b5dfa4691350117da8aaf3251b56 -PasteFormat text -PastePrivacy 1 -PasteCode $string -PasteName CCDC_Scoring_Users | clip
+            }
+            $expire = Read-Host "How long should pastebin URL be active? (valid, case sensitive: N, 10M, 1H, 1D)"
+            Write-Host -ForegroundColor Cyan "All CCDC_Scoring user plaintext creds are being saved to pastebin. The URL will be active for $expire . . ."
+            $url = Create-NewPaste -DevKey 7a94b5dfa4691350117da8aaf3251b56 -PasteFormat text -PastePrivacy 1 -PasteCode $string -PasteName CCDC_Scoring_Users -PasteExpireDate "$expire"
+            Write-Host -ForegroundColor Cyan "CCDC_Scoring user creds pastebin URL below has been copied to clib-board"
+            Write-Host -ForegroundColor Yellow $url
+            $url | clip
         }
     }    
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($plainPass){
@@ -1432,40 +1485,45 @@ if($plainPass){
 
 #region User Edits
 # --------- Set admin sensitive, password required all, remove members from Schema Admins ---------
-function uniqueUserPols{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nEnabling admin sensitive, password required for all, and removing all members from Schema Admins"
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "Importing ActiveDirectory module"
+function userPols{
+    Write-Host -ForegroundColor Green "`nEnabling special user policies"
+    Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
-    Write-Host "`nUsers that don't require a password:"
+    Write-Host -ForegroundColor Cyan "Users that don't require a password:"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    Get-ADUser -Filter {PasswordNotRequired -eq $true}
-    Set-ADUser -Identity "CN=Administrator,CN=Users,DC=team,DC=local" -AccountNotDelegated $true
+    Get-ADUser -Filter {PasswordNotRequired -eq $true}    
     Get-ADUser -Filter {PasswordNotRequired -eq $true} | Set-ADUser -PasswordNotRequired $false
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "All users now require a password even Guest :-)"
-    Write-Host "Removing all members from 'Schema Admins' AD group"
+    Write-Host -ForegroundColor Cyan "All above users now require a password even Guest account :-)"
+    Write-Host -ForegroundColor Cyan "Enabling admin sensitive (not delegated)"
+    Write-Host -ForegroundColor Cyan "Compiling the domain"
+    $domain = wmic computersystem get domain | Select-Object -skip 1
+    $domain = "$domain".Trim()
+    $domaina = "$domain".Trim() -replace '.\b\w+', '' #prefix
+    $domainb = "$domain".trim() -replace '^\w+\.', '' #suffix
+    Set-ADUser -Identity "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb" -AccountNotDelegated $true
+    Write-Host -ForegroundColor Cyan "Removing all members from 'Schema Admins' AD group"
     #Remove-ADGroupMember -Identity Schema Admins -Members Administrator -Confirm:$False
+    $Group = "Schema Admins"
+    Write-Host -ForegroundColor Cyan "Exporting default schema admins members to 'schem_admins_members.txt'"
+    Get-ADGroupMember -Identity $Group | Out-File $env:userprofile\desktop\Script_Output\schema_admins_members.txt
     try {
-        $Groups = "Schema Admins"
-        foreach ($Group in $Groups){Get-ADGroupMember -Identity $Group | Remove-ADPrincipalGroupMembership -MemberOf $Group -Confirm:$false}
-        }
-        catch [System.SystemException] {
-            Write-Warning "Schema Admins group is already empty"
-            Write-Error $_
-            $host.UI.RawUI.foregroundcolor = "white"
-            Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-            $HOST.UI.RawUI.Flushinputbuffer()
-            return
-        }
-        Write-Host "All members removed from Schema Admins group"
+        foreach ($member in $Groups){Get-ADGroupMember -Identity $member | Remove-ADPrincipalGroupMembership -MemberOf $member -Confirm:$false}
+    }
+    catch [System.SystemException] {
+        Write-Warning "Schema Admins group is already empty"
+        Write-Error $_
         $host.UI.RawUI.foregroundcolor = "white"
+        Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+        $HOST.UI.RawUI.Flushinputbuffer()
+        return
+    }
+    Write-Host "All members removed from Schema Admins group"
+    $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($uniqueUserPols){
-    uniqueUserPols
+if($userPols){
+    userPols
 }
 # --------- disable guest account ---------
 function disableGuest{
@@ -1475,10 +1533,10 @@ function disableGuest{
     #Import-Module ActiveDirectory
     #Disable-ADAccount -Identity Guest
     net user guest /active:no
-    Write-Host "Guest account disabled"
+    #Write-Host "Guest account disabled"
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    # Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    # $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($disableGuest){
     disableGuest
@@ -1488,12 +1546,9 @@ if($disableGuest){
 #region File System
 # --------- Isass.exe ---------
 function removeIsass{
-    Write-Host -ForegroundColor Green "Detects and removes Isass.exe (not to be confused with Lsass.exe)"
+    Write-Host -ForegroundColor Green "Detect and removes Isass.exe (not to be confused with Lsass.exe)"
     #REG query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\ /f AutoShareServer
-    cmd /c "echo Isass in Registry:" > desktop\Script_Output\isass_exe.txt
-    reg query HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /f Isass | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    type $env:USERPROFILE\desktop\Script_Output\isass_exe.txt
+    #Test-Path does not work correctly with all PowerShell providers. For example, you can use Test-Path to test the path of a registry key, but if you use it to test the path of a registry entry, it always returns $False, even if the registry entry is present.
     #region TestReg
     function Test-RegistryValue {
         param (
@@ -1510,23 +1565,37 @@ function removeIsass{
         catch {return $false}
     }
     #endregion TestReg
-    if (Test-RegistryValue -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Value Isass){
-        Write-Host -ForegroundColor Cyan "Backing up `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`""
-        reg export HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run $env:USERPROFILE\desktop\Script_Output\isass_reg_bak.reg
-        Write-Host -ForegroundColor Cyan "Deleting `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v Isass`""
-        reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v Isass /f
-        cmd /c "echo Isass.exe in `"%SystemRoot%\System32`":" >> desktop\Script_Output\isass_exe.txt
-        try{dir $env:systemroot\System32\Isass.exe | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append}
-        catch{Write-Host -ForegroundColor Cyan "Isass.exe is not in `"%SystemRoot%\System32\`""}
-        Write-Host -ForegroundColor Cyan "Deleting Isass.exe from `"%SystemRoot%\System32\`""
-        cmd /c del /f %Systemroot%\system32\Isass.exe        
-        cmd /c "echo Isass.exe in `"%SystemRoot%\System32`" after:" >> desktop\Script_Output\isass_exe.txt
-        cmd /c del /f %Systemroot%\system32\Isass.exe | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append
-    }else{Write-Host -ForegroundColor Cyan "Isass.exe is not in `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`""}
-    type $env:USERPROFILE\desktop\Script_Output\isass_exe.txt
+    $choice = Read-Host "1) enumerate isass.exe`n2) remove isass.exe"
+    switch($choice){
+        1{
+            cmd /c "echo Isass in Registry:" > %userprofile%\desktop\Script_Output\isass_exe.txt
+            cmd /c echo %time% >> $env:userprofile\desktop\Script_Output\isass_exe.txt
+            reg query HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /f Isass | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append
+            $host.UI.RawUI.foregroundcolor = "darkgray"
+            type $env:USERPROFILE\desktop\Script_Output\isass_exe.txt
+        }2{
+            if(Test-RegistryValue -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run -Value lsass){
+                Write-Host -ForegroundColor Cyan "Backing up `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`""
+                reg export HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run $env:USERPROFILE\desktop\Script_Output\isass_reg_bak.reg
+                Write-Host -ForegroundColor Cyan "Deleting `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v Isass`""
+                reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v lsass /f
+                cmd /c "echo Isass.exe in `"%SystemRoot%\System32`":" >> desktop\Script_Output\isass_exe.txt
+                try{dir $env:systemroot\System32\Isass.exe | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append}
+                catch{Write-Host -ForegroundColor Cyan "Isass.exe is not in `"%SystemRoot%\System32\`""}
+                Write-Host -ForegroundColor Cyan "Deleting Isass.exe from `"%SystemRoot%\System32\`""
+                cmd /c del /f %Systemroot%\system32\Isass.exe        
+                cmd /c "echo Isass.exe in `"%SystemRoot%\System32`" after:" >> desktop\Script_Output\isass_exe.txt
+                cmd /c del /f %Systemroot%\system32\Isass.exe | Out-File $env:USERPROFILE\desktop\Script_Output\isass_exe.txt -Append
+            }
+            else{Write-Host -ForegroundColor Cyan "Isass.exe is not in `"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`""}
+        }
+    }    
+    if(Test-Path $env:USERPROFILE\desktop\Script_Output\isass_exe.txt){
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        type $env:USERPROFILE\desktop\Script_Output\isass_exe.txt
+    }
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($removeIsass){
@@ -1553,8 +1622,9 @@ function cve_0674{
         }
     }
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    Start-Sleep -s 1
+    # Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    # $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($cve_0674){
     cve_0674
@@ -1576,7 +1646,8 @@ function scriptToTxt{
         cmd /c assoc .vbs=VBSFile
         cmd /c assoc .wsf=WSFFile
         cmd /c assoc .wsh=WSHFile
-        cmd /c assoc .py=Python.File
+        # cmd /c assoc .py=Python.File
+        # cmd /c assoc .ps1=Microsoft.PowerShellScript.1
         }
         1{
             Write-Host -ForegroundColor Green "`nAssociating script extensions to open with notepad (-r to revert)"
@@ -1588,12 +1659,17 @@ function scriptToTxt{
             cmd /c assoc .vbs=txtfile
             cmd /c assoc .wsf=txtfile
             cmd /c assoc .wsh=txtfile
-            cmd /c assoc .py=txtfile
+            # cmd /c assoc .py=txtfile
+            # cmd /c assoc .ps1=txtfile
+        }
+        3{
+            Write-Host "Repair PowerShell | assoc .ps1=Microsoft.PowerShellScript.1"
         }
     }
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    Start-Sleep -s 1
+    # Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    # $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($scriptToTxt){
     scriptToTxt
@@ -1617,20 +1693,147 @@ if($makeADBackup){
 #endregion File System
 
 #region Enumeration
+# --------- MS17-010 ---------
+function eternalBlue{
+    [reflection.assembly]::LoadWithPartialName("System.Version")
+    $os = Get-WmiObject -class Win32_OperatingSystem
+    $osName = $os.Caption
+    $s = "%systemroot%\system32\drivers\srv.sys"
+    $v = [System.Environment]::ExpandEnvironmentVariables($s)
+    If (Test-Path "$v")
+        {
+        Try
+            {
+            $versionInfo = (Get-Item $v).VersionInfo
+            $versionString = "$($versionInfo.FileMajorPart).$($versionInfo.FileMinorPart).$($versionInfo.FileBuildPart).$($versionInfo.FilePrivatePart)"
+            $fileVersion = New-Object System.Version($versionString)
+            }
+        Catch
+            {
+            Write-Host "Unable to retrieve file version info, please verify vulnerability state manually." -ForegroundColor Yellow
+            Return
+            }
+        }
+    Else
+        {
+        Write-Host "Srv.sys does not exist, please verify vulnerability state manually." -ForegroundColor Yellow
+        Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+        $HOST.UI.RawUI.Flushinputbuffer()
+        Return
+        }
+    if ($osName.Contains("Vista") -or ($osName.Contains("2008") -and -not $osName.Contains("R2")))
+        {
+        if ($versionString.Split('.')[3][0] -eq "1")
+            {
+            $currentOS = "$osName GDR"
+            $expectedVersion = New-Object System.Version("6.0.6002.19743")
+            } 
+        elseif ($versionString.Split('.')[3][0] -eq "2")
+            {
+            $currentOS = "$osName LDR"
+            $expectedVersion = New-Object System.Version("6.0.6002.24067")
+            }
+        else
+            {
+            $currentOS = "$osName"
+            $expectedVersion = New-Object System.Version("9.9.9999.99999")
+            }
+        }
+    elseif ($osName.Contains("Windows 7") -or ($osName.Contains("2008 R2")))
+        {
+        $currentOS = "$osName LDR"
+        $expectedVersion = New-Object System.Version("6.1.7601.23689")
+        }
+    elseif ($osName.Contains("Windows 8.1") -or $osName.Contains("2012 R2"))
+        {
+        $currentOS = "$osName LDR"
+        $expectedVersion = New-Object System.Version("6.3.9600.18604")
+        }
+    elseif ($osName.Contains("Windows 8") -or $osName.Contains("2012"))
+        {
+        $currentOS = "$osName LDR"
+        $expectedVersion = New-Object System.Version("6.2.9200.22099")
+        }
+    elseif ($osName.Contains("Windows 10"))
+        {
+        if ($os.BuildNumber -eq "10240")
+            {
+            $currentOS = "$osName TH1"
+            $expectedVersion = New-Object System.Version("10.0.10240.17319")
+            }
+        elseif ($os.BuildNumber -eq "10586")
+            {
+            $currentOS = "$osName TH2"
+            $expectedVersion = New-Object System.Version("10.0.10586.839")
+            }
+        elseif ($os.BuildNumber -eq "14393")
+            {
+            $currentOS = "$($osName) RS1"
+            $expectedVersion = New-Object System.Version("10.0.14393.953")
+            }
+        elseif ($os.BuildNumber -eq "15063")
+            {
+            $currentOS = "$osName RS2"
+            "No need to Patch. RS2 is released as patched. "
+            return
+            }
+        }
+    elseif ($osName.Contains("2016"))
+        {
+        $currentOS = "$osName"
+        $expectedVersion = New-Object System.Version("10.0.14393.953")
+        }
+    elseif ($osName.Contains("Windows XP"))
+        {
+        $currentOS = "$osName"
+        $expectedVersion = New-Object System.Version("5.1.2600.7208")
+        }
+    elseif ($osName.Contains("Server 2003"))
+        {
+        $currentOS = "$osName"
+        $expectedVersion = New-Object System.Version("5.2.3790.6021")
+        }
+    else
+        {
+        Write-Host "Unable to determine OS applicability, please verify vulnerability state manually." -ForegroundColor Yellow
+        $currentOS = "$osName"
+        $expectedVersion = New-Object System.Version("9.9.9999.99999")
+        }
+    Write-Host "`n`nCurrent OS: $currentOS (Build Number $($os.BuildNumber))" -ForegroundColor Cyan
+    Write-Host "`nExpected Version of srv.sys: $($expectedVersion.ToString())" -ForegroundColor Cyan
+    Write-Host "`nActual Version of srv.sys: $($fileVersion.ToString())" -ForegroundColor Cyan
+    If ($($fileVersion.CompareTo($expectedVersion)) -lt 0)
+        {
+        Write-Host "`n`n"
+        Write-Host "System is NOT Patched" -ForegroundColor Red
+        }
+    Else
+        {
+        Write-Host "`n`n"
+        Write-Host "System is Patched" -ForegroundColor Green
+        }
+    #
+    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer()
+}
+if($eternalBlue){
+    eternalBlue
+}
 # --------- active processes ---------
 function processes{
     #at.exe
-    Write-Host -ForegroundColor "Enumerating processes"
+    Write-Host -ForegroundColor Green "Enumerating processes"
+    cmd /c echo. >> $env:userprofile\desktop\Script_Output\tasklist.txt
     cmd /c echo tasklist %time% >> $env:userprofile\desktop\Script_Output\tasklist.txt
     #Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append
     tasklist | Out-File $env:userprofile\desktop\Script_Output\tasklist.txt -Append #session
-    cmd /c echo tasklist %time% schtasks >> $env:userprofile\desktop\Script_Output\schtasks.txt
+    cmd /c echo. >> $env:userprofile\desktop\Script_Output\schtasks.txt
+    cmd /c echo schtasks %time% >> $env:userprofile\desktop\Script_Output\schtasks.txt
     #Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
     schtasks | Out-File $env:userprofile\desktop\Script_Output\schtasks.txt -Append
     $host.UI.RawUI.foregroundcolor = "darkgray"
     Get-Content $env:userprofile\desktop\Script_Output\tasklist.txt
     Get-Content $env:userprofile\desktop\Script_Output\schtasks.txt
-
 }
 if($processes){
     processes
@@ -1666,15 +1869,15 @@ function startups {
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "cyan"
     #wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt    
-    if(Test-Path -Path "C:\tools"){
+    if(Test-Path -Path "C:\tools\sysinternals"){
         Write-Host -ForegroundColor Green "Startup programs etc. enumeration"
-        Write-Host -ForegroundColor Cyan "1) `'autorunsc`' with vt`n2) normal `'autorunsc`'"
+        Write-Host -ForegroundColor Cyan "1) full `'autorunsc`' with vt`n2) defualt `'autorunsc`'`n3) choose autorunsc w/ vt"
         Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
         $input = Read-Host
         switch($input){
             1{
             Write-Host -ForegroundColor Green "`nCreating CSV list of startup tasks `'autorunsc`' and checking with VirusTotal"
-            autorunsc -accepteula -a * -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\auto_run.csv
+            autorunsc -accepteula -a bcdeghiklmnrstw -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\auto_run.csv
             $host.UI.RawUI.foregroundcolor = "darkgray"
             type $env:userprofile\desktop\Script_Output\auto_run.csv
             Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\auto_run.csv`" has suspicious startup programs"
@@ -1686,25 +1889,48 @@ function startups {
                 type $env:userprofile\desktop\Script_Output\startup_programs.txt
                 Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
                 #autorunsc -accepteula -a ciel -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\autos.csv
+            }3{
+                Write-Host -ForegroundColor Gray "`n*    All.
+                b    Boot execute.
+                c    Codecs.
+                d    Appinit DLLs.
+                e    Explorer addons.
+                g    Sidebar gadgets (Vista and higher)
+                h    Image hijacks.
+                i    Internet Explorer addons.
+                k    Known DLLs.
+                l    Logon startups (this is the default).
+                m    WMI entries.
+                n    Winsock protocol and network providers.
+                o    Office addins.
+                p    Printer monitor DLLs.
+                r    LSA security providers.
+                s    Autostart services and non-disabled drivers.
+                t    Scheduled tasks.
+                w    Winlogon entries."
+                $choice = Read-Host "Enter a char or combination of letters with no spaces"
+                autorunsc -accepteula -a "$choice" -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\auto_run.csv
             }
         }
     }else{
-        Write-Host -ForegroundColor Green "`nCreating list of startup tasks using `'wmic`'"
+        Write-Host -ForegroundColor Green "`nCreating list of startup tasks using `'wmic`' and hardcoded regedit"
+        cmd /c echo. >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
+        cmd /c echo WMIC: %time% >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
         wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+        cmd /c echo. >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
+        cmd /c echo reg query: %time% >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
+        reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+        reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+        reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+        reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
         $host.UI.RawUI.foregroundcolor = "darkgray"
         type $env:userprofile\desktop\Script_Output\startup_programs.txt
         Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
     }
-    <#
-    reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-    reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-    reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-    reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-    #>
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
-    $HOST.UI.RawUI.Flushinputbuffer()
+    Start-Sleep -s 3
+    <# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer() #>
 }
 if($startups){
     startups
@@ -1712,8 +1938,7 @@ if($startups){
 # --------- format netstat -abno --------- 
 function formatNetstat{
     makeOutDir
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nRunning netstat -abno and formatting"
+    Write-Host -ForegroundColor Green "`nExporting netstat -abno LISTENING and ESTABLISHED"
     $host.UI.RawUI.foregroundcolor = "cyan"
     $netstat = (netstat -abno | Select-Object -skip 2) -join "`n" -split "(?= [TU][CD]P\s+(?:\d+\.|\[\w*:\w*:))" |
     ForEach-Object {$_.trim() -replace "`n",' ' -replace '\s{2,}',',' -replace '\*:\*', '*:*,' -replace 'PID', 'PID,Ownership_Info'} | ConvertFrom-Csv
@@ -1731,9 +1956,9 @@ function formatNetstat{
     $netstat_lsn | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt
     Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt`" has LISTENING netstat"
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
-    $HOST.UI.RawUI.Flushinputbuffer()
+    Start-Sleep -s 2
+    <# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer() #>
 }
 if($formatNetstat){
     formatNetstat
@@ -1742,14 +1967,15 @@ if($formatNetstat){
 function runningServices{
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nCreating list of running services"
+    Write-Host "`nExporting list of running services"
     $host.UI.RawUI.foregroundcolor = "cyan"
     Get-Service | Where-Object {$_.Status -eq "Running"} | Out-File $env:USERPROFILE\desktop\Script_Output\running_services.txt
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "`"$env:USERPROFILE\desktop\Script_Output\running_services.txt`" has list of running services"
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
+    Start-Sleep -s 2
+    <# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer() #>
 }
 if($runningServices){
     runningServices
@@ -1757,8 +1983,7 @@ if($runningServices){
 # --------- enumerate HotFix updates ---------
 function hotFixCheck{
     makeOutDir
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nComparing systeminfo HotFix list against HotFix master-list"
+    Write-Host -ForegroundColor Green "`nComparing systeminfo HotFix `'wmic qfe`' with HotFix master-list"
     #manual page
     #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
     #compile systeminfo
@@ -1774,30 +1999,34 @@ function hotFixCheck{
                     Write-Host "The system is 2008 64-bit R2 and SP1 is installed."
                     $auto_download_KBs = @{
                         #KB975517 = "https://bit.ly/2rArzrt" # 6.0 x86
-                        KB2393802 = "http://bit.ly/2kodsxw" # after SP1
-                        KB3006226 = "http://bit.ly/2jLUmzu" # after SP1
-                        KB3000869 = "http://bit.ly/2kxFGZk" # after SP1
-                        KB3000061 = "http://bit.ly/2k4FRHV" # after SP1
-                        KB2984972 = "http://bit.ly/2l6dBFP" # after SP1
-                        KB3126593 = "http://bit.ly/2jN0x6n" # after SP1
-                        KB2982378 = "https://bit.ly/39o5fTa" # after SP1
-                        KB3042553 = "https://download.microsoft.com/download/9/6/0/96092B3C-20B0-4D15-9C0A-AD71EC2FEC1E/Windows6.1-KB3042553-x64.msu" # after SP1
-                        KB2562485 = "https://download.microsoft.com/download/8/F/6/8F6409C8-CA14-411D-B9EE-71D063FA6912/Windows6.1-KB2562485-x64.msu" # after SP1
-                        KB3100465 = "https://bit.ly/2F2usVm" # after SP1
-                        KB3019978 = "https://download.microsoft.com/download/A/9/2/A9261883-EDDB-4282-9028-25D3A73BFAA8/Windows6.1-KB3019978-x64.msu" # after SP1
-                        KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu" # after SP1
-                        KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu" # after SP1
+                        KB2393802 = "http://bit.ly/2kodsxw" # after SP1 - MS11-011: Vulnerabilities in Windows Kernel could allow elevation of privilege
+                        KB3006226 = "http://bit.ly/2jLUmzu" # after SP1 - MS14-064: Vulnerabilities in Windows OLE Could Allow Remote Code Execution (3011443)
+                        KB3000869 = "http://bit.ly/2kxFGZk" # after SP1 - MS14-060: Vulnerability in Windows OLE Could Allow Remote Code Execution (3000869)
+                        KB3000061 = "http://bit.ly/2k4FRHV" # after SP1 - MS14-058: Vulnerabilities in kernel-mode driver could allow remote code execution
+                        KB2984972 = "http://bit.ly/2l6dBFP" # after SP1 - Update for RDC 7.1 to support restricted administration logons on Windows 7 and Windows Server 2008 R2
+                        KB3126593 = "http://bit.ly/2jN0x6n" # after SP1 - MS16-014: Security Update for Microsoft Windows to Address Remote Code Execution (3134228)
+                        KB2982378 = "https://bit.ly/39o5fTa" # after SP1 - Update to Improve Credentials Protection and Management
+                        KB3042553 = "https://download.microsoft.com/download/9/6/0/96092B3C-20B0-4D15-9C0A-AD71EC2FEC1E/Windows6.1-KB3042553-x64.msu" # after SP1 - MS15-034: Vulnerability in HTTP.sys could allow remote code execution: April 14, 2015
+                        KB2562485 = "https://download.microsoft.com/download/8/F/6/8F6409C8-CA14-411D-B9EE-71D063FA6912/Windows6.1-KB2562485-x64.msu" # after SP1 - MS11-058: Vulnerabilities in DNS Server could allow remote code execution: August 9, 2011
+                        KB3100465 = "https://bit.ly/2F2usVm" # after SP1 - MS15-127: Security update for Microsoft Windows DNS to address remote code execution: December 8, 2015
+                        KB3019978 = "https://download.microsoft.com/download/A/9/2/A9261883-EDDB-4282-9028-25D3A73BFAA8/Windows6.1-KB3019978-x64.msu" # after SP1 - MS15-004: Description of the security update for Windows: January 13, 2015
+                        KB3060716 = "https://download.microsoft.com/download/B/5/9/B5918CCD-E699-4227-98D0-88E6F0DFAC75/Windows6.1-KB3060716-x64.msu" # after SP1 - MS15-090: Vulnerabilities in Windows could allow elevation of privilege: August 11, 2015
+                        KB3071756 = "https://download.microsoft.com/download/B/6/0/B603CE22-B0D7-48C8-83D2-3ED3FCA5365B/Windows6.1-KB3071756-x64.msu" # after SP1 - MS15-085: Description of the security update for Windows Mount Manager: August 11, 2015
                         #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 (update readyness tool)
-                        KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu" # after SP1
+                        KB3004375 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3004375-v3-x64_c4f55f4d06ce51e923bd0e269af11126c5e7196a.msu" # after SP1 - MS15-011: Vulnerability in Group Policy could allow remote code execution: February 10, 2015
                         KB3000483 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2015/01/windows6.1-kb3000483-x64_67cdef488e5dc049ecae5c2fd041092fd959b187.msu" # after SP1
                         KB3011780 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/11/windows6.1-kb3011780-x64_fdd28f07643e9f123cf935bc9be12f75ac0b4d80.msu" # after SP1
+                        #KB4012212 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/02/windows6.1-kb4012212-x64_2decefaa02e2058dcd965702509a992d8c4e92b3.msu" # 
+                        KB4012215 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2017/03/windows6.1-kb4012215-x64_a777b8c251dcd8378ecdafa81aefbe7f9009c72b.msu"
+                        KB4499175 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2019/05/windows6.1-kb4499175-x64_3704acfff45ddf163d8049683d5a3b75e49b58cb.msu" #blue keep CVE-2019-0708
                         KB2871997 = "https://download.microsoft.com/download/E/E/6/EE61BDFF-E2EA-41A9-AC03-CEBC88972337/Windows6.1-KB2871997-v2-x64.msu" # after SP1
                         KB2931356 = "https://download.microsoft.com/download/8/C/2/8C2D99DA-306D-4CC0-88C7-DCFD81820CCE/Windows6.1-KB2931356-x64.msu" # after SP1
-                        KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
-                        KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed
-                        KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed
-                        KB2992611 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/10/windows6.1-kb2992611-x64_786356207570e1f5c422795f3c15961af3cb2d0a.msu"
+                        KB2503658 = "http://bit.ly/2l15YDR" # *actually installed - MS11-026: Vulnerability in MHTML could allow information disclosure: April 12, 2011
+                        KB2489256 = "http://bit.ly/2kqhe9I" # *actually installed - MS11-004: Vulnerability in Internet Information Services (IIS) FTP service could allow remote code execution
+                        KB2769369 = "https://bit.ly/2FeeQ17" # *actually installed - MS13-001 Vulnerability in Windows Print Spooler Components Could Allow Remote Code Execution (2769369)
+                        KB2992611 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2014/10/windows6.1-kb2992611-x64_786356207570e1f5c422795f3c15961af3cb2d0a.msu" # MS14-066: Vulnerability in SChannel could allow remote code execution: November 11, 2014
                         KB3018238 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2014/11/windows6.1-kb3018238-x64_a8abfb302c814db104e6c0f987dd4b887899b54a.msu"
+                        KB958644 = "http://download.windowsupdate.com/msdownload/update/software/secu/2008/10/windows6.1-kb958644-x64_9f47934042f858669a1e2ba71e53504d09141172.msu" #conficker [?] 958644 (MS08-067)
                         #KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1 (not security or critical at all)
                         #KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
                     }
@@ -1823,7 +2052,7 @@ function hotFixCheck{
                     KB2849470 = "https://bit.ly/2MG0fQ6"
                     KB3011780 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2014/10/windows6.0-kb3011780-x64_c6135e518ffd1b053f1244a3f17d4c352c569c5b.msu"
                     KB4012598 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/02/windows6.0-kb4012598-x64_6a186ba2b2b98b2144b50f88baf33a5fa53b5d76.msu"
-                    KB958644 = "https://download.microsoft.com/download/0/f/4/0f425c69-4a1f-4654-b4f8-476a5b1bae1d/Windows6.0-KB958644-x64.msu"
+                    KB958644 = "https://download.microsoft.com/download/0/f/4/0f425c69-4a1f-4654-b4f8-476a5b1bae1d/Windows6.0-KB958644-x64.msu" #conficker
                 } 
             }
         }else{ #2012
@@ -2060,12 +2289,12 @@ if($hotFixCheck){
 # --------- SMB status ---------
 function SMBStatus{
     makeOutDir
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nReg query SMB status"
+    Write-Host -ForegroundColor Green "`nExporting reg query SMB status"
     $host.UI.RawUI.foregroundcolor = "cyan"
     #reg query HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
     Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
     Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters | ForEach-Object {Get-ItemProperty $_.pspath} | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
+    cmd /c echo lanmanworkstation %time% >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
     sc.exe qc lanmanworkstation | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
     $host.UI.RawUI.foregroundcolor = "darkgray"
     Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
@@ -2073,7 +2302,6 @@ function SMBStatus{
     Write-Host "`"$env:USERPROFILE\desktop\Script_Output\SMB_status.txt`" has SBM status"
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-$HOST.UI.RawUI.Flushinputbuffer() 
     $HOST.UI.RawUI.Flushinputbuffer()
     }
 if($SMBStatus){
@@ -2170,11 +2398,11 @@ function readOutput{
     }else{
         Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
     }
-
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer()
-    }
+    Start-Sleep -s 3
+    # Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    # $HOST.UI.RawUI.Flushinputbuffer()
+}
 if($readOutput){
     readOutput
 }
@@ -2184,35 +2412,74 @@ function enumerate{
     Write-Host -ForegroundColor Green "Running enumeration functions"
     processes
     startups
-    #icass
+    removeIsass #-enum
     firewallStatus
     formatNetstat    
     runningServices
-    hotFixCheck
     SMBStatus
+    #hotFixCheck
+    Write-Host -ForegroundColor Green "`nExporting installed HotFixes info `'wmic qfe`'"
+    Get-Date -UFormat "%A %m/%d/%Y %R %Z" | Out-File $env:USERPROFILE\desktop\Script_Output\hotfix_info.txt -Append
+    wmic qfe | Out-File $env:USERPROFILE\desktop\Script_Output\hotfix_info.txt -Append
+    Write-Host -ForegroundColor Cyan "Exporting systeminfo"
+    systeminfo | Out-File $env:USERPROFILE\desktop\Script_Output\system_info.txt
 }
 if($enumerate){
     enumerate
 }
 #endregion Enumeration
 
+#region Windows Events
+function events{
+    Write-Host -ForegroundColor Green "Windows Events"
+    Write-Host -ForegroundColor Cyan "1) Account Logon - Audit Credential Vailidation last 14 days`n2) Sec events`n3) List audit policy info by category`n4) [?] 5) Enter log `"Name`" then event `"ID`""
+    $choice = Read-Host "Choose one"
+    switch($choice){        
+        1{Get-EventLog Security 4768, 4771, 4772, 4769, 4770, 4649, 4778, 4779, 4800, 4801, 4802, 4803, 5378, 5632, 5633 -after ((get-date).addDays(-14))}
+        2{
+            $num = read-host "How many sec events?"
+            Get-EventLog -Newest "$num" -LogName Security | Format-List
+        }
+        3{
+            Write-Host -ForegroundColor Cyan "auditpol /get /category:*"; auditpol /get /category:*
+        }
+        4{
+        }
+        5{
+            $log = Read-Host "Enter a log name (valid: Application | Security | Setup | System)"
+            $id = Read-Host "Enter a log ID or multiple separated by a ',' (valid: <see attached>)"
+            Get-WinEvent -FilterHashtable @{LogName="$log"; ID="$id"}
+        }
+    }
+Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+$HOST.UI.RawUI.Flushinputbuffer()
+}
+if($events){
+    events
+}
+#endregion Windows Events
+
 # --------- run all hardening functions ---------
 function harden{
-    Write-Host -ForegroundColor Green "Hardening . . ."
+    # Write-Host -ForegroundColor Green "Hardening . . ."
+    # ncpa.cpl
+    # Write-Host -ForegroundColor Magenta "Fix IPV6 (maybe just disable) then press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    # $HOST.UI.RawUI.Flushinputbuffer()
     enumerate #formatNetstat, firewallStatus, runningServices, startups, hotFixCheck, SMBStatus
-    firewallOn
     firewallRules -reset
-    removeIsass
+    firewallOn
+    getTools
+    #removeIsass # deletes value from registry startup, and %systemroot%\...\isass.exe, may need to kill the process
     cve_0674
-    scriptToTxt
     disableTeredo
+    scriptToTxt    
     enableSMB2
     disableRDP
     disablePrintSpooler
     disableAdminShares
     Write-Host -ForegroundColor Cyan "Here is netCease"; netCease #script kitty-ing netCease (-r to revert changes)
     miscRegedits
-    uniqueUserPols
+    userPols
     disableGuest
     changePAdmin
     changePBinddn
@@ -2229,10 +2496,9 @@ function harden{
     $HOST.UI.RawUI.Flushinputbuffer()
     #>
     GPTool
+    #hotFixCheck
     timeStamp
-    downloadTools
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nAll hardening functions are finished. Restart computer?`n"
+    Write-Host -ForegroundColor Green "`nAll hardening functions are finished. Restart computer?`n"
     $host.UI.RawUI.foregroundcolor = "white"
     restart-computer -Confirm
 }
@@ -2241,17 +2507,13 @@ if($harden){
 }
 # --------- provide list of available functions ---------
 function avail{
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nAvailable Functions:"
-    $host.UI.RawUI.foregroundcolor = "darkgreen"
-    Write-Host "
+    Write-Host -ForegroundColor Green "`nAvailable Functions:"
+    Write-Host -ForegroundColor DarkGreen "
     ------- Invasive: -------
     harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
-    disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, uniqueUserPols, enumerate)
+    disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)
     scriptToTxt (script file type open with notepad) | -Revert, -r
-    makeADBackup
     removeIsass
-    changeDCMode (changes Domain Mode to Windows2008R2Domain)
     netCease (disable Net Session Enumeration) | -Revert, -r
     cve_0674 (disables jscript.dll) | -Revert, -r
     disableGuest (disables Guest account)
@@ -2263,31 +2525,40 @@ function avail{
     firewallOn (turns on firewall)
     firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
     enableSMB2 (disables SMB1 and enable SMB2 via registry)
-    configNTP (ipconfig + set NTP server)
     changePass (Kyle's AD user password script enhanced)
     changePAdmin (input admin password)
     changePBinddn (input admin password)
     passPolicy (enable passwd complexity and length 12)
-    uniqueUserPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
+    userPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
     "
-    $host.UI.RawUI.foregroundcolor = "darkcyan"
-    Write-Host "
+    Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "
+    ------- Extra: -------
+    configNTP (ipconfig + set NTP server)    
+    changeDCMode (changes Domain Mode to Windows2008R2Domain)
+    makeADBackup
+    "
+    Write-Host -ForegroundColor DarkCyan "
     ------- Noninvasive: -------
+    events
+    eternalBlue (detects if Eternal Blue has been patched)
     makeOutDir (makes script output directory on desktop)
     timeStamp (timestamp Script_Output)
-    enumerate (startups, formatNetstat, firewallStatus, runningServices, hotFixCheck)
-    loopPing (ping all IP addresses in a class C network)
-    ports (displays common ports file)
-    downloadTools (download relevant tools)
+    enumerate (startups, formatNetstat, firewallStatus, runningServices, hotFixCheck)   
+    getTools (download and install relevant tools)
     hotFixCheck (checks list of HotFix KBs against systeminfo)
     pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
     startups
-    GPTool (opens GP info tool)
-    dateChanged
+    GPTool (opens GP info tool)    
     firewallStatus
     SMBStatus (returns SMB registry info)
-    netstatRegex (format/regex netstat -abno, listening, and established > netstat_lsn.txt, netstat_est.txt)
+    formatNetstat (format/regex netstat -abno, listening, and established > netstat_lsn.txt, netstat_est.txt)
     runningServices
+    "
+    Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "
+    ------- Extra: -------
+    loopPing (ping all IP addresses in a class C network)
+    ports (displays common ports file)
+    dateChanged
     morePIDInfo (enter a PID for more info)
     serviceInfo (enter a service name for more info)
     NTPStripchart
@@ -2295,8 +2566,7 @@ function avail{
     readOutput (provide function output to console)
     avail (display this screen)
     "
-    $host.UI.RawUI.foregroundcolor = "darkred"
-    Write-Host "
+    Write-Host -ForegroundColor DarkRed "
     ------- Injects: -------
     firewallStatus
     configNTP
