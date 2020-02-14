@@ -14,7 +14,7 @@ AD users
 malware stuff  
 
 # Function Descriptions
-------- Invasive: -------
+------- Invasive: -------  
     harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,  
     disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)  
     scriptToTxt (script file type open with notepad) | -Revert, -r  
