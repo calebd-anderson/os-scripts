@@ -66,3 +66,9 @@ malware stuff
     firewallStatus  
     configNTP  
     firewallRules (opt. 1) - Open RDP for an IP address  
+---------------------------------------------------------------------------------------------------------------------------------      
+ Other credit:    
+ https://github.com/PaulSec/awesome-windows-domain-hardening    
+ https://www.codeproject.com/articles/2318/data-encryption-with-dpapi    
+ https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87    
+ https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51
