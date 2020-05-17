@@ -1008,6 +1008,7 @@ if($passPolicy){
     passPolicy
 }
 # --------- Main password changer ---------
+# password complexity code credit to: https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51
 #disable reverse encryption policy then change all DC user passwords except admin and binddn
 function changePass{
     #region scriptkitty
