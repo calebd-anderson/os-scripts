@@ -5,7 +5,7 @@ hardening_exe.ps1 is useable after compiled with PS2EXE
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
 Using the compiled executable a feature is called by adding the name of the function as a switch to the exe.
 
-Script Goals/To-Do:  
+### Script Goals/To-Do:  
 Disable unecessary services  
 KB research and implementation  
 AD users  
@@ -65,10 +65,10 @@ avail (display this screen)
 ------- Injects: -------  
 firewallStatus  
 configNTP  
-firewallRules (opt. 1) - Open RDP for an IP address  
----------------------------------------------------------------------------------------------------------------------------------      
- Other credit:    
- https://github.com/PaulSec/awesome-windows-domain-hardening    
- https://www.codeproject.com/articles/2318/data-encryption-with-dpapi    
- https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87    
- https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51
+firewallRules (opt. 1) - Open RDP for an IP address
+  
+### Other credit:  
+https://github.com/PaulSec/awesome-windows-domain-hardening    
+https://www.codeproject.com/articles/2318/data-encryption-with-dpapi    
+https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87    
+https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51
