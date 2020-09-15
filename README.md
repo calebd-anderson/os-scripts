@@ -1,7 +1,7 @@
 # Windows Server Hardening
 ### This script served as study of Windows Server security hardening.  
 
-hardening_exe.ps1 is useable after compiled with PS2EXE  
+hardening_exe.ps1 is useable after compiled with PS2EXE found below  
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
 Using the compiled executable a feature is called by adding the name of the function as a switch to the exe.
 
