@@ -1,5 +1,5 @@
 # Windows Server Hardening
-This script is a collection of many Windows Server hardening functions.  
+This script served as study of Windows Server security hardening.  
 
 hardening_exe.ps1 is useable after compiled with PS2EXE  
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
@@ -28,7 +28,7 @@ disableTeredo  (disables teredo)
 firewallOn (turns on firewall)  
 firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)  
 enableSMB2 (disables SMB1 and enable SMB2 via registry)  
-changePass (Kyle's AD user password script enhanced)  
+changePass (<> AD user password script enhanced)  
 changePAdmin (input admin password)  
 changePBinddn (input admin password)  
 passPolicy (enable passwd complexity and length 12)  
