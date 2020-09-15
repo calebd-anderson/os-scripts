@@ -4,7 +4,7 @@
 There are two versions. A PowerShell script meant to be run right in PowerShell.  
 - hardening.ps1  
 
-As well as a script that was designed to be compiled into a binary executable.  
+As well as a script that was designed to be compiled into a binary executable. Which allows PowerShell to be disabled completely.  
 - hardening_exe.ps1  
 
 Compile using PS2EXE found at this URL    
