@@ -1,14 +1,15 @@
 # Windows Server Hardening
 ### This script served as study of Windows Server security hardening.  
 
-There are two versions:  
-- hardening.ps1
+There are two versions. A PowerShell script meant to be run right in PowerShell.  
+- hardening.ps1  
+
+As well as a script that was designed to be compiled into a binary executable.  
 - hardening_exe.ps1  
 
-A PowerShell script meant to be run directly from PowerShell and a script that was designed to be compiled into a binary executable.  
-hardening_exe.ps1 is meant to be compiled with PS2EXE found below  
+Compile using PS2EXE found at this URL    
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
-Using the compiled executable pass the function names as arguments to the exe.
+Using the compiled executable pass function names as arguments to the exe to run them.
 
 ### Script Goals/To-Do:  
 Disable unecessary services  
