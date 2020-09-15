@@ -3,7 +3,7 @@
 
 hardening_exe.ps1 is useable after compiled with PS2EXE found below  
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
-Using the compiled executable a feature is called by adding the name of the function as a switch to the exe.
+Using the compiled executable pass the function names as arguments to the exe.
 
 ### Script Goals/To-Do:  
 Disable unecessary services  
