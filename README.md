@@ -1,5 +1,5 @@
 # Windows Server Hardening
-This script served as study of Windows Server security hardening.  
+### This script served as study of Windows Server security hardening.  
 
 hardening_exe.ps1 is useable after compiled with PS2EXE  
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
