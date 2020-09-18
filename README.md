@@ -16,6 +16,7 @@ Disable unecessary services
 KB research and implementation  
 AD users  
 malware stuff  
+group policy efficiency  
   
 ## Function Descriptions  
 ------- Invasive: ------  
