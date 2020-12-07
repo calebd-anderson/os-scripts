@@ -1,7 +1,9 @@
 # Windows Server Hardening
-### This script served as study of Windows Server security hardening.  
+### This script served as a study of Windows Server R2 security hardening.  
+Disclaimer: This script was built to be run in a VM for testing and educational purposes. It was not built to be run in a production environment.  
 
-There are two versions. A PowerShell script meant to be run right in PowerShell.  
+###### There are two versions:  
+A PowerShell script meant to be run right in PowerShell.  
 - hardening.ps1  
 
 As well as a script that was designed to be compiled into a binary executable. Which allows PowerShell to be disabled completely.  
@@ -78,4 +80,5 @@ firewallRules (opt. 1) - Open RDP for an IP address
 https://github.com/PaulSec/awesome-windows-domain-hardening    
 https://www.codeproject.com/articles/2318/data-encryption-with-dpapi    
 https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87    
-https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51
+https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51    
+https://support.microsoft.com/en-us/help/4023262/how-to-verify-that-ms17-010-is-installed

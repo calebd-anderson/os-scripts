@@ -570,8 +570,8 @@ function firewallRules{ Param([Parameter(Mandatory=$false)][Switch]$reset)
     }else{
         Write-Host -ForegroundColor Cyan "1) reset now`n2) more options"
         Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
-        $input = Read-Host
-        switch($input){
+        $user_input = Read-Host
+        switch($user_input){
             1{
             makeRules
             }
@@ -677,7 +677,7 @@ function netCease {
         $backupValue = $regKey.GetValue($backup, $null)
         $originalValue = $regKey.GetValue($name, $null)
         
-        if (($backupValue -eq $null) -and ($originalValue -ne $null))
+        if (($null -ne $backupValue) -and ($null -ne $originalValue))
         {
             Set-ItemProperty -Path $key -Name $backup -Value $originalValue
         }
@@ -695,12 +695,12 @@ function netCease {
         $backupValue = $regKey.GetValue($backup, $null)
         
         Write-Host "Reverting changes..."
-        if ($backupValue -eq $null)
+        if ($null -ne $backupValue)
         {
             #Delete the value when no backed up value is found
             Write-Host "Backup value is missing. cannot revert changes"
         }
-        elseif ($backupValue -ne $null)
+        elseif ($null -ne $backupValue)
         {
             Write-Verbose "Backup value: $backupValue"
             Set-ItemProperty -Path $key -Name $name -Value $backupValue
@@ -724,8 +724,8 @@ function netCease {
     Write-Host -ForegroundColor Green "NetCease 1.02 by Itai Grady (@ItaiGrady), Microsoft Advance Threat Analytics (ATA) Research Team, 2016"
     Write-Host -ForegroundColor Cyan "1) normal`n2) revert"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
-    $input = Read-Host
-    switch($input){
+    $user_input = Read-Host
+    switch($user_input) {
         2{
             RevertChanges -key $key -name $name
             Write-Host "In order for the reverting to take effect, please restart the Server service"
@@ -778,8 +778,8 @@ function disableTeredo{
     Write-Host -ForegroundColor Green "Disables teredo"
     Write-Host -ForegroundColor Cyan "1) enable`n2) disable"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
-    $input = Read-Host
-    switch($input){
+    $user_input = Read-Host
+    switch($user_input) {
         1{
             Write-Host -ForegroundColor Green "`nEnabling Teredo"
             #Prefer IPv4 over IPv6
@@ -916,8 +916,8 @@ function disableRDP{
     Write-Host -ForegroundColor Green "`nDisables or enables RDP services"
     #Write-Host "Opening System Properties dialog box. Remove all Remote Desktop Users"
     #sysdm.cpl
-    $input = Read-Host "1) disable RDP`n2) enable RDP services"
-    switch($input){
+    $user_input = Read-Host "1) disable RDP`n2) enable RDP services"
+    switch($user_input) {
         1{
             Write-Host -ForegroundColor Cyan "Stopping RDP Service, also UserMode Port Redirector; and disabling"
             #net stop "remote desktop services"
@@ -1221,11 +1221,15 @@ if($changePBinddn){
 
 #region User Query
 #--------- extract more info on pid ---------
-function morePIDInfo{
-    $host.UI.RawUI.foregroundcolor = "cyan"
+function morePIDInfo {
+    $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "Displays more info on PID(s)"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    tasklist.exe
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $aPID = Read-Host "`nEnter a PID to get its properties"
+    Write-Host -ForegroundColor Cyan "Enter a PID to get its properties: " -NoNewline
+    $host.UI.RawUI.foregroundcolor = "cyan"
+    $aPID = Read-Host
     Write-Host "Displaying properties of $aPID"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     Get-WMIObject Win32_Process -Filter "processid = '$aPID'" | Select-Object *
@@ -1237,7 +1241,7 @@ if($morePIDInfo){
     morePIDInfo
 }
 # --------- enter service name for more info ---------
-function serviceInfo{
+function serviceInfo {
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "Displays more info on service by name"
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -1607,8 +1611,8 @@ function cve_0674{
     Write-Host -ForegroundColor Green "`nDisables jscript.dll CVE-2020-0674 (-r to revert)"
     Write-Host -ForegroundColor Cyan "1) disable jscript.dll`n2) revert"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
-    $input = Read-Host
-    switch($input){
+    $user_input = Read-Host
+    switch($user_input){
         2{
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Reverting"
@@ -1635,8 +1639,8 @@ function scriptToTxt{
     Write-Host -ForegroundColor Green "Associates notepad with script extensions"
     Write-Host -ForegroundColor Cyan "1) associate scripts to txt`n2) reset to default"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
-    $input = Read-Host
-    switch($input){
+    $user_input = Read-Host
+    switch($user_input) {
         2{
         Write-Host -ForegroundColor Green "`nReverting script extensions association to default"
         $host.UI.RawUI.foregroundcolor = "cyan"
@@ -1695,7 +1699,7 @@ if($makeADBackup){
 
 #region Enumeration
 # --------- MS17-010 ---------
-function eternalBlue{
+function eternalBlue {
     [reflection.assembly]::LoadWithPartialName("System.Version")
     $os = Get-WmiObject -class Win32_OperatingSystem
     $osName = $os.Caption
@@ -1817,7 +1821,7 @@ function eternalBlue{
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($eternalBlue){
+if($eternalBlue) {
     eternalBlue
 }
 # --------- active processes ---------
@@ -1836,11 +1840,11 @@ function processes{
     Get-Content $env:userprofile\desktop\Script_Output\tasklist.txt
     Get-Content $env:userprofile\desktop\Script_Output\schtasks.txt
 }
-if($processes){
+if($processes) {
     processes
 }
 # --------- loop ping ---------
-function loopPing{
+function loopPing {
     Write-Host -ForegroundColor Green "`nEnumerates a class C subnet"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     ipconfig /all
@@ -1849,7 +1853,7 @@ function loopPing{
     $host.UI.RawUI.foregroundcolor = "darkgray"
     cmd /c "for /L %I in (1,1,254) do ping -w 30 -n 1 $network.%I | find `"Reply`" >> `"$env:USERPROFILE\desktop\$network`_ping_loop.txt`""
 }
-if($loopPing){
+if($loopPing) {
     loopPing
 }
 # --------- order directory by date changed ---------
@@ -1862,7 +1866,7 @@ function dateChanged {
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($dateChanged){
+if($dateChanged) {
     dateChanged
 }
 # --------- startup enumeration --------- 
@@ -1870,24 +1874,24 @@ function startups {
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "cyan"
     #wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt    
-    if(Test-Path -Path "C:\tools\sysinternals"){
+    if(Test-Path -Path "C:\tools\sysinternals") {
         Write-Host -ForegroundColor Green "Startup programs etc. enumeration"
         Write-Host -ForegroundColor Cyan "1) full `'autorunsc`' with vt`n2) defualt `'autorunsc`'`n3) choose autorunsc w/ vt"
         Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
-        $input = Read-Host
-        switch($input){
+        $user_input = Read-Host
+        switch($user_input){
             1{
             Write-Host -ForegroundColor Green "`nCreating CSV list of startup tasks `'autorunsc`' and checking with VirusTotal"
             autorunsc -accepteula -a bcdeghiklmnrstw -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\auto_run.csv
             $host.UI.RawUI.foregroundcolor = "darkgray"
-            type $env:userprofile\desktop\Script_Output\auto_run.csv
+            Get-Content $env:userprofile\desktop\Script_Output\auto_run.csv
             Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\auto_run.csv`" has suspicious startup programs"
             }
             2{
                 Write-Host -ForegroundColor Green "`nCreating list of startup tasks using `'autorunsc`'"
                 autorunsc -accepteula -m | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
                 $host.UI.RawUI.foregroundcolor = "darkgray"
-                type $env:userprofile\desktop\Script_Output\startup_programs.txt
+                Get-Content $env:userprofile\desktop\Script_Output\startup_programs.txt
                 Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
                 #autorunsc -accepteula -a ciel -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\autos.csv
             }3{
@@ -1913,59 +1917,82 @@ function startups {
                 autorunsc -accepteula -a "$choice" -c -m -s -v -vt -u -o $env:userprofile\desktop\Script_Output\auto_run.csv
             }
         }
-    }else{
-        Write-Host -ForegroundColor Green "`nCreating list of startup tasks using `'wmic`' and hardcoded regedit"
-        cmd /c echo. >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
-        cmd /c echo WMIC: %time% >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
-        wmic startup list full | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-        cmd /c echo. >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
-        cmd /c echo reg query: %time% >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
-        reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-        reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-        reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
-        reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\desktop\Script_Output\startup_programs.txt -Append
+    } else {
+        Write-Host -ForegroundColor Green "`nSysinternals not available. Creating list of startup tasks using `'wmic startup list full`' and hard-coded reg query"
+        cmd /c echo. > $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt # creates empty text file
+        cmd /c echo %time% - WMIC startup list full: >> $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt
+        cmd /c echo. >> $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt
+        cmd /c echo ------------------------ >> $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt
+        wmic startup list full | Out-File $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt -Append
+        cmd /c echo. >> $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt
+        cmd /c echo %time% - reg query: >> $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt
+        cmd /c echo. >> $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt
+        cmd /c echo ------------------------ >> $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt
+        reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt -Append
+        reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt -Append
+        reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run  | Out-File $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt -Append
+        reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce  | Out-File $env:USERPROFILE\Desktop\Script_Output\startup_programs.txt -Append
         $host.UI.RawUI.foregroundcolor = "darkgray"
-        type $env:userprofile\desktop\Script_Output\startup_programs.txt
-        Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\startup_programs.txt`" has list of startup programs"
+        Get-Content $env:userprofile\Desktop\Script_Output\startup_programs.txt
+        Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\Desktop\Script_Output\startup_programs.txt`" has list of startup programs"
     }
     $host.UI.RawUI.foregroundcolor = "white"
     Start-Sleep -s 3
     <# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer() #>
 }
-if($startups){
+if($startups) {
     startups
 }
-# --------- format netstat -abno --------- 
-function formatNetstat{
+# --------- objectify netstat -abno --------- 
+function formatNetstat {
     makeOutDir
-    Write-Host -ForegroundColor Green "`nExporting netstat -abno LISTENING and ESTABLISHED"
-    $host.UI.RawUI.foregroundcolor = "cyan"
+    Write-Host -ForegroundColor Green "`nAdvanced netstat -abno:"
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    # create fancy netstat object
     $netstat = (netstat -abno | Select-Object -skip 2) -join "`n" -split "(?= [TU][CD]P\s+(?:\d+\.|\[\w*:\w*:))" |
     ForEach-Object {$_.trim() -replace "`n",' ' -replace '\s{2,}',',' -replace '\*:\*', '*:*,' -replace 'PID', 'PID,Ownership_Info'} | ConvertFrom-Csv
-    #create ESTABLISHED and LISTENING netstat files list with only unique PIDs
-    Write-Host "Creating ESTABLISHED netstat list file"
-    $netstat_est = $netstat | Where-Object {$_.State -eq 'ESTABLISHED'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
-    ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
-    $netstat_est = ($netstat_est | Out-String).trim() -replace '(?m)^\s{30}', ''
-    $netstat_est | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_est.txt
-    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_est.txt`" has ESTABLISHED netstat"
-    Write-Host "Creating LISTENING netstat list file"
-    $netstat_lsn = $netstat | Where-Object {$_.State -eq 'LISTENING'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
-    ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path}
-    $netstat_lsn = ($netstat_lsn | Out-String).trim() -replace '(?m)^\s{30}', ''
-    $netstat_lsn | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt
-    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt`" has LISTENING netstat"
+    while($choice -ne 'q') {
+        $netstat | Format-Table -AutoSize
+        Write-Host -ForegroundColor Cyan "1) Export LISTENING, and ESTABLISHED lists.`n2) Get verbose details on PID from wmic.`nq) to quit."
+        Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        $choice = Read-Host
+        switch($choice) {
+            1 {
+                #create ESTABLISHED and LISTENING netstat lists with unique PIDs only
+                Write-Host "Exporting list of unique ESTABLISHED connections > `"Script_Output\netstat_est.txt`""
+                $netstat_est = $netstat | Where-Object {$_.State -eq 'ESTABLISHED'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
+                ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path,CommandLine | Format-List}
+                $netstat_est = ($netstat_est | Out-String).trim() -replace '(?m)^\s{30}', ''
+                $netstat_est | Out-File $env:USERPROFILE\desktop\Script_Output\netstat_est.txt
+                Write-Host "Exporting list of unique LISTENING connections > `"Script_Output\netstat_lsn.txt`""
+                $netstat_lsn = $netstat | Where-Object {$_.State -eq 'LISTENING'} | Select-Object -Expand PID | Sort-Object | Get-Unique | ForEach-Object {Set-Variable -Name c -Value $_ -PassThru} |
+                ForEach-Object {Get-WmiObject Win32_Process -Filter "ProcessID = '$c'" | Select-Object ProcessID,Name,Path,CommandLine | Format-List}
+                $netstat_lsn = ($netstat_lsn | Out-String).trim() -replace '(?m)^\s{30}', ''
+                Set-Content -Path $env:USERPROFILE\Desktop\Script_Output\netstat_lsn.txt -Value $netstat_lsn
+            }
+            2 {
+                Write-Host -ForegroundColor Magenta "Enter a PID to get its detailed properties: " -NoNewline
+                $host.UI.RawUI.foregroundcolor = "darkgray"
+                $aPID = Read-Host
+                Write-Host -ForegroundColor Cyan "Displaying verbose properties of PID [$aPID]`:"
+                $host.UI.RawUI.foregroundcolor = "darkgray"
+                Get-WMIObject Win32_Process -Filter "ProcessID = '$aPID'" | Out-Host
+            }
+        }
+    }
+
     $host.UI.RawUI.foregroundcolor = "white"
     Start-Sleep -s 2
-    <# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer() #>
+    Write-Host "Netstat enumeration finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($formatNetstat){
+if($formatNetstat) {
     formatNetstat
 }
 # --------- create list of running services file on desktop ---------
-function runningServices{
+function runningServices {
     makeOutDir
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nExporting list of running services"
@@ -1978,12 +2005,14 @@ function runningServices{
     <# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer() #>
 }
-if($runningServices){
+if($runningServices) {
     runningServices
 }
 # --------- enumerate HotFix updates ---------
-function hotFixCheck{
+function hotFixCheck {
     makeOutDir
+    # https://support.microsoft.com/en-us/help/4023262/how-to-verify-that-ms17-010-is-installed
+    # https://www.catalog.update.microsoft.com/Home.aspx
     Write-Host -ForegroundColor Green "`nComparing systeminfo HotFix `'wmic qfe`' with HotFix master-list"
     #manual page
     #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
@@ -2030,9 +2059,11 @@ function hotFixCheck{
                         KB958644 = "http://download.windowsupdate.com/msdownload/update/software/secu/2008/10/windows6.1-kb958644-x64_9f47934042f858669a1e2ba71e53504d09141172.msu" #conficker [?] 958644 (MS08-067)
                         #KB3172605 = "https://download.microsoft.com/download/C/6/1/C61C4258-305B-4A9F-AA55-57E21000FE66/Windows6.1-KB3172605-x64.msu" # didn't work in SP1 # or pre-SP1 (not security or critical at all)
                         #KB2819745 = "https://download.microsoft.com/download/3/D/6/3D61D262-8549-4769-A660-230B67E15B25/Windows6.1-KB2819745-x64-MultiPkg.msu" # PS 4.0
+                        KB4022722 = "http://download.windowsupdate.com/c/msdownload/update/software/secu/2017/06/windows6.1-kb4022722-x64_ee5b5fae02d1c48dbd94beaff4d3ee4fe3cd2ac2.msu" #eternal blue
+                        KB4022168 = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2017/06/windows6.1-kb4022168-x64_1d69279af440d9fa7faa87df1eda7c55fc31f260.msu" #eternal blue (rollup)
                     }
                 }
-                else{ #2008 R2 64-bit pre-SP1
+                else { #2008 R2 64-bit pre-SP1
                     Write-Host "The system is 2008 64-bit R2 and SP1 is not installed."
                     $auto_download_KBs = @{
                         KB2503658 = "http://bit.ly/2l15YDR" # *actually installed
@@ -2041,7 +2072,7 @@ function hotFixCheck{
                         #KB947821 = "https://download.microsoft.com/download/4/7/B/47B0AC80-4CC3-40B0-B68E-8A6148D20804/Windows6.1-KB947821-v34-x64.msu" # after SP1 & pre-SP1 also didn't work (update readiness tool)
                     }
                 }
-            }elseif (($system_info | Out-String).Contains("Service Pack 1")) { #2008 64-bit SP1
+            } elseif (($system_info | Out-String).Contains("Service Pack 1")) { #2008 64-bit SP1
                 $os = Get-WmiObject -Class Win32_OperatingSystem            
                 Write-Host "No auto KBs on file for" $os.Caption "64-bit, 6.0, SP1"
             }
@@ -2056,12 +2087,12 @@ function hotFixCheck{
                     KB958644 = "https://download.microsoft.com/download/0/f/4/0f425c69-4a1f-4654-b4f8-476a5b1bae1d/Windows6.0-KB958644-x64.msu" #conficker
                 } 
             }
-        }else{ #2012
-            if (($system_info | Out-String).Contains("R2")){
+        } else { #2012
+            if (($system_info | Out-String).Contains("R2")) {
                 if (($system_info | Out-String).Contains("Service Pack 1")){ #2012 R2 64-bit SP1
                     $os = Get-WmiObject -Class Win32_OperatingSystem            
                     Write-Host "No auto KBs on file for " $os.Caption
-                }else{ #2012 R2 64-bit pre-SP1
+                } else { #2012 R2 64-bit pre-SP1
                     Write-Host "The system is 2012 R2 64-bit and SP1 is not installed. These HotFixes can be installed:"
                     $auto_download_KBs = @{
                         KB4012217 = "http://download.windowsupdate.com/d/msdownload/update/software/secu/2017/03/windows8-rt-kb4012217-x64_96635071602f71b4fb2f1a202e99a5e21870bc93.msu" #eternal blue
@@ -2166,7 +2197,7 @@ function hotFixCheck{
     $auto_download_KBs | Export-Clixml -Path $env:userprofile\appdata\local\might_install.xml
     Write-Host "`"$env:userprofile\appdata\local\might_install.xml`" has list of HotFixes and thier URLs that did not match systeminfo HotFix list"
     #compile already downloaded
-    function files{
+    function files {
         $files = Get-ChildItem "$env:userprofile\downloads\updates"
         <# compile full filename if $files more than 1
         if($files.Count -gt 1){
@@ -2177,7 +2208,7 @@ function hotFixCheck{
         $files = $files -replace '(?m).{4}$',''
         return $files
     }
-    function install{
+    function install {
         $files = files
         #remove already installed from files
         if($files.count -gt 1){
@@ -2237,7 +2268,7 @@ function hotFixCheck{
             }
         }else{Write-Host "Everything has been installed."}
     }
-    function download{
+    function download {
         $files = files
         #remove already downloaded from db
         foreach($kb in $files){$auto_download_KBs.Remove($kb)}
@@ -2281,14 +2312,14 @@ function hotFixCheck{
     }
     download    
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    Write-Host "Download module finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($hotFixCheck){
+if($hotFixCheck) {
     hotFixCheck
 }
 # --------- SMB status ---------
-function SMBStatus{
+function SMBStatus {
     makeOutDir
     Write-Host -ForegroundColor Green "`nExporting reg query SMB status"
     $host.UI.RawUI.foregroundcolor = "cyan"
@@ -2304,30 +2335,30 @@ function SMBStatus{
     $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
-    }
-if($SMBStatus){
+}
+if($SMBStatus) {
     SMBStatus
 }
 # --------- provide script output to the console ---------
-function readOutput{
+function readOutput {
     #output netstat -abno
     $host.UI.RawUI.foregroundcolor = "green"
     Write-Host "`nReading script output to console:`n"
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "#netstat Output:"
     if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\netstat_est.txt)){
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    Write-Host "run regexNetstat"
-    }else{
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "#ESTABLISHED Connections (netstat_est.txt)"
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    Get-Content $env:USERPROFILE\desktop\Script_Output\netstat_est.txt
-    Start-Sleep -s 3
-    $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "#LISTENING Connections (netstat_lsn.txt)"
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    Get-Content $env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        Write-Host "run regexNetstat"
+    } else {
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        Write-Host "#ESTABLISHED Connections (netstat_est.txt)"
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        Get-Content $env:USERPROFILE\desktop\Script_Output\netstat_est.txt
+        Start-Sleep -s 3
+        $host.UI.RawUI.foregroundcolor = "cyan"
+        Write-Host "#LISTENING Connections (netstat_lsn.txt)"
+        $host.UI.RawUI.foregroundcolor = "darkgray"
+        Get-Content $env:USERPROFILE\desktop\Script_Output\netstat_lsn.txt
     }
 
     Start-Sleep -s 3
@@ -2335,20 +2366,20 @@ function readOutput{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "`n#List of Running Services (running_services.txt)"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\running_services.txt)){
-    Write-Host "run runningServices"
-    }else{
-    Get-Content $env:USERPROFILE\desktop\Script_Output\running_services.txt
+    if (-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\running_services.txt)) {
+        Write-Host "run runningServices"
+    } else {
+        Get-Content $env:USERPROFILE\desktop\Script_Output\running_services.txt
     }
 
     Start-Sleep -s 3
     #updates to install
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "#Please attempt to install these KBs (might_install.txt):"
-    if(-not (Test-Path "$env:userprofile\appdata\local\might_install.xml")){
-    Write-host "run hotFixCheck"
+    if(-not (Test-Path "$env:userprofile\appdata\local\might_install.xml")) {
+        Write-host "run hotFixCheck"
     }
-    else{
+    else {
         $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
         $applicable_KBs | Out-File "$env:USERPROFILE\desktop\Script_Output\might_install.txt"
         $host.UI.RawUI.foregroundcolor = "darkgray"
@@ -2367,10 +2398,10 @@ function readOutput{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "#Firewall Status (firewall_status.txt)"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\firewall_status.txt)){
-    Write-Host "run firewallStatus"
-    }else{
-    Get-Content $env:USERPROFILE\desktop\Script_Output\firewall_status.txt
+    if (-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\firewall_status.txt)) {
+        Write-Host "run firewallStatus"
+    } else {
+        Get-Content $env:USERPROFILE\desktop\Script_Output\firewall_status.txt
     }
 
     Start-Sleep -s 3
@@ -2378,10 +2409,10 @@ function readOutput{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "#SMB Status (SMB_status.txt)"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\SMB_status.txt)){
-    Write-Host "run SMBStatus"
-    }else{
-    Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
+    if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\SMB_status.txt)) {
+        Write-Host "run SMBStatus"
+    } else {
+        Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
     }
 
     Start-Sleep -s 3
@@ -2389,14 +2420,14 @@ function readOutput{
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "`n#Teredo Status (teredo_state.txt)"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    if(-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\teredo_state.txt)){
+    if (-not (Test-Path -LiteralPath $env:USERPROFILE\desktop\Script_Output\teredo_state.txt)) {
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "Getting teredo state"
         $host.UI.RawUI.foregroundcolor = "darkgray"
         netsh interface teredo show state
         $host.UI.RawUI.foregroundcolor = "cyan"
         Write-Host "run disableTeredo"
-    }else{
+    } else {
         Get-Content $env:USERPROFILE\desktop\Script_Output\teredo_state.txt
     }
     $host.UI.RawUI.foregroundcolor = "white"
@@ -2404,11 +2435,11 @@ function readOutput{
     # Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     # $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($readOutput){
+if($readOutput) {
     readOutput
 }
 # --------- run enumeration functions ---------
-function enumerate{
+function enumerate {
     makeOutDir
     Write-Host -ForegroundColor Green "Running enumeration functions"
     processes
@@ -2425,26 +2456,27 @@ function enumerate{
     Write-Host -ForegroundColor Cyan "Exporting systeminfo"
     systeminfo | Out-File $env:USERPROFILE\desktop\Script_Output\system_info.txt
 }
-if($enumerate){
+if($enumerate) {
     enumerate
 }
 #endregion Enumeration
 
 #region Windows Events
-function events{
+function events {
     Write-Host -ForegroundColor Green "Windows Events"
-    Write-Host -ForegroundColor Cyan "1) Account Logon - Audit Credential Vailidation last 14 days`n2) Sec events`n3) List audit policy info by category`n4) [?] 5) Enter log `"Name`" then event `"ID`""
+    Write-Host -ForegroundColor Cyan "1) Account Logon - Audit Credential Vailidation last 14 days`n2) n recent sec. events`n3) List audit policy info by category`n4) Open event viewer snap-in console`n5) Enter log `"Name`" then event `"ID`""
     $choice = Read-Host "Choose one"
-    switch($choice){        
+    switch($choice) {
         1{Get-EventLog Security 4768, 4771, 4772, 4769, 4770, 4649, 4778, 4779, 4800, 4801, 4802, 4803, 5378, 5632, 5633 -after ((get-date).addDays(-14))}
         2{
-            $num = read-host "How many sec events?"
-            Get-EventLog -Newest "$num" -LogName Security | Format-List
+            $num = read-host "How many sec. events?"
+            Get-EventLog -Newest "$num" -LogName Security | Format-List | Out-Host -Paging
         }
         3{
             Write-Host -ForegroundColor Cyan "auditpol /get /category:*"; auditpol /get /category:*
         }
         4{
+            eventvwr.msc
         }
         5{
             $log = Read-Host "Enter a log name (valid: Application | Security | Setup | System)"
@@ -2452,16 +2484,16 @@ function events{
             Get-WinEvent -FilterHashtable @{LogName="$log"; ID="$id"}
         }
     }
-Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+Write-Host "Finished events module. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
 $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($events){
+if($events) {
     events
 }
 #endregion Windows Events
 
 # --------- run all hardening functions ---------
-function harden{
+function harden {
     # Write-Host -ForegroundColor Green "Hardening . . ."
     # ncpa.cpl
     # Write-Host -ForegroundColor Magenta "Fix IPV6 (maybe just disable) then press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
@@ -2503,14 +2535,46 @@ function harden{
     $host.UI.RawUI.foregroundcolor = "white"
     restart-computer -Confirm
 }
-if($harden){
+if($harden) {
     harden
 }
 # --------- provide list of available functions ---------
-function avail{
+function avail {
     Write-Host -ForegroundColor Green "`nAvailable Functions:"
-    Write-Host -ForegroundColor DarkGreen "
-    ------- Invasive: -------
+
+    # "non-invasite"
+    Write-Host -ForegroundColor Cyan "`n------- Non-invasive: -------"
+    $host.UI.RawUI.foregroundcolor = "DarkCyan"
+    Write-Host "
+    startups (enumerate startup programs)
+    formatNetstat (netstat -abno, listening, established > netstat_lsn.txt, netstat_est.txt)
+    firewallStatus
+    runningServices
+    hotFixCheck (checks list of HotFix KBs against systeminfo)
+    enumerate (all above modules ^)
+    events (Win event options)
+    eternalBlue (detects if Eternal Blue has been patched)
+    makeOutDir (makes script output directory on desktop)
+    timeStamp (timestamp Script_Output)
+    getTools (download and install relevant tools)
+    pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
+    GPTool (opens GP info tool)
+    SMBStatus (returns SMB registry info)"
+    Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "`n------- Extra: -------
+    loopPing (ping all IP addresses in a class C network)
+    ports (displays common ports file)
+    dateChanged (Provide files by date changed)
+    morePIDInfo (enter a PID for more info)
+    serviceInfo (enter a service name for more info)
+    NTPStripchart
+    plainPass (retreive plaintext password(s) from saved ciphertext file)
+    readOutput (provide function output to console)
+    avail (display this screen)"
+
+    # "invasive"
+    Write-Host -ForegroundColor Cyan "`n------- Invasive: -------"
+    $host.UI.RawUI.foregroundcolor = "DarkGreen"
+    Write-Host "
     harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
     disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)
     scriptToTxt (script file type open with notepad) | -Revert, -r
@@ -2530,56 +2594,25 @@ function avail{
     changePAdmin (input admin password)
     changePBinddn (input admin password)
     passPolicy (enable passwd complexity and length 12)
-    userPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)
-    "
-    Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "
-    ------- Extra: -------
+    userPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)"
+    Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "`n------- Extra: -------
     configNTP (ipconfig + set NTP server)    
     changeDCMode (changes Domain Mode to Windows2008R2Domain)
-    makeADBackup
-    "
-    Write-Host -ForegroundColor DarkCyan "
-    ------- Noninvasive: -------
-    events
-    eternalBlue (detects if Eternal Blue has been patched)
-    makeOutDir (makes script output directory on desktop)
-    timeStamp (timestamp Script_Output)
-    enumerate (startups, formatNetstat, firewallStatus, runningServices, hotFixCheck)   
-    getTools (download and install relevant tools)
-    hotFixCheck (checks list of HotFix KBs against systeminfo)
-    pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
-    startups
-    GPTool (opens GP info tool)    
-    firewallStatus
-    SMBStatus (returns SMB registry info)
-    formatNetstat (format/regex netstat -abno, listening, and established > netstat_lsn.txt, netstat_est.txt)
-    runningServices
-    "
-    Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "
-    ------- Extra: -------
-    loopPing (ping all IP addresses in a class C network)
-    ports (displays common ports file)
-    dateChanged
-    morePIDInfo (enter a PID for more info)
-    serviceInfo (enter a service name for more info)
-    NTPStripchart
-    plainPass (retreive plaintext password(s) from saved ciphertext file)
-    readOutput (provide function output to console)
-    avail (display this screen)
-    "
+    makeADBackup"
+
+    #injects
+    Write-Host -ForegroundColor Cyan "`n------- Injects: -------"
     Write-Host -ForegroundColor DarkRed "
-    ------- Injects: -------
     firewallStatus
     configNTP
-    firewallRules (opt. 1) - Open RDP for an IP address
-    `n"
+    firewallRules (opt. 1) - Open RDP for an IP address"
     $host.UI.RawUI.foregroundcolor = "white"
 }
-if($avail){
+if($avail) {
     avail
 }
 avail
 
-#Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-#$HOST.UI.RawUI.Flushinputbuffer()
-#cmd /c pause
+# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+# $HOST.UI.RawUI.Flushinputbuffer()
+# cmd /c pause
