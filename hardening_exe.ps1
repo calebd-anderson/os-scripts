@@ -31,7 +31,7 @@ Param(
     [switch]$morePIDInfo,
     [switch]$runningServices,
     [switch]$serviceInfo,
-    [switch]$hotFixCheck,
+    [switch]$expertUpdate,
     [switch]$pickAKB,
     [switch]$enableSMB2,
     [switch]$SMBStatus,
@@ -622,23 +622,25 @@ if($firewallRules){
     firewallRules
 }
 # --------- firewall status ---------
-function firewallStatus{
+function firewallStatus {
     makeOutDir
     Write-Host -ForegroundColor Green "`nExporting firewall status"
-    cmd /c echo. >> $env:userprofile\desktop\Script_Output\firewall_status.txt
-    cmd /c echo firewall_config %time% >> $env:userprofile\desktop\Script_Output\firewall_status.txt
-    netsh firewall show config | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_status.txt -Append
-    cmd /c echo. >> $env:userprofile\desktop\Script_Output\firewall_rules_enabled.txt
-    cmd /c echo firewall_rules %time% >> $env:userprofile\desktop\Script_Output\firewall_rules_enabled.txt
-    netsh advfirewall firewall show rule status=enabled name=all | Out-File $env:USERPROFILE\desktop\Script_Output\firewall_rules_enabled.txt -Append
-    Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\firewall_status.txt`" has fireawll status"
-    Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\firewall_rules_enabled.txt`" has list of enabled rules"
+    # cmd /c echo. >> $env:userprofile\desktop\Script_Output\firewall_status.txt
+    cmd /c echo %time% - Firewall config >> $env:userprofile\desktop\Script_Output\firewall_status.txt
+    netsh firewall show config | Out-File $env:USERPROFILE\desktop\Script_Output\firewall-status.txt -Append
+    cmd /c echo. >> $env:userprofile\desktop\Script_Output\enabled-firewall_rules.txt
+    cmd /c echo %time% - Firewall rules >> $env:userprofile\desktop\Script_Output\enabled-firewall_rules.txt
+    netsh advfirewall firewall show rule status=enabled name=all | Out-File $env:USERPROFILE\desktop\Script_Output\enabled-firewall_rules.txt -Append
+    $host.UI.RawUI.foregroundcolor = "darkgray"
+    Get-Content "$env:USERPROFILE\desktop\Script_Output\firewall-status.txt"
+    Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\firewall-status.txt`" has fireawll status"
+    Write-Host -ForegroundColor Cyan "`"$env:USERPROFILE\desktop\Script_Output\enabled-firewall_rules.txt`" has list of enabled rules"
     $host.UI.RawUI.foregroundcolor = "white"
     Start-Sleep -s 2
-    <# Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
-    $HOST.UI.RawUI.Flushinputbuffer() #>
+    Write-Host "`nFirewall enumeration finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($firewallStatus){
+if($firewallStatus) {
     firewallStatus
 }
 # --------- displays common ports file ---------
@@ -885,9 +887,9 @@ if($miscRegedits){
     miscRegedits
 }
 # --------- disable SMB1 via registry ---------
-function enableSMB2{
+function enableSMB2 {
     $BuildVersion = [System.Environment]::OSVersion.Version
-    if($BuildVersion.Revision -ge '0'){
+    if($BuildVersion.Revision -ge '0') {
         Write-Host -ForegroundColor Green "`nDisabling SMB1 and enabling SMB2 (registry and services)"
         $host.UI.RawUI.foregroundcolor = "cyan"
         #disable SMB1
@@ -900,11 +902,11 @@ function enableSMB2{
         #enable SMB2/3
         sc.exe config lanmanworkstation depend= bowser/mrxsmb20/nsi
         sc.exe config mrxsmb20 start= auto
-    }else{
+    } else {
         #Win12 SMB CMD-Lets
     }
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    Write-Host "enableSMB2 module finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($enableSMB2){
@@ -1262,7 +1264,7 @@ function pickAKB{
     Import-Module BitsTransfer
     $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
     $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "`nThere are" $applicable_KBs.count "available hotfixes below. KB2489256, KB2503658, and KB2769369 installed in lab"
+    Write-Host "`nThere are" $applicable_KBs.count "available hotfixes below. (KB2489256, KB2503658, and KB2769369 installed in lab)"
     $host.UI.RawUI.foregroundcolor = "darkgray"   
     $applicable_KBs   
     $host.UI.RawUI.foregroundcolor = "magenta"
@@ -1818,14 +1820,14 @@ function eternalBlue {
         Write-Host "System is Patched" -ForegroundColor Green
         }
     #
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    Write-Host "Eternal Blue module finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($eternalBlue) {
     eternalBlue
 }
 # --------- active processes ---------
-function processes{
+function processes {
     #at.exe
     Write-Host -ForegroundColor Green "Enumerating processes"
     cmd /c echo. >> $env:userprofile\desktop\Script_Output\tasklist.txt
@@ -2009,11 +2011,11 @@ if($runningServices) {
     runningServices
 }
 # --------- enumerate HotFix updates ---------
-function hotFixCheck {
+function expertUpdate {
     makeOutDir
     # https://support.microsoft.com/en-us/help/4023262/how-to-verify-that-ms17-010-is-installed
     # https://www.catalog.update.microsoft.com/Home.aspx
-    Write-Host -ForegroundColor Green "`nComparing systeminfo HotFix `'wmic qfe`' with HotFix master-list"
+    Write-Host -ForegroundColor Green "`nComparing systeminfo HotFix `'wmic qfe`' with your list"
     #manual page
     #$manual_KBs = @{KB4012213 = "http://support.microsoft.com/kb/4012213"}
     #compile systeminfo
@@ -2220,7 +2222,7 @@ function hotFixCheck {
                     }
                 }
             }
-        }elseif($installed.count -le 1 -and $files.count -le 1){
+        }elseif($installed.count -le 1 -and $files.count -le 1) {
             <# $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Warning "both installed and files are strings:"
             Write-Host "this is files type:" $files.GetType()
@@ -2247,11 +2249,11 @@ function hotFixCheck {
 
         $host.UI.RawUI.foregroundcolor = "darkgray"
         $install
-        if($install.count -gt 0 -or $install.Length -gt 0){
-            Write-Host -ForegroundColor Cyan "The" $install.count "hotfix(s) above are downloaded but not installed. " -NoNewline
+        if($install.count -gt 0 -or $install.Length -gt 0) {
+            $host.UI.RawUI.foregroundcolor = "cyan"
+            Write-Host -ForegroundColor Cyan "The" $install.count "hotfix(s) above are downloaded but not installed."
             Write-Host -ForegroundColor Magenta "Would you like to install them now? (y, n): " -NoNewline
             $yes = Read-Host
-            $host.UI.RawUI.foregroundcolor = "cyan"                        
             #install loop 
             if ($yes -eq 'y'){
                 foreach ($f in $install){
@@ -2260,9 +2262,10 @@ function hotFixCheck {
                 }
                 Write-Host "Finished installing updates."
             }else{
-                $host.UI.RawUI.foregroundcolor = "magenta"
-                $pick = Read-Host "`nWould you like to pick `'one`' Hotfix from the list? (y, n)"
-                if ($pick -eq 'y'){
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                Write-Host -ForegroundColor Magenta "Would you like to pick `'one`' Hotfix from the list? (y, n) " -NoNewline
+                $pick = Read-Host 
+                if ($pick -eq 'y') {
                     pickAKB
                 }
             }
@@ -2274,7 +2277,7 @@ function hotFixCheck {
         foreach($kb in $files){$auto_download_KBs.Remove($kb)}
         if($auto_download_KBs.count -gt 0){
             $host.UI.RawUI.foregroundcolor = "darkgray"
-            $auto_download_KBs
+            $auto_download_KBs | Format-Table -AutoSize
             $host.UI.RawUI.foregroundcolor = "cyan"
             Write-Host "`nThe" $auto_download_KBs.count "HotFixe(s) above have not been downloaded or installed."
             Write-Host -ForegroundColor Magenta "Would you like to download them now? (y, n): " -NoNewline
@@ -2295,45 +2298,51 @@ function hotFixCheck {
                         Write-Host -ForegroundColor Yellow $_ "The URL below has been copied to the clipboard"
                         $url | clip
                         Write-Host -ForegroundColor Yellow $url
-                        Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+                        Write-Host -ForegroundColor White "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
                         $HOST.UI.RawUI.Flushinputbuffer()
                     }
                 }
                 Write-Host "Downloading complete."
                 install                 
             } else {
-                $host.UI.RawUI.foregroundcolor = "magenta"
-                $pick = Read-Host "`nWould you like to pick a specific HotFix from the list? (y, n)"
-                if ($pick -eq 'y'){
+                $host.UI.RawUI.foregroundcolor = "cyan"
+                Write-Host -ForegroundColor Magenta "Would you like to pick a specific HotFix from the list? (y, n) " -NoNewline
+                $pick = Read-Host 
+                if ($pick -eq 'y') {
                     pickAKB
-                }else{install}
+                } else {install}
             }
         }else{Write-Host -ForegroundColor Cyan "Everything has been downloaded."; install}
     }
     download    
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Download module finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    Write-Host "`nexpertUpdate module finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($hotFixCheck) {
-    hotFixCheck
+if($expertUpdate) {
+    expertUpdate
 }
 # --------- SMB status ---------
 function SMBStatus {
     makeOutDir
-    Write-Host -ForegroundColor Green "`nExporting reg query SMB status"
+    Write-Host -ForegroundColor Green "`nExporting reg query SMB status`n"
     $host.UI.RawUI.foregroundcolor = "cyan"
     #reg query HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
-    Get-Date -Format "dddd MM/dd/yyyy HH:mm K" | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
+    if (Test-Path -Path "$env:USERPROFILE\desktop\Script_Output\SMB_status.txt") {        
+        cmd /c echo. >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
+        # cmd /c echo `#`#`#`#`#`#`#`#`#`#`# >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
+    }
+    Get-Date -Format "dddd MM/dd/yyyy HH:mm K
+----------------------" | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
     Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters | ForEach-Object {Get-ItemProperty $_.pspath} | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
-    cmd /c echo lanmanworkstation %time% >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
+    # cmd /c echo lanmanworkstation %time% >> $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
     sc.exe qc lanmanworkstation | Out-File $env:USERPROFILE\desktop\Script_Output\SMB_status.txt -Append
     $host.UI.RawUI.foregroundcolor = "darkgray"
     Get-Content $env:USERPROFILE\desktop\Script_Output\SMB_status.txt
     $host.UI.RawUI.foregroundcolor = "cyan"
-    Write-Host "`"$env:USERPROFILE\desktop\Script_Output\SMB_status.txt`" has SBM status"
+    Write-Host "`n`"$env:USERPROFILE\desktop\Script_Output\SMB_status.txt`" has SBM status"
     $host.UI.RawUI.foregroundcolor = "white"
-    Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
+    Write-Host "`nSMB enumeration finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 if($SMBStatus) {
@@ -2377,7 +2386,7 @@ function readOutput {
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "#Please attempt to install these KBs (might_install.txt):"
     if(-not (Test-Path "$env:userprofile\appdata\local\might_install.xml")) {
-        Write-host "run hotFixCheck"
+        Write-host "run expertUpdate"
     }
     else {
         $applicable_KBs = Import-Clixml $env:userprofile\appdata\local\might_install.xml
@@ -2467,18 +2476,18 @@ function events {
     Write-Host -ForegroundColor Cyan "1) Account Logon - Audit Credential Vailidation last 14 days`n2) n recent sec. events`n3) List audit policy info by category`n4) Open event viewer snap-in console`n5) Enter log `"Name`" then event `"ID`""
     $choice = Read-Host "Choose one"
     switch($choice) {
-        1{Get-EventLog Security 4768, 4771, 4772, 4769, 4770, 4649, 4778, 4779, 4800, 4801, 4802, 4803, 5378, 5632, 5633 -after ((get-date).addDays(-14))}
-        2{
+        1 {Get-EventLog Security 4768, 4771, 4772, 4769, 4770, 4649, 4778, 4779, 4800, 4801, 4802, 4803, 5378, 5632, 5633 -after ((get-date).addDays(-14))}
+        2 {
             $num = read-host "How many sec. events?"
             Get-EventLog -Newest "$num" -LogName Security | Format-List | Out-Host -Paging
         }
-        3{
+        3 {
             Write-Host -ForegroundColor Cyan "auditpol /get /category:*"; auditpol /get /category:*
         }
-        4{
+        4 {
             eventvwr.msc
         }
-        5{
+        5 {
             $log = Read-Host "Enter a log name (valid: Application | Security | Setup | System)"
             $id = Read-Host "Enter a log ID or multiple separated by a ',' (valid: <see attached>)"
             Get-WinEvent -FilterHashtable @{LogName="$log"; ID="$id"}
@@ -2550,16 +2559,16 @@ function avail {
     formatNetstat (netstat -abno, listening, established > netstat_lsn.txt, netstat_est.txt)
     firewallStatus
     runningServices
-    hotFixCheck (checks list of HotFix KBs against systeminfo)
-    enumerate (all above modules ^)
+    expertUpdate (checks list of HotFix KBs against systeminfo)
+    SMBStatus (returns SMB registry info)
+    ^enumerate (all above modules ^)
     events (Win event options)
     eternalBlue (detects if Eternal Blue has been patched)
     makeOutDir (makes script output directory on desktop)
     timeStamp (timestamp Script_Output)
-    getTools (download and install relevant tools)
+    getTools (download and install your tools)
     pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
-    GPTool (opens GP info tool)
-    SMBStatus (returns SMB registry info)"
+    GPTool (opens GP info tool)"
     Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "`n------- Extra: -------
     loopPing (ping all IP addresses in a class C network)
     ports (displays common ports file)
@@ -2575,10 +2584,9 @@ function avail {
     Write-Host -ForegroundColor Cyan "`n------- Invasive: -------"
     $host.UI.RawUI.foregroundcolor = "DarkGreen"
     Write-Host "
-    harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
-    disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)
-    scriptToTxt (script file type open with notepad) | -Revert, -r
-    removeIsass
+    ^harden (firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
+    disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, ^enumerate)
+    scriptToTxt (change script file types to notepad) | -Revert, -r
     netCease (disable Net Session Enumeration) | -Revert, -r
     cve_0674 (disables jscript.dll) | -Revert, -r
     disableGuest (disables Guest account)
@@ -2586,19 +2594,20 @@ function avail {
     disableAdminShares (disables Admin share via regedit)
     miscRegedits (many mimikatz cache edits)
     disablePrintSpooler (disables print spooler service)
-    disableTeredo  (disables teredo)
+    disableTeredo (disables teredo)
     firewallOn (turns on firewall)
     firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
-    enableSMB2 (disables SMB1 and enable SMB2 via registry)
+    enableSMB2 (disables SMB1 and enables SMB2 via registry)
     changePass (Kyle's AD user password script enhanced)
-    changePAdmin (input admin password)
-    changePBinddn (input admin password)
+    changePAdmin (change admin password)
+    changePBinddn (change admin password)
     passPolicy (enable passwd complexity and length 12)
     userPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)"
     Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "`n------- Extra: -------
-    configNTP (ipconfig + set NTP server)    
+    configNTP (ipconfig + set NTP server)
     changeDCMode (changes Domain Mode to Windows2008R2Domain)
-    makeADBackup"
+    makeADBackup
+    removeIsass (removes malware `'I`'sass)"
 
     #injects
     Write-Host -ForegroundColor Cyan "`n------- Injects: -------"
