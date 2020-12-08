@@ -3,7 +3,7 @@
 **Disclaimer**: This script was built to be run in a VM for testing and educational purposes. It was not built for a production environment nor for malicious purposes.
 
 #### There are two versions:  
-A PowerShell script meant to be run right in PowerShell.  
+A PowerShell script meant to be run right in PowerShell. (probably behind)  
 - hardening.ps1  
 
 As well as a script that was designed to be compiled into a binary executable. Which allows PowerShell to be disabled completely.  
