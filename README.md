@@ -1,17 +1,18 @@
 # Windows Server Hardening
 ### This script served as a study of Windows Server R2 security hardening.  
-Disclaimer: This script was built to be run in a VM for testing and educational purposes. It was not built to be run in a production environment.  
+**Disclaimer**: This script was built to be run in a VM for testing and educational purposes. It was not built for a production environment nor for malicious purposes.  
+It is a combination of cmd bash and PowerShell.
 
-###### There are two versions:  
-A PowerShell script meant to be run right in PowerShell.  
+#### There are two versions:  
+A PowerShell script meant to be run right in PowerShell. (probably behind)  
 - hardening.ps1  
 
-As well as a script that was designed to be compiled into a binary executable. Which allows PowerShell to be disabled completely.  
+As well as a script that was designed to be compiled into a binary executable which allows PowerShell to be disabled completely.
 - hardening_exe.ps1  
 
 Compile using PS2EXE found at this URL    
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
-Using the compiled executable pass function names as arguments to the exe to run them.
+Start the executable from cmd and pass function names as arguments/switches.
 
 ### Script Goals/To-Do:  
 Disable unecessary services  
@@ -81,4 +82,5 @@ https://github.com/PaulSec/awesome-windows-domain-hardening
 https://www.codeproject.com/articles/2318/data-encryption-with-dpapi    
 https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87    
 https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51    
-https://support.microsoft.com/en-us/help/4023262/how-to-verify-that-ms17-010-is-installed
+https://support.microsoft.com/en-us/help/4023262/how-to-verify-that-ms17-010-is-installed    
+https://www.amazon.com/Blue-Team-Field-Manual-BTFM/dp/154101636X/ref=sr_1_3?dchild=1&hvadid=78134097399686&hvbmt=be&hvdev=c&hvqmt=e&keywords=blue+team+handbook&qid=1607392571&sr=8-3&tag=mh0b-20
