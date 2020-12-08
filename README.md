@@ -1,8 +1,8 @@
 # Windows Server Hardening
 ### This script served as a study of Windows Server R2 security hardening.  
-Disclaimer: This script was built to be run in a VM for testing and educational purposes. It was not built to be run in a production environment.  
+**Disclaimer**: This script was built to be run in a VM for testing and educational purposes. It was not built for a production environment nor for malicious purposes.
 
-###### There are two versions:  
+#### There are two versions:  
 A PowerShell script meant to be run right in PowerShell.  
 - hardening.ps1  
 
@@ -81,4 +81,5 @@ https://github.com/PaulSec/awesome-windows-domain-hardening
 https://www.codeproject.com/articles/2318/data-encryption-with-dpapi    
 https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87    
 https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51    
-https://support.microsoft.com/en-us/help/4023262/how-to-verify-that-ms17-010-is-installed
+https://support.microsoft.com/en-us/help/4023262/how-to-verify-that-ms17-010-is-installed    
+https://www.amazon.com/Blue-Team-Field-Manual-BTFM/dp/154101636X/ref=sr_1_3?dchild=1&hvadid=78134097399686&hvbmt=be&hvdev=c&hvqmt=e&keywords=blue+team+handbook&qid=1607392571&sr=8-3&tag=mh0b-20
