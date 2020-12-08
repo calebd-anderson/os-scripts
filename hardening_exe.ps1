@@ -27,7 +27,7 @@ Param(
     [switch]$undoScriptToTxt,
     [switch]$disableAdminShares,
     [switch]$miscRegedits,
-    [switch]$formatNetstat,
+    [switch]$superNetstat,
     [switch]$morePIDInfo,
     [switch]$runningServices,
     [switch]$serviceInfo,
@@ -1947,7 +1947,7 @@ if($startups) {
     startups
 }
 # --------- objectify netstat -abno --------- 
-function formatNetstat {
+function superNetstat {
     makeOutDir
     Write-Host -ForegroundColor Green "`nAdvanced netstat -abno:"
     $host.UI.RawUI.foregroundcolor = "darkgray"
@@ -1990,8 +1990,8 @@ function formatNetstat {
     Write-Host "Netstat enumeration finished. Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($formatNetstat) {
-    formatNetstat
+if($superNetstat) {
+    superNetstat
 }
 # --------- create list of running services file on desktop ---------
 function runningServices {
@@ -2455,7 +2455,7 @@ function enumerate {
     startups
     removeIsass #-enum
     firewallStatus
-    formatNetstat    
+    superNetstat    
     runningServices
     SMBStatus
     #hotFixCheck
@@ -2556,7 +2556,7 @@ function avail {
     $host.UI.RawUI.foregroundcolor = "DarkCyan"
     Write-Host "
     startups (enumerate startup programs)
-    formatNetstat (netstat -abno, listening, established > netstat_lsn.txt, netstat_est.txt)
+    superNetstat (netstat -abno, LISTENING, ESTABLISHED > netstat_lsn.txt, netstat_est.txt)
     firewallStatus
     runningServices
     expertUpdate (checks list of HotFix KBs against systeminfo)
