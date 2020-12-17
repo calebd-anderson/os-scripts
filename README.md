@@ -21,8 +21,8 @@ AD users
 malware stuff  
 group policy efficiency  
   
-## Function Descriptions  
-------- Enumerate (reads the system): -------  
+### Function Descriptions  
+#### ------- Enumerate (reads the system): -------  
 startups (enumerate startup programs)  
 superNetstat (netstat -abno, LISTENING, ESTABLISHED > netstat_lsn.txt, netstat_est.txt)  
 firewallStatus  
@@ -37,7 +37,7 @@ timeStamp (timestamp Script_Output dir)
 getTools (download and install your tools)  
 pickAKB (Provides applicable KB info then prompts for KB and downloads \<KB\>.msu to "downloads")  
 GPTool (opens group policy info tool)  
-------- Extra: -------  
+##### ------- Extra Enumerate: -------  
 loopPing (identify ping replies in a class C network)  
 ports (displays common ports file)  
 dateChanged  
@@ -47,11 +47,11 @@ NTPStripchart
 plainPass (decrypt and display password(s) from ciphertext file)  
 readOutput (read output files to console)  
 avail (display this screen)  
-------- Injects: -------  
+#### ------- Injects: -------  
 firewallStatus  
 configNTP  
 firewallRules (opt. 1) - Open RDP for an IP address  
-------- Invasive (changes the system): ------  
+#### ------- Invasive (changes the system): ------  
 harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,  
 disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)  
 scriptToTxt (script file type open with notepad) | -Revert, -r  
@@ -72,7 +72,7 @@ changePAdmin (input admin password)
 changePBinddn (input admin password)  
 passPolicy (enable passwd complexity and length 12)  
 userPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)  
-------- Extra: -------  
+##### ------- Extra: -------  
 configNTP (ipconfig + set NTP server)  
 changeDCMode (changes Domain Mode to Windows2008R2Domain)   
 makeADBackup  
