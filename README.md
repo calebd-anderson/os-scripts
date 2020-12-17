@@ -22,7 +22,7 @@ malware stuff
 group policy efficiency  
   
 ## Function Descriptions  
-------- Noninvasive: -------  
+------- Enumerate (reads the system): -------  
 startups (enumerate startup programs)  
 superNetstat (netstat -abno, LISTENING, ESTABLISHED > netstat_lsn.txt, netstat_est.txt)  
 firewallStatus  
@@ -51,7 +51,7 @@ avail (display this screen)
 firewallStatus  
 configNTP  
 firewallRules (opt. 1) - Open RDP for an IP address  
-------- Invasive: ------  
+------- Invasive (changes the system): ------  
 harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,  
 disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)  
 scriptToTxt (script file type open with notepad) | -Revert, -r  
