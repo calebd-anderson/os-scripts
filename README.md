@@ -50,7 +50,7 @@ avail (display this screen)
 ------- Injects: -------  
 firewallStatus  
 configNTP  
-firewallRules (opt. 1) - Open RDP for an IP address
+firewallRules (opt. 1) - Open RDP for an IP address  
 ------- Invasive: ------  
 harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,  
 disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)  
