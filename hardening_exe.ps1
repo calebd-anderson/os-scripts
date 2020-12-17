@@ -2576,8 +2576,8 @@ function avail {
     morePIDInfo (enter a PID for more info)
     serviceInfo (enter a service name for more info)
     NTPStripchart
-    plainPass (retreive plaintext password(s) from saved ciphertext file)
-    readOutput (provide function output to console)
+    plainPass (decrypt and display password(s) from ciphertext file)
+    readOutput (read output files to console)
     avail (display this screen)"
 
     # "invasive"

@@ -22,6 +22,35 @@ malware stuff
 group policy efficiency  
   
 ## Function Descriptions  
+------- Noninvasive: -------  
+startups (enumerate startup programs)  
+superNetstat (netstat -abno, LISTENING, ESTABLISHED > netstat_lsn.txt, netstat_est.txt)  
+firewallStatus  
+runningServices  
+expertUpdate (checks list of HotFix KBs against systeminfo)  
+SMBStatus (returns SMB registry info)  
+enumerate (executes all modules above)  
+events (Win events)  
+eternalBlue (indicates if Eternal Blue has been patched)  
+makeOutDir (creates output dir on desktop)  
+timeStamp (timestamp Script_Output dir)  
+getTools (download and install your tools)  
+pickAKB (Provides applicable KB info then prompts for KB and downloads \<KB\>.msu to "downloads")  
+GPTool (opens group policy info tool)  
+------- Extra: -------  
+loopPing (identify ping replies in a class C network)  
+ports (displays common ports file)  
+dateChanged  
+morePIDInfo (enter a PID to display detailed info)  
+serviceInfo (enter a service name to display detailed info)  
+NTPStripchart  
+plainPass (decrypt and display password(s) from ciphertext file)  
+readOutput (read output files to console)  
+avail (display this screen)  
+------- Injects: -------  
+firewallStatus  
+configNTP  
+firewallRules (opt. 1) - Open RDP for an IP address
 ------- Invasive: ------  
 harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,  
 disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)  
@@ -47,35 +76,6 @@ userPols (enable all users require passwords, enable admin sensitive, remove all
 configNTP (ipconfig + set NTP server)  
 changeDCMode (changes Domain Mode to Windows2008R2Domain)   
 makeADBackup  
-------- Noninvasive: -------  
-events  
-eternalBlue (detects if Eternal Blue has been patched)  
-makeOutDir (makes script output directory on desktop)  
-timeStamp (timestamp Script_Output)  
-enumerate (startups, formatNetstat, firewallStatus, runningServices, hotFixCheck)  
-getTools (download and install relevant tools)  
-hotFixCheck (checks list of HotFix KBs against systeminfo)  
-pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to "downloads")  
-startups  
-GPTool (opens GP info tool)  
-firewallStatus  
-SMBStatus (returns SMB registry info)  
-formatNetstat (format/regex netstat -abno, listening, and established > netstat_lsn.txt, netstat_est.txt)  
-runningServices  
-------- Extra: -------  
-loopPing (ping all IP addresses in a class C network)  
-ports (displays common ports file)  
-dateChanged  
-morePIDInfo (enter a PID for more info)  
-serviceInfo (enter a service name for more info)  
-NTPStripchart  
-plainPass (retreive plaintext password(s) from saved ciphertext file)  
-readOutput (provide function output to console)  
-avail (display this screen)  
-------- Injects: -------  
-firewallStatus  
-configNTP  
-firewallRules (opt. 1) - Open RDP for an IP address
   
 ### Other credit:  
 https://github.com/PaulSec/awesome-windows-domain-hardening    
