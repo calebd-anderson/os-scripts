@@ -47,10 +47,6 @@ NTPStripchart
 plainPass (decrypt and display password(s) from ciphertext file)  
 readOutput (read output files to console)  
 avail (display this screen)  
-#### ------- Injects: -------  
-firewallStatus  
-configNTP  
-firewallRules (opt. 1) - Open RDP for an IP address  
 #### ------- Invasive (changes the system): ------  
 harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,  
 disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)  
@@ -76,6 +72,10 @@ userPols (enable all users require passwords, enable admin sensitive, remove all
 configNTP (ipconfig + set NTP server)  
 changeDCMode (changes Domain Mode to Windows2008R2Domain)   
 makeADBackup  
+#### ------- Injects: -------  
+firewallStatus  
+configNTP  
+firewallRules (opt. 1) - Open RDP for an IP address  
   
 ### Other credit:  
 https://github.com/PaulSec/awesome-windows-domain-hardening    
