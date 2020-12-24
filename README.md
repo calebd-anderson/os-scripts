@@ -21,7 +21,7 @@ AD users
 malware stuff  
 group policy efficiency  
   
-### Function Descriptions  
+### Function Descriptions:  
 #### ------- Enumerate (reads the system): -------  
 startups (enumerate startup programs)  
 superNetstat (netstat -abno, LISTENING, ESTABLISHED > netstat_lsn.txt, netstat_est.txt)  
