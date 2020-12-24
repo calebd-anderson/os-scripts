@@ -1,7 +1,6 @@
 # Windows Server Hardening
 ### This script served as a study of Windows Server R2 security hardening.  
 **Disclaimer**: This script was built to be run in a VM for testing and educational purposes. It was not built for a production environment nor for malicious purposes.  
-It is a combination of cmd bash and PowerShell.
 
 #### There are two versions:  
 A PowerShell script meant to be run right in PowerShell. (probably behind)  
