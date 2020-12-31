@@ -48,7 +48,7 @@ plainPass (decrypt and display password(s) from ciphertext file)
 readOutput (read output files to console)  
 avail (display this screen)  
 #### ------- Invasive (changes the system): ------  
-harden (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,  
+harden: (makeOutputDir, firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP, 
 disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, enumerate)  
 scriptToTxt (script file type open with notepad) | -Revert, -r  
 removeIsass  
@@ -65,7 +65,7 @@ firewallRules (Block RDP In, Block VNC In, Block VNC Java In, Block FTP In)
 enableSMB2 (disables SMB1 and enable SMB2 via registry)  
 changePass (<> AD user password script enhanced)  
 changePAdmin (input admin password)  
-changePBinddn (input admin password)  
+changePBinddn (input binddn password)  
 passPolicy (enable passwd complexity and length 12)  
 userPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)  
 ##### ------- Extra: -------  
