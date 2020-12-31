@@ -2584,7 +2584,7 @@ function avail {
     Write-Host -ForegroundColor Cyan "`n------- Invasive: -------"
     $host.UI.RawUI.foregroundcolor = "DarkGreen"
     Write-Host "
-    ^harden (firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
+    ^harden: (firewallRules, turnOnFirewall, scriptToTxt, disableAdminShares, miscRegedits, enableSMB2, disableRDP,
     disablePrintSpooler, disableGuest, changePAdmin, changePBinddn, GPTool, changePass, passPolicy, userPols, ^enumerate)
     scriptToTxt (change script file types to notepad) | -Revert, -r
     netCease (disable Net Session Enumeration) | -Revert, -r
@@ -2600,7 +2600,7 @@ function avail {
     enableSMB2 (disables SMB1 and enables SMB2 via registry)
     changePass (Kyle's AD user password script enhanced)
     changePAdmin (change admin password)
-    changePBinddn (change admin password)
+    changePBinddn (change binddn password)
     passPolicy (enable passwd complexity and length 12)
     userPols (enable all users require passwords, enable admin sensitive, remove all members from Schema Admins)"
     Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "`n------- Extra: -------
