@@ -4,13 +4,12 @@
 **Disclaimer**: This script was built to be run in a VM for testing and educational purposes. It was not built for a production environment nor for malicious purposes.  
 
 #### There are two versions:  
-A PowerShell script meant to be run right in PowerShell. (probably behind)  
+A raw PowerShell script which is ran normally in PowerShell and is likely out of date:  
 - hardening.ps1  
 
-As well as a script that was designed to be compiled into a binary executable which allows PowerShell to be disabled completely.
+A PowerShell script that is designed to be compiled into a binary executable (which allows PowerShell to be disabled completely):
 - hardening_exe.ps1  
-
-Compile using PS2EXE found at this URL    
+- Compile using PS2EXE found at this URL    
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
 
 🔥 Use the executable from cli and pass function names as arguments/switches.
