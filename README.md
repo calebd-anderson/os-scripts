@@ -12,7 +12,7 @@ A PowerShell script that is designed to be compiled into a binary executable (wh
 - Compile using PS2EXE found at this URL    
 https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
 
-🔥 Use the executable from cli and pass function names as arguments/switches.
+🔥 Use the executable from CLI and pass function names (below) as arguments/switches.
 
 ### Script Goals/To-Do:  
 Disable unecessary services  
