@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Dovecot</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Dovecot Setup</h1>
+  <a href="https://www.server-world.info/en/note?os=Fedora_21&p=mail&f=2">server-world page</a>
+  <table>
+    <tr>
+        <th>port</th>
+        <th>service</th>
+    </tr>
+    <tr>
+        <td>110</td>
+        <td>pop3</td>
+    </tr>
+    <tr>
+        <td>995</td>
+        <td>pop3s</td>
+    </tr>
+    <tr>
+        <td>143</td>
+        <td>imap</td>
+    </tr>
+    <tr>
+        <td>993</td>
+        <td>impaps</td>
+    </tr>
+  </table>
+
+  <div>/etc/dovecot/dovecot.conf</div>
+  <div>
+    <code>]# vi +24 /etc/dovecot/dovecot.conf</code>
+    <code>protocols = imap pop3 lmtp</code>
+  </div>
+  <div>
+      <code>]# vi +102 /etc/dovecot/dovecot.conf</code>
+      <code>!include_try local.conf</code>
+  </div>
+</body>
+</html>
