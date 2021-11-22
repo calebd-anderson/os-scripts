@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>iptables</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="" />
+</head>
+<body>
+
+  <h1>iptables</h1>
+  <div>Disable:</div>
+  <div>]# systemctl stop firewalld</div>
+  <div>]# systemctl disable firewalld</div>
+  <div>]# systemctl mask firewalld</div>
+  <div>Config File</div>
+  <div>/etc/sysconfig/iptables-config</div>
+  <div>HTTP</div>
+  <div>]# iptables -A INPUT -p tcp --dport 80 -j ACCEPT</div>
+  <div>SSH</div>
+  <div>]# iptables -A INPUT -p tcp --dport 22 -j ACCEPT</div>
+  <div>SMTP</div>
+  <div>]# iptables -A INPUT -p tcp --dport 25 -j ACCEPT</div>
+  <div>POP3</div>
+  <div>]# iptables -A INPUT -p tcp --dport 110 -j ACCEPT</div>
+  <div>NTP</div>
+  <div>]# iptables -A INPUT -p tcp --dport 123 -j ACCEPT</div>
+  <div>DNS</div>
+  <div>]# iptables -A INPUT -p tcp --dport 53 -j ACCEPT</div>
+  <div>Loopback</div>
+  <div>]# iptables -A INPUT -i lo -j ACCEPT</div>
+  <div>Reject IP</div>
+  <div>]# iptables -A INPUT -s 203.0.113.51 -j REJECT</div>
+  <div>Allow Related Back In</div>
+  <div>]# iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</div>
+  <div>Allow ICMP In</div>
+  <div>]# iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT</div>
+
+</body>
+</html>
