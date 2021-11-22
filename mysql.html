@@ -10,12 +10,14 @@
 <body>
   <h1>MySQL Setup</h1>
   <div>
-    <div>Log</div>
-    <div>/var/log/mariadb/mariadb.log</div>
-    <div>Config</div>
-    <div>/etc/my.cnf</div>
+    <h2>Log</h2>
+    <code>]# tail /var/log/mariadb/mariadb.log</code>
+  </div>
+  <div>
+    <h2>Config</h2>
+    <code>]# vi /etc/my.cnf</code>
     <code>bind-address=127.0.0.1</code>
-    <code>SHOW VARIABLES LIKE 'port';</code>
+    <code>MariaDB [()]> SHOW VARIABLES LIKE 'port';</code>
   </div>
 </body>
 </html>
