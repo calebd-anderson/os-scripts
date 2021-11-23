@@ -16,6 +16,14 @@
     <code>]# systemctl disable firewalld</code>
     <code>]# systemctl mask firewalld</code>
   </div>
+  <div>
+    <h2>Reset</h2>
+    <code>]# iptables -F</code>
+    <code>]# iptables -X</code>
+    <code>]# iptables -P INPUT ACCEPT</code>
+    <code>]# iptables -P OUTPUT ACCEPT</code>
+    <code>]# iptables -P FORWARD ACCEPT</code>
+  </div>
   <h2>Config Files</h2>
   <div>/etc/sysconfig/iptables-config</div>
   <div>/proc/net/</div>
@@ -48,6 +56,11 @@
     <h2>ALLOW DNS - 53/udp</h2>
     <code>]# iptables -A INPUT -p udp --sport 53 -j ACCEPT</code>
     <code>]# iptables -A OUTPUT -p udp --dport 53 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>ALLOW LDAP - 389/tcp (?)</h2>
+    <code>]# iptables -A INPUT -p tcp --sport 389 -j ACCEPT</code>
+    <code>]# iptables -A OUTPUT -p tcp --dport 389 -j ACCEPT</code>
   </div>
   <div>
     <h2>Allow Loopback</h2>

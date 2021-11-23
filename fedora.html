@@ -7,8 +7,8 @@
   <meta name="description" content="" />
 </head>
 <body>
-  <h1>Network</h1>
-  <h2>Enum</h2>
+  <h1>Fedora</h1>
+  <h2>Enum Network</h2>
   <ul>
       <li>]# nmcli d</li>
       <li>]# nmcli d show [interfaceID]</li>
@@ -17,11 +17,15 @@
   <h2>DNS</h2>
   <ul>
     <li>]# vi /etc/resolv.conf</li>
-    ]# nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[nameserverIP] [gatewayIP]"
+    <li>]# nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[nameserverIP] [gatewayIP]"</li>
   </ul>
   <h2>tcpdump</h2>
   <ul>
     <li>]# tcpdump -nni &lt;interfaceID&gt; tcp and port 80</li>
+  </ul>
+  <h2>list sudo privileges</h2>
+  <ul>
+    <li>]# sudo -l -U &lt;username&gt;</li>
   </ul>
 </body>
 </html>
