@@ -8,24 +8,36 @@
 </head>
 <body>
   <h1>Fedora</h1>
+  <h2>Path</h2>
+  <div>/etc/sysconfig/network-scripts/</div>
   <h2>Enum Network</h2>
   <ul>
-      <li>]# nmcli d</li>
-      <li>]# nmcli d show [interfaceID]</li>
-      <li>]# ip addr show</li>
+      <li><code>]# nmcli d</code></li>
+      <li><code>]# nmcli d show [interfaceID]</code></li>
+      <li><code>]# ip addr show</code></li>
   </ul>
   <h2>DNS</h2>
   <ul>
-    <li>]# vi /etc/resolv.conf</li>
-    <li>]# nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[nameserverIP] [gatewayIP]"</li>
+    <li><code>]# vi /etc/resolv.conf</code></li>
+    <li><code>]# nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[nameserverIP] [gatewayIP]"</code></li>
   </ul>
   <h2>tcpdump</h2>
   <ul>
-    <li>]# tcpdump -nni &lt;interfaceID&gt; tcp and port 80</li>
+    <li><code>]# tcpdump -nni &lt;interfaceID&gt; tcp and port 80</code></li>
   </ul>
   <h2>list sudo privileges</h2>
   <ul>
-    <li>]# sudo -l -U &lt;username&gt;</li>
+    <li><code>]# sudo -l -U &lt;username&gt;</code></li>
   </ul>
+  <h2>users</h2>
+  <ul>
+    <li><code>]# compgen -u</code></li>
+    <li><code>]# awk -F':' '{print $1}' /etc/passwd</code></li>
+    <li><code>]# getent passwd | awk -F: '{$4==0} {print $1}'</code></li>
+    <li><code>]# useradd --create-home -s /sbin/nologin user1; passwd user1</code></li>
+    <li><code>}# userdel -r user1</code></li>
+  </ul>
+  <h2>sudoer file</h2>
+  <code>]# visudo</code>
 </body>
 </html>
