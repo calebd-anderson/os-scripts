@@ -16,40 +16,55 @@
     <code>]# systemctl disable firewalld</code>
     <code>]# systemctl mask firewalld</code>
   </div>
-  <h2>Config File</h2>
+  <h2>Config Files</h2>
   <div>/etc/sysconfig/iptables-config</div>
   <div>/proc/net/</div>
-  <div>
-    <h2>Allow HTTP - 80/tcp</h2>
-    <code>]# iptables -A INPUT -p tcp --dport 80 -j ACCEPT</code>
-    <code>]# iptables -A OUTPUT -p tcp --sport 80 -j ACCEPT</code>
-  </div>
   <div>
     <h2>Allow SSH - 22/tcp</h2>
     <code>]# iptables -A INPUT -p tcp --dport 22 -j ACCEPT</code>
     <code>]# iptables -A OUTPUT -p tcp --sport 22 -j ACCEPT</code>
   </div>
   <div>
-    <h2>Allow SMTP (postfix) - 25/tcp</h2>
-    <code>]# iptables -A INPUT -p tcp --dport 25 -j ACCEPT</code>
+    <h2>Allow HTTP (apache) - 80/tcp</h2>
+    <code>]# iptables -A INPUT -p tcp --dport 80 -j ACCEPT</code>
+    <code>]# iptables -A OUTPUT -p tcp --sport 80 -j ACCEPT</code>
   </div>
   <div>
-    <h2>Allow POP3 (dovecot) - 110/tcp</h2>
-    <code>]# iptables -A INPUT -p tcp --dport 110 -j ACCEPT</code>
+    <h2>Allow SMTP (postfix) - 25/tcp (?)</h2>
+    <code>]# iptables -A INPUT -p tcp --dport 25 -j ACCEPT</code>
+    <code>]# iptables -A OUTPUT -p tcp --sport 25 -j ACCEPT</code>
   </div>
-  <h2>Allow NTP - 123/tcp</h2>
-  <code>]# iptables -A INPUT -p tcp --dport 123 -j ACCEPT</code>
+  <div>
+    <h2>Allow POP3 (dovecot) - 110/tcp (?)</h2>
+    <code>]# iptables -A INPUT -p tcp --dport 110 -j ACCEPT</code>
+    <code>]# iptables -A OUTPUT -p tcp --sport 110 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow NTP - 123/tcp (?)</h2>
+    <code>]# iptables -A INPUT -p tcp --sport 123 -j ACCEPT</code>
+    <code>]# iptables -A OUTPUT -p tcp --dport 123 -j ACCEPT</code>
+  </div>
   <div>
     <h2>ALLOW DNS - 53/udp</h2>
     <code>]# iptables -A INPUT -p udp --sport 53 -j ACCEPT</code>
     <code>]# iptables -A OUTPUT -p udp --dport 53 -j ACCEPT</code>
   </div>
-  <h2>Allow Loopback</h2>
-  <code>]# iptables -A INPUT -i lo -j ACCEPT</code>
-  <h2>Allow Related Back In</h2>
-  <code>]# iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</code>
-  <h2>Allow ICMP In</h2>
-  <code>]# iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT</code>
+  <div>
+    <h2>Allow Loopback</h2>
+    <code>]# iptables -A INPUT -i lo -j ACCEPT</code>
+    <code>]# iptables -A OUTPUT -o lo -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow Established, Related In</h2>
+    <code>]# iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</code>
+    <code><s>]# iptables -I INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT</s></code>
+    <code><s>]# iptables -I OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT</s></code>
+    <a href=https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands>Reference</a>
+  </div>
+  <div>
+    <h2>Allow ICMP Out</h2>
+    <code>]# iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT</code>
+  </div>
   <h2>Reject IP</h2>
   <code>]# iptables -A INPUT -s &lt;IPADDR&gt; -j REJECT</code>
   <h2>Show Line Numbers</h2>
