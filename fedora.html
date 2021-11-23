@@ -11,9 +11,17 @@
   <h2>Enum</h2>
   <ul>
       <li>]# nmcli d</li>
-      <li>]# nmcli d show DEVICEID</li>
+      <li>]# nmcli d show [interfaceID]</li>
       <li>]# ip addr show</li>
   </ul>
-  <div></div>
+  <h2>DNS</h2>
+  <ul>
+    <li>]# vi /etc/resolv.conf</li>
+    ]# nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[nameserverIP] [gatewayIP]"
+  </ul>
+  <h2>tcpdump</h2>
+  <ul>
+    <li>]# tcpdump -nni &lt;interfaceID&gt; tcp and port 80</li>
+  </ul>
 </body>
 </html>
