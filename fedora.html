@@ -60,29 +60,44 @@
     <code>]# awk -F':' '{print $1}' /etc/passwd</code>
   </div>
   <div>
-    <h3>List all admin users</h3>
-    <code>]# getent passwd | awk -F: '($4==0) {print $1}'</code>
+    <h3><code>root</code> only UID 0 (page 495 fedora 19 cis)</h3>
+    <code>]# awk -F: '($3 == 0) { print $1 }' /etc/passwd</code>
+    <code>]# getent passwd 0 | cut -d ":" -f 1</code>
   </div>
+  <h3>List all users with GID 0</h3>
+  <code>]# getent passwd | awk -F: '($4==0) {print $1}'</code>
+  <h3>Check GID <code>root</code> 0 (page 458 fedora 19 cis)</h3>
+  <code>]# grep "^root:" /etc/passwd | cut -f4 -d:</code>
   <div>
     <h3>List all normal users</h3>
-    <code>]# getent passwd {1000..6000}</code>
     <code>]# grep -E '^UID_MIN|^UID_MAX' /etc/login.defs</code>
+    <code>]# getent passwd {1000..6000}</code>
   </div>
   <div>
     <h3>List system accounts</h3>
     <code>]# awk -F: '($3 &lt; 500) {print $1 }' /etc/passwd</code>
   </div>
-  <h3>Create user</h3>
+  <h3>Create email user</h3>
   <code>]# useradd --create-home -s /sbin/nologin user1; passwd user1</code>
   <h3>Delete user</h3>
   <code>]# userdel -r user1</code>
+  <h3>ID info</h3>
+  <code>]# id &lt;username&gt;</code>
+  <h3>Info</h3>
+  <code>]# finger &lt;username&gt;</code>
   <h2>Sudoer file</h2>
   <code>]# visudo</code>
   <h2>list sudo privileges</h2>
   <code>]# sudo -l -U &lt;username&gt;</code>
+  <h3>Last login</h3>
+  <code>]# lastlog -u &lt;username&gt;</code>
   <h2>Passwords</h2>
   <h3>Expiration</h3>
   <code>]# chage --list &lt;username&gt;</code>
+  <h3>PAM</h3>
+  <code>]# grep '^\s*minlen\s*' /etc/security/pwquality.conf</code>
+  <h2>Files (to-do)</h2>
+  <div>sticky bit world writable page 65 fedora 19 cis</div>
 </body>
 
 </html>
