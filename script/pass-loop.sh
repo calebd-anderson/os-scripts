@@ -1,5 +1,5 @@
 #!/bin/bash
-users=$(getent passwd | grep -v root | cut -d ":" -f 1)
+users=$(getent passwd {1000..6000} | cut -d ":" -f 1)
 for user in $users; do
   read -p "enter pass ("${user}"): " pass
   echo "$user:$pass" | chpasswd
