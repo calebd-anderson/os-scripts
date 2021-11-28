@@ -1,43 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Fedora</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="description" content="" />
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <h1>Fedora</h1>
-  <h2>Path</h2>
+  <div>
+    <h2>System</h2>
+    <code>]# uname -r</code>
+    <code>]# lscpu</code>
+    <code>]# cat /etc/issue</code>
+  </div>
+  <h2>Network</h2>
+  <h3>Paths</h3>
   <div>/etc/sysconfig/network-scripts/</div>
-  <h2>Enum Network</h2>
-  <ul>
-      <li><code>]# nmcli d</code></li>
-      <li><code>]# nmcli d show [interfaceID]</code></li>
-      <li><code>]# ip addr show</code></li>
-  </ul>
-  <h2>DNS</h2>
-  <ul>
-    <li><code>]# vi /etc/resolv.conf</code></li>
-    <li><code>]# nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[nameserverIP] [gatewayIP]"</code></li>
-  </ul>
-  <h2>tcpdump</h2>
-  <ul>
-    <li><code>]# tcpdump -nni &lt;interfaceID&gt; tcp and port 80</code></li>
-  </ul>
-  <h2>list sudo privileges</h2>
-  <ul>
-    <li><code>]# sudo -l -U &lt;username&gt;</code></li>
-  </ul>
-  <h2>users</h2>
-  <ul>
-    <li><code>]# compgen -u</code></li>
-    <li><code>]# awk -F':' '{print $1}' /etc/passwd</code></li>
-    <li><code>]# getent passwd | awk -F: '{$4==0} {print $1}'</code></li>
-    <li><code>]# useradd --create-home -s /sbin/nologin user1; passwd user1</code></li>
-    <li><code>}# userdel -r user1</code></li>
-  </ul>
-  <h2>sudoer file</h2>
+  <div>
+    <h3>Enumeration</h3>
+    <code>]# nmcli d</code>
+    <code>]# nmcli d show [interfaceID]</code>
+    <code>]# ip addr show</code>
+  </div>
+  <div>
+    <h3>Modify</h3>
+    <h4>IP Address</h4>
+    <code>]# nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[ipAddr] [gatewayIP]"</code>
+    <h4>DNS</h4>
+    <code>]# nmcli c modify &lt;interfaceID&gt; ipv4.dns [nameServerIP]</code>
+    <s><code>]# vi /etc/resolv.conf</code></s>
+    <h4>Disable ip6</h4>
+    <code>]# grep "^\s*linux" /boot/grub2/grub.cfg | grep -v ipv6.disable=1</code>
+  </div>
+  <div>
+    <h3>Analyze Traffic</h3>
+    <h4>tcpdump</h4>
+    <code>]# tcpdump -nni &lt;interfaceID&gt; tcp and port 80</code>
+  </div>
+  <h2>Services</h2>
+  <code>]# systemctl --type=service --state=running</code>
+  <h2>Users</h2>
+  <div>
+    <h3>nologon paths</h3>
+    <div>/sbin/nologin</div>
+    <div>/usr/sbin/nologin</div>
+    <h3>Audit usable system accounts (page 407 fedora 28 cis)</h3>
+    <!-- <code>]# egrep -v "^\+" /etc/passwd | awk -F: '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $3&lt;500 && $7!="/usr/sbin/nologin" && $7!="/bin/false") {print}'</code>
+    <code>]# egrep -v "^\+" /etc/passwd | awk -F: '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $3&lt;500 && $7!="/usr/sbin/nologin" && $7!="/bin/false") {print}'</code> -->
+    <code>]# awk -F: '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $1!~/^\+/ && $3&lt;'"$(awk '/^\s*UID_MIN/{print $2}' /etc/login.defs)"' && $7!="'"$(which nologin)"'" && $7!="/bin/false") {print}' /etc/passwd</code>
+    <code>]# awk -F: '($1!="root" && $1!~/^\+/ && $3&lt;'"$(awk '/^\s*UID_MIN/{print $2}' /etc/login.defs)"') {print $1}' /etc/passwd | xargs -I '{}' passwd -S '{}' | awk '($2!="L" && $2!="LK") {print $1}'</code>
+  </div>
+  <div>
+    <h3>List all users</h3>
+    <code>]# compgen -u</code>
+    <code>]# awk -F':' '{print $1}' /etc/passwd</code>
+  </div>
+  <div>
+    <h3>List all admin users</h3>
+    <code>]# getent passwd | awk -F: '($4==0) {print $1}'</code>
+  </div>
+  <div>
+    <h3>List all normal users</h3>
+    <code>]# getent passwd {1000..6000}</code>
+    <code>]# grep -E '^UID_MIN|^UID_MAX' /etc/login.defs</code>
+  </div>
+  <div>
+    <h3>List system accounts</h3>
+    <code>]# awk -F: '($3 &lt; 500) {print $1 }' /etc/passwd</code>
+  </div>
+  <h3>Create user</h3>
+  <code>]# useradd --create-home -s /sbin/nologin user1; passwd user1</code>
+  <h3>Delete user</h3>
+  <code>]# userdel -r user1</code>
+  <h2>Sudoer file</h2>
   <code>]# visudo</code>
+  <h2>list sudo privileges</h2>
+  <code>]# sudo -l -U &lt;username&gt;</code>
+  <h2>Passwords</h2>
+  <h3>Expiration</h3>
+  <code>]# chage --list &lt;username&gt;</code>
 </body>
+
 </html>
