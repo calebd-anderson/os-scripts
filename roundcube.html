@@ -8,7 +8,8 @@
 </head>
 <body>
   <h1>Roundcube Setup</h1>
-  <div>]# vi +10 /etc/httpd/conf.d/roundcubemail.conf</div>
+  <code>]# vi +10 /etc/httpd/conf.d/roundcubemail.conf</code>
+  <div><a href="https://httpd.apache.org/docs/2.4/mod/mod_authz_core.html">mod_authz_core.html (LDAP)</a></div>
   <pre>
 <code>
   &lt;Directory /usr/shara/roundcubemail/&gt;
@@ -16,7 +17,8 @@
         # Apache 2.4
         Require local
         Require ip 192.168.1.2
-        Require ip 192.168.50.1
+        Require ip 192.168.50.0/24
+        Require all granted
     &lt;/IfModule&gt;
     &lt;IfModule !mod_authz_core.c&gt;
         # Apache 2.2
@@ -28,5 +30,9 @@
   &lt;/Directory&gt;
 </code>
   </pre>
+  <h2>to-do</h2>
+  <ul>
+    <li>remove installer script</li>
+  </ul>
 </body>
 </html>

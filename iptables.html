@@ -28,11 +28,13 @@
     <div>/proc/net/[...]</div>
     <div>/etc/protocols</div>
     <div>
+      <!-- maybe catch all OUTPUT -->
       <h2>Aggregate (CCDC)</h2>
       <code>]# iptables -A INPUT -p tcp -m multiport --dports 25,80,110,143 -j ACCEPT</code>
       <code>]# iptables -A OUTPUT -p tcp -m multiport --sports 25,80,110,143 -j ACCEPT</code>
       <code>]# iptables -A INPUT -p udp -m multiport --sports 53,123,389 -j ACCEPT</code>
       <code>]# iptables -A OUTPUT -p udp -m multiport --dports 53,123,389 -j ACCEPT</code>
+      <!-- maybe no LDAP IN -->
       <code>]# iptables -A INPUT -p tcp --sport 389 -j ACCEPT</code>
       <code>]# iptables -A OUTPUT -p tcp --dport 389 -j ACCEPT</code>
       <code>]# iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</code>
