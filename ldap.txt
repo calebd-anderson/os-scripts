@@ -1,0 +1,64 @@
+# LDAP start
+vi +281 /etc/roundcubemail/config.inc.php
+
+# Address Book
+vi +723 /etc/roundcubemail/config.inc.php
+
+#hostname: WIN-5FSEVKEBMA5.metro-ccdc.lab
+
+vi +757 /etc/roundcubemail/config.inc.php
+
+# All retrivable parameters
+PS:> Get-ADUser calebtree -Properties *
+
+# CREATE
+~]# vi /etc/postfix/ldap/ldap-virtual-users.cf
+
+server_host = ldap://metro-ccdc.lab
+server_port = 389
+search_base = cn=Users,dc=metro-ccdc,dc=lab
+version = 3
+bind = yes
+bind_dn = cn=caleb,cn=Users,dc=metro-ccdc,dc=lab
+bind_pw = ***REMOVED***
+query_filter = cn=%s
+result_attribute = cn
+
+# convert to hash (not)
+]# postmap hash:/etc/postfix/ldap/ldap-virtual-users.cf
+
+# Test Connection
+~]# postmap -q 'caleb' ldap:/etc/postfix/ldap/ldap-virtual-users.cf
+
+# error codes
+# https://docs.servicenow.com/bundle/rome-platform-administration/page/administer/reference-pages/reference/r_LDAPErrorCodes.html
+
+postmap: warning: dict_ldap_connect: Unable to bind to server ldap://192.168.1.6:389 with dn uid=postfix,ou=services,dc=metro-ccdc,dc=lab: -1 (Can't contact LDAP server)
+postmap: fatal: table ldap:/etc/postfix/ldap_virtual_recipients.cf: query error: Transport endpoint is not connected
+
+~]# postmap -q metro-ccdc.lab ldap:/etc/postfix/ldap/ldap-virtual-domains.cf
+postmap: warning: dict_ldap_lookup: Search error 1: Operations error
+postmap: fatal: table ldap:/etc/postfix/ldap/ldap-virtual-domains.cf: query error: Success
+
+# add
+vi /etc/dovecot/dovecot.conf
+
+auth default {
+  mechanisms = plain
+
+  # LDAP database
+  userdb ldap {
+    args = /etc/dovecot/dovecot-ldap.conf
+  }
+
+  user = vmail
+}
+
+vi /etc/dovecot/dovecot-ldap.conf
+hosts = 192.168.1.6
+ldap_version = 3
+base = ou=people,dc=WIN-5FSEVKEBMA5,dc=metro-ccdc,dc=lab
+scope = subtree
+user_attrs = uid,mailMessageStore,,,,,mailQuotaSize=quota
+user_filter = (&(&(objectClass=qmailUser)(accountStatus=active))(|(mailAlternateAddress=%u)(mail=%u)(uid=%u)))
+user_global_uid = 1005
