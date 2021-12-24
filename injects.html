@@ -11,7 +11,7 @@
   <h1>Injects</h1>
   <div>
     <h2>NTP</h2>
-    <h3>NTP is installed?</h3>
+    <h3>NTP Client installed?</h3>
     <code>]# rpm -q chrony</code>
     <code>]# rpm -q ntp</code>
     <h3>Verify Remote Servers</h3>
@@ -21,6 +21,11 @@
     <code>]# grep ^OPTIONS /etc/sysconfig/chronyd</code>
     <code>]# grep "^OPTIONS" /etc/sysconfig/ntpd</code>
     <code>]# grep "^ExecStart" /usr/lib/systemd/system/ntpd.service</code>
+    <h3><code>chronyc</code></h3>
+    <code>~]$ vi /etc/chrony.conf</code>
+    <code>~]$ chronyc tracking</code>
+    <code>~]$ chronyc sources</code>
+    <code>~]$ chronyc sourcestats</code>
   </div>
 </body>
 </html>
