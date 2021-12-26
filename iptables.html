@@ -9,6 +9,7 @@
 </head>
   <body>
     <h1>iptables</h1>
+    <a href="https://crm.vpscheap.net/index.php?rp=/knowledgebase/29/25-Most-Frequently-Used-Linux-IPTables-Rules-Examples.html">Reference</a>
     <div>
       <h2>Disable <code>firewalld</code>:</h2>
       <code>]# systemctl stop firewalld</code>
@@ -30,18 +31,16 @@
     <div>
       <!-- maybe catch all OUTPUT -->
       <h2>Aggregate (CCDC)</h2>
-      <code>]# iptables -A INPUT -p tcp -m multiport --dports 25,80,110,143 -j ACCEPT</code>
-      <code>]# iptables -A OUTPUT -p tcp -m multiport --sports 25,80,110,143 -j ACCEPT</code>
-      <code>]# iptables -A INPUT -p udp -m multiport --sports 53,123,389 -j ACCEPT</code>
-      <code>]# iptables -A OUTPUT -p udp -m multiport --dports 53,123,389 -j ACCEPT</code>
-      <!-- maybe no LDAP IN -->
-      <code>]# iptables -A INPUT -p tcp --sport 389 -j ACCEPT</code>
-      <code>]# iptables -A OUTPUT -p tcp --dport 389 -j ACCEPT</code>
+      <!-- allow incoming  -->
+      <code>]# iptables -A INPUT -p tcp -m multiport --dports 25,80,110,143 -m state --state NEW,ESTABLISHED -j ACCEPT</code>
+      <code>]# iptables -A OUTPUT -p tcp -m multiport --sports 25,80,110,143 -m state --state NEW,ESTABLISHED -j ACCEPT</code>
       <code>]# iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</code>
+      <!-- allow outgoing -->
+      <code>]# iptables -A OUTPUT -p udp -m multiport --dports 53,123,389 -m state --state NEW,ESTABLISHED -j ACCEPT</code>
+      <code>]# iptables -A OUTPUT -p tcp  -m multiport --dports 389,443 -m state --state NEW,ESTABLISHED -j ACCEPT</code>
       <code>]# iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT</code>
       <code>]# iptables -A INPUT -i lo -j ACCEPT</code>
       <code>]# iptables -A OUTPUT -o lo -j ACCEPT</code>
-      <a href="https://crm.vpscheap.net/index.php?rp=/knowledgebase/29/25-Most-Frequently-Used-Linux-IPTables-Rules-Examples.html">Reference</a>
     </div>
     <div>
       <h2>Allow SSH - 22/tcp</h2>
