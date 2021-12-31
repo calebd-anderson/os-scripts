@@ -2,28 +2,27 @@
 <html lang="en">
 
 <head>
-    <title>Postfix</title>
+    <title>LDAP - Dovecot</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <h1>LDAP - Dovecot</h1>
     <div>
-        <code>]# yum install openldap*</code>
-        <code>]# ldapsearch -h ccdc-ad.lab -b cn=users,dc=metro-ccdc,dc=lab -LLL -x -W -D cn=caleb,cn=users,dc=metro-ccdc,dc=lab</code>
-        <code>]# vi /etc/dovecot/conf.d/10-auth.conf</code>
+        <code>yum install openldap*</code>
+        <code>ldapsearch -h ccdc-ad.lab -b cn=users,dc=metro-ccdc,dc=lab -LLL -x -W -D cn=caleb,cn=users,dc=metro-ccdc,dc=lab</code>
+        <code>vi /etc/dovecot/conf.d/10-auth.conf</code>
         <pre>
-            <code>
     - !include auth-system.conf.ext
     + #!include auth-system.conf.ext
     - #!include auth-ldap.conf.ext
     + !include auth-ldap.conf.ext
-            </code>
         </pre>
     </div>
-    <h2>thing</h2>
-    <code>]# /etc/dovecot/dovecot-ldap.conf.ext</code>
+    <h2>config</h2>
+    <code>/etc/dovecot/dovecot-ldap.conf.ext</code>
     <pre>
     hosts           = ccdc-ad.lab:389
     ldap_version    = 3
@@ -39,7 +38,10 @@
     # default_pass_scheme = CRYPT
     user_attrs      = =home=/home/vmail/%Ln/Maildir/,=mail=maildir:/home/vmail/%Ln/Maildir/,=uid=10000,=gid=10000
     </pre>
-
+    <h2>Dovecot variable syntax</h2>
+    <img src="syntax-1.png">
+    <h2>OpenLDAP (ldapsearch) - Syntax</h2>
+    <img src="syntax-2.png">
 </body>
 
 </html>

@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>MySQL</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="" />
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <h1>MySQL Setup</h1>
   <div>
     <h2>Log</h2>
-    <code>]# tail /var/log/mariadb/mariadb.log</code>
+    <code>tail /var/log/mariadb/mariadb.log</code>
   </div>
   <div>
     <h2>Config</h2>
-    <code>]# vi /etc/my.cnf</code>
-    <a href="https://stackoverflow.com/questions/13208614/restricting-mysql-connections-from-localhost-to-improve-security">scakoverflow reference</a>
+    <code>vi /etc/my.cnf</code>
+    <a
+      href="https://stackoverflow.com/questions/13208614/restricting-mysql-connections-from-localhost-to-improve-security">scakoverflow
+      reference</a>
     <h3>Restrict</h3>
     <code>[mysqld]</code>
     <code>bind-address=127.0.0.1</code>
     <code>MariaDB [()]> SHOW VARIABLES LIKE 'port';</code>
   </div>
 </body>
+
 </html>

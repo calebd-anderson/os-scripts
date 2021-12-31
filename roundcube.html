@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Roundcube</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 </head>
+
 <body>
   <h1>Roundcube Setup</h1>
-  <code>]# vi +10 /etc/httpd/conf.d/roundcubemail.conf</code>
+  <code>vi +10 /etc/httpd/conf.d/roundcubemail.conf</code>
   <div><a href="https://httpd.apache.org/docs/2.4/mod/mod_authz_core.html">mod_authz_core.html (LDAP)</a></div>
   <pre>
 <code>
@@ -32,19 +34,20 @@
   <h2>Config</h2>
   <div>
     <h4>Variable: <code>smtp_auth_type</code></h4>
-    <code>]# vi +248 /etc/roundcubemail/config.inc.php</code>
+    <code>vi +248 /etc/roundcubemail/config.inc.php</code>
     <h3>LDAP Start</h3>
     <code>vi +281 /etc/roundcubemail/config.inc.php</code>
     <h3>Address Book Start</h3>
     <code>vi +723 /etc/roundcubemail/config.inc.php</code>
     <h4>Variable: <code>address_book_type</code></h4>
-    <code>]# vi +734 /etc/roundcubemail/config.inc.php</code>
+    <code>vi +734 /etc/roundcubemail/config.inc.php</code>
     <h4>Variable: <code>hosts</code></h4>
-    <code>]# vi +766 /etc/roundcubemail/config.inc.php</code>
+    <code>vi +766 /etc/roundcubemail/config.inc.php</code>
   </div>
   <h2>to-do</h2>
   <ul>
     <li>remove installer script</li>
   </ul>
 </body>
+
 </html>

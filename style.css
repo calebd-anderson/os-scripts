@@ -1,3 +1,7 @@
 div > code {
     display: block;
 }
+
+code::before {
+    content: "]# ";
+}

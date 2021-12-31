@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Injects</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <h1>Injects</h1>
   <div>
     <h2>NTP</h2>
     <h3>NTP Client installed?</h3>
-    <code>]# rpm -q chrony</code>
-    <code>]# rpm -q ntp</code>
+    <code>rpm -q chrony</code>
+    <code>rpm -q ntp</code>
     <h3>Verify Remote Servers</h3>
-    <code>]# grep -E "^(server|pool)" /etc/chrony.conf</code>
-    <code>]# grep -E "^(server|pool)" /etc/ntp.conf</code>
+    <code>grep -E "^(server|pool)" /etc/chrony.conf</code>
+    <code>grep -E "^(server|pool)" /etc/ntp.conf</code>
     <h3>Options</h3>
-    <code>]# grep ^OPTIONS /etc/sysconfig/chronyd</code>
-    <code>]# grep "^OPTIONS" /etc/sysconfig/ntpd</code>
-    <code>]# grep "^ExecStart" /usr/lib/systemd/system/ntpd.service</code>
+    <code>grep ^OPTIONS /etc/sysconfig/chronyd</code>
+    <code>grep "^OPTIONS" /etc/sysconfig/ntpd</code>
+    <code>grep "^ExecStart" /usr/lib/systemd/system/ntpd.service</code>
     <h3><code>chronyc</code></h3>
     <code>~]$ vi /etc/chrony.conf</code>
     <code>~]$ chronyc tracking</code>
@@ -27,4 +29,5 @@
     <code>~]$ chronyc sourcestats</code>
   </div>
 </body>
+
 </html>
