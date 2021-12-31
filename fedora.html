@@ -10,6 +10,7 @@
 
 <body>
   <h1>Fedora</h1>
+  <code>yum remove -y cockpit</code>
   <div>
     <h2>System</h2>
     <code>uname -r</code>
@@ -18,8 +19,8 @@
   </div>
   <h2>Network</h2>
   <h3>Paths</h3>
-  <div> vi /etc/sysconfig/network-scripts/ifcfg-[eno...]</div>
-  <div>/etc/NetworkManager/system-connections/</div>
+    <div>/etc/sysconfig/network-scripts/ifcfg-[eno...]</div>
+    <div>/etc/NetworkManager/system-connections/</div>
   <div>
     <h3>gateway</h3>
     <code>route add default gw 192.168.1.2 [devID]</code>
