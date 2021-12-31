@@ -10,6 +10,9 @@
 <body>
   <h1>Dovecot Setup</h1>
   <a href="https://www.server-world.info/en/note?os=Fedora_21&p=mail&f=2">server-world page</a>
+  <code>]# doveconf</code> <div>in config files</div>
+  <code>]# doveconf -n</code> <div>not in config files</div>
+  <code>]# doveconf -N</code> <div>all including defaults</div>
   <h2>ports</h2>
   <table>
     <tr>
@@ -42,6 +45,16 @@
   <div>
     <code>]# vi +102 /etc/dovecot/dovecot.conf</code>
     <code>!include_try local.conf</code>
+  </div>
+  <div>
+    <code>]# vi +24 /etc/dovecot/conf.d/10-logging.conf</code>
+    <code>auth_verbose = yes</code>
+    <code>]# vi +34 /etc/dovecot/conf.d/10-logging.conf</code>
+    <code>auth_debug = yes</code>
+    <code>]# vi +42 /etc/dovecot/conf.d/10-logging.conf</code>
+    <code>mail_debug = yes</code>
+    <code>]# vi +61 /etc/dovecot/dovecot.conf</code>
+    <code>mail_debug = yes</code>
   </div>
 
 </body>
