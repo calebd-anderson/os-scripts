@@ -22,6 +22,7 @@
   <div>/etc/NetworkManager/system-connections/</div>
   <div>
     <h3>gateway</h3>
+    <code>route add default gw 192.168.1.2 [devID]</code>
     <code>route -n</code>
     <code>ip route show</code>
     <code>netstat -rn</code>
@@ -35,25 +36,24 @@
   <div>
     <h3>Modify</h3>
     <h4>IP Address</h4>
-    <code>nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[ipAddr] [gatewayIP]"</code>
-    <code>ifconfig [devID] [ip_addr] netmask [255.255.255.0]</code>
+      <code>nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[ipAddr] [gatewayIP]"</code>
+      <code>ifconfig [devID] [ip_addr] netmask [255.255.255.0]</code>
     <h4>DNS</h4>
-    <code>nmcli c modify &lt;interfaceID&gt; ipv4.dns [nameServerIP]</code>
-    <code>vi /etc/resolv.conf</code>
-    <code>route add default gw 192.168.1.2 [devID]</code>
+      <code>nmcli c modify &lt;interfaceID&gt; ipv4.dns [nameServerIP]</code>
+      <code>vi /etc/resolv.conf</code>
     <h3>Refresh/Restart interface</h3>
-    <code>ip addr flush dev eno16777736</code>
-    <code>nmcli c down &lt;deviceID&gt;; nmcli c up &lt;deviceID&gt;</code>
-    <code>systemctl restart network.service</code>
-    <code>systemctl restart NetworkManager</code>
+      <code>ip addr flush dev eno16777736</code>
+      <code>nmcli c down &lt;deviceID&gt;; nmcli c up &lt;deviceID&gt;</code>
+      <code>systemctl restart network.service</code>
+      <code>systemctl restart NetworkManager</code>
     <h3>force reconnect</h3>
-    <code>nmcli con reload [devid]</code>
-    <code>dhclient -r</code>
-    <code>dhclient</code>
+      <code>nmcli con reload [devid]</code>
+      <code>dhclient -r</code>
+      <code>dhclient</code>
     <h3>ipv4.method (static/auto)</h3>
-    <div> nmcli c modify [devid] ipv4.method auto</div>
+      <div> nmcli c modify [devid] ipv4.method auto</div>
     <h4>Disable ip6</h4>
-    <code>grep "^\s*linux" /boot/grub2/grub.cfg | grep -v ipv6.disable=1</code>
+      <code>grep "^\s*linux" /boot/grub2/grub.cfg | grep -v ipv6.disable=1</code>
   </div>
   <div>
     <h3>Analyze Traffic</h3>
