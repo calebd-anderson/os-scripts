@@ -11,14 +11,21 @@
 <body>
   <h1>Fedora</h1>
   <code>yum remove -y cockpit</code>
+  <h2>hostname</h2>
   <div>
-    <h2>System</h2>
+    <code>hostnamectl set-hostname [dc].[dc].[tld]</code>
+    <code>hostname -f[s][i]</code>
+    <div>/etc/hostname</div>
+    <div>/etc/hosts</div>
+  </div>
+  <div>
+    <h2>system</h2>
     <code>uname -r</code>
     <code>lscpu</code>
     <code>cat /etc/issue</code>
   </div>
-  <h2>Network</h2>
-  <h3>Paths</h3>
+  <h2>network</h2>
+  <h3>paths</h3>
     <div>/etc/sysconfig/network-scripts/ifcfg-[eno...]</div>
     <div>/etc/NetworkManager/system-connections/</div>
   <div>
@@ -28,8 +35,13 @@
     <code>ip route show</code>
     <code>netstat -rn</code>
   </div>
+  <h3>ports and services</h3>
   <div>
-    <h3>Enumeration</h3>
+    <code>lsof -Pni :25</code>
+    <code>netstat -tulnp</code>
+  </div>
+  <div>
+    <h3>enumeration</h3>
     <code>nmcli d</code>
     <code>nmcli d show [interfaceID]</code>
     <code>ip addr show</code>
@@ -131,6 +143,11 @@
       href="https://docs.fedoraproject.org/en-US/Fedora/21/html/System_Administrators_Guide/sec-Configuring_Yum_and_Yum_Repositories.html">https://docs.fedoraproject.org/en-US/Fedora/21/html/System_Administrators_Guide/sec-Configuring_Yum_and_Yum_Repositories.html</a>
     <code>/etc/yum.conf</code>
     <code>/etc/yum.repos.d</code>
+  </div>
+  <div>
+    <h2>Logging</h2>
+    <div>/var/log/maillog</div>
+    <div>/var/log/roundcubemail/errors</div>
   </div>
   <h2>to-do</h2>
   <div>sticky bit world writable page 65 fedora 19 cis</div>

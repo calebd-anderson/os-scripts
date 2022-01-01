@@ -10,6 +10,7 @@
 
 <body>
     <h1>LDAP - Postfix</h1>
+    <a href="http://acidx.net/wordpress/2014/06/installing-a-mailserver-with-postfix-dovecot-sasl-ldap-roundcube/">reference</a>
     <div>
         <h2>main.cf</h2>
         <code>vi /etc/postfix/main.cf</code>
@@ -27,10 +28,11 @@
         bind = yes
         bind_dn = cn=caleb,cn=Users,dc=metro-ccdc,dc=lab
         bind_pw = ***REMOVED***
-        query_filter = cn=%s
-        result_attribute = cn
+        query_filter = (&(mail=%s))
+        result_attribute = mail
         </pre>
-        <code>postmap -q 'caleb' ldap:/etc/postfix/ldap/ldap_virtual_recipients.cf</code>
+        <h3>test</h3>
+        <code>postmap -q 'calebtree@metro-ccdc.lab' ldap:/etc/postfix/ldap/ldap_virtual_recipients.cf</code>
     </div>
     <div>
         <h2>virtual_domains</h2>
@@ -43,6 +45,7 @@
     </div>
     <div>
         <h2>drop.cidr</h2>
+        <code>vi /etc/postfix/ldap/drop.cidr</code>
         <pre>
         # IP/CIDR			Action
         1.2.3.0/24			REJECT Blacklisted
@@ -50,6 +53,7 @@
     </div>
     <div>
         <h2>identitycheck.pcre</h2>
+        <code>vi /etc/postfix/ldap/identitycheck.pcre</code>
         <pre>
         # Identity (RegEx)		Action
         /^(mail\.example\.com)$/	REJECT Hostname Abuse: $1
