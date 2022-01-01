@@ -11,18 +11,16 @@
 <body>
     <h1>LDAP - Dovecot</h1>
     <div>
-        <code>yum install openldap*</code>
+        <code>yum install -y openldap*</code>
         <code>ldapsearch -h ccdc-ad.lab -b cn=users,dc=metro-ccdc,dc=lab -LLL -x -W -D cn=caleb,cn=users,dc=metro-ccdc,dc=lab</code>
-        <code>vi /etc/dovecot/conf.d/10-auth.conf</code>
-        <pre>
-    - !include auth-system.conf.ext
-    + #!include auth-system.conf.ext
-    - #!include auth-ldap.conf.ext
-    + !include auth-ldap.conf.ext
-        </pre>
+    </div>
+    <div>
+        <h2>create vmail user</h2>
+        <code>groupadd -g 10000 vmail</code>
+        <code>useradd -u 10000 -g 10000 -s /bin/false vmail</code>
     </div>
     <h2>config</h2>
-    <code>/etc/dovecot/dovecot-ldap.conf.ext</code>
+    <code>vi /etc/dovecot/dovecot-ldap.conf.ext</code>
     <pre>
     hosts           = ccdc-ad.lab:389
     ldap_version    = 3
@@ -38,6 +36,28 @@
     # default_pass_scheme = CRYPT
     user_attrs      = =home=/home/vmail/%Ln/Maildir/,=mail=maildir:/home/vmail/%Ln/Maildir/,=uid=10000,=gid=10000
     </pre>
+    <div>
+        <h3>symlink so passdb/userdb</h3>
+        <code>ln -s /etc/dovecot/dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext</code>
+        <code>vi +21 /etc/dovecot/conf.d/auth-ldap.conf.ext</code>
+        <pre>
+    userdb {
+        driver = ldap
+        + args = /etc/dovecot/dovecot-ldap-userdb.conf.ext
+        - args = /etc/dovecot/dovecot-ldap.conf.ext
+    }
+        </pre>
+    </div>
+    <div>
+        <h2>enable through comment</h2>
+        <code>vi /etc/dovecot/conf.d/10-auth.conf</code>
+        <pre>
+        - !include auth-system.conf.ext
+        + #!include auth-system.conf.ext
+        - #!include auth-ldap.conf.ext
+        + !include auth-ldap.conf.ext
+        </pre>
+    </div>
     <h2>Dovecot variable syntax</h2>
     <img src="assets/syntax-1.png">
     <h2>OpenLDAP (ldapsearch) - Syntax</h2>

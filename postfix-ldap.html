@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>LDAP - Postfix</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>LDAP - Postfix</h1>
+    <div>
+        <h2>main.cf</h2>
+        <code>vi /etc/postfix/main.cf</code>
+        <h3>smtpd_banner (573)</h3>
+        <div>smtpd_banner = $myhostname ESMTP $mail_name (Fedora)</div>
+    </div>
+    <div>
+        <h2>ldap_virtual_recipients.cf</h2>
+        <code>vi /etc/postfix/ldap/ldap_virtual_recipients.cf</code>
+        <pre>
+        server_host = ldap://ad.metro-ccdc.lab
+        server_port = 389
+        search_base = cn=Users,dc=metro-ccdc,dc=lab
+        version = 3
+        bind = yes
+        bind_dn = cn=caleb,cn=Users,dc=metro-ccdc,dc=lab
+        bind_pw = ***REMOVED***
+        query_filter = cn=%s
+        result_attribute = cn
+        </pre>
+        <code>postmap -q 'caleb' ldap:/etc/postfix/ldap/ldap_virtual_recipients.cf</code>
+    </div>
+    <div>
+        <h2>virtual_domains</h2>
+        <code>vi /etc/postfix/ldap/virtual_domains</code>
+        <pre>
+        # Domain		    Anything
+        metro-ccdc.lab		OK
+        </pre>
+        <code>postmap hash:/etc/postfix/ldap/virtual_domains</code>
+    </div>
+    <div>
+        <h2>drop.cidr</h2>
+        <pre>
+        # IP/CIDR			Action
+        1.2.3.0/24			REJECT Blacklisted
+        </pre>
+    </div>
+    <div>
+        <h2>identitycheck.pcre</h2>
+        <pre>
+        # Identity (RegEx)		Action
+        /^(mail\.example\.com)$/	REJECT Hostname Abuse: $1
+        /^(1\.2\.3\.4)$/		REJECT Hostname Abuse: $1
+        /^(\[1\.2\.3\.4\])$/		REJECT Hostname Abuse: $1
+        </pre>
+    </div>
+</body>
+
+</html>
