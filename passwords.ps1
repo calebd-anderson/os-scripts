@@ -66,7 +66,7 @@ function New-CtmADComplexPassword
     Write-Host -ForegroundColor Cyan "Creation of hashes used in pass the hash attack reg setting:"
     reg query HKLM\System\CurrentControlSet\Control\Lsa /f NoLMHash
 
-    $passLen = Read-Host "`nEnter the password length (0-25):"
+    $passLen = Read-Host "`nEnter the password length (0-25)"
     
     $samUsers = (Get-ADUser -Filter {SamAccountName -NotLike "Administrator" -and SamAccountName -NotLike "Guest" -and SamAccountName -NotLike "krbtgt" -and SamAccountName -NotLike "*_*" -and SamAccountName -NotLike "DefaultAccount"}).SamAccountName
 
@@ -84,7 +84,7 @@ function New-CtmADComplexPassword
         $hashTable.Add($user,$encrypted)
     }
     $hashTable | Export-Clixml -Path $env:userprofile\Desktop\securePasswords.xml
-    Write-Host -ForegroundColor Cyan "`"$env:userprofile\Desktop\securePasswords.xml`" has AD users db"
+    Write-Host -ForegroundColor Cyan "`n`"$usrPaswdDb`" has the AD user/password db.`n"
 }
 
 # --------- update the admin password ---------
@@ -158,13 +158,32 @@ function updateBinddnPassword{
 }
 
 function retrievePlainPasswords {
-    Write-Host -ForegroundColor Green "Retreives plaintext AD password(s)"    
-    $hashtable = Import-Clixml $env:userprofile\Desktop\securePasswords.xml
-    Write-Host -ForegroundColor Cyan "`n1) Print all plaintext to console.`n2) Save all plaintext to `"$env:userprofile\Desktop\all_user_passwords.txt`".`n3) Retrieve single plaintext using SamAccountName.`n"
+    $usrPaswdDb = "$env:userprofile\Desktop\securePasswords.xml"
+    $hastableExists = Test-Path -Path $usrPaswdDb;
+    Write-Host -ForegroundColor Green "Retreives plaintext AD password(s)`n"  
+    if($hastableExists) {
+        $hashtable = Import-Clixml $usrPaswdDb
+        Write-Host "Loaded AD users hashtable: " -NoNewline
+        Write-Host -ForegroundColor Green $hastableExists
+    } else {
+        Write-Host "Loaded AD users hashtable: " -NoNewline
+        Write-Host -ForegroundColor Red $hastableExists
+    }
+      
+    Write-Host -ForegroundColor Cyan "`n1) Update and save all user passwords to $usrPaswdDb.`n2) Update binddn password.`n3) Update Administrator password.`n4) Print all plaintext to console.`n5) Save all plaintext to `"$env:userprofile\Desktop\all_user_passwords.txt`". (risky!)`n6) Retrieve single plaintext using SamAccountName.`n"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
     $switch = Read-Host
     switch ($switch) {
         1 {
+            changePass
+        }
+        2 {
+            updateBinddnPassword
+        }
+        3 {
+            updateAdminPassword
+        }
+        4 {
             foreach ($key in $hashTable.GetEnumerator()) {
                 $PlainPassword = $key.Value
                 $SecurePassword = ConvertTo-SecureString $PlainPassword
@@ -176,7 +195,7 @@ function retrievePlainPasswords {
                 Write-Host -ForegroundColor DarkGray $UnsecurePassword
             }
         }
-        2 {
+        5 {
             foreach ($key in $hashTable.GetEnumerator()) {
                 $PlainPassword = "$($key.Value)"
                 $SecurePassword = ConvertTo-SecureString $PlainPassword
@@ -186,9 +205,9 @@ function retrievePlainPasswords {
                 #$host.UI.RawUI.foregroundcolor = "darkgray"
                 Out-File -FilePath "$env:userprofile\Desktop\all_user_passwords.txt" -InputObject "$($key.Name):$UnsecurePassword`n" -Append
             }                
-            Write-Host -ForegroundColor Cyan "All plaintext passwords saved to `"$env:userprofile\Desktop\all_user_passwords.txt`""
+            Write-Host -ForegroundColor Cyan "All plaintext passwords saved to `"$u`""
         }
-        3 {
+        6 {
             $username = Read-Host "Enter SamAccountName to retreive the plaintext password"    
             $PlainPassword = $hashtable."$username"
             $SecurePassword = ConvertTo-SecureString $PlainPassword
@@ -202,5 +221,4 @@ function retrievePlainPasswords {
     }
 }
 
-#changePass
 retrievePlainPasswords
