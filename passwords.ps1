@@ -66,39 +66,25 @@ function New-CtmADComplexPassword
     Write-Host -ForegroundColor Cyan "Creation of hashes used in pass the hash attack reg setting:"
     reg query HKLM\System\CurrentControlSet\Control\Lsa /f NoLMHash
 
-    Write-Host -ForegroundColor Cyan "`nParsing the domain name"
-    $domain = "$(wmic computersystem get domain | Select-Object -skip 1)".Trim();
-    $subd = $domain.Split('.')[0];
-    $tld = $domain.Split('.')[1];
+    $passLen = Read-Host "`nEnter the password length (0-25):"
     
-    $passLen = Read-Host "`nEnter the password length (0-25)"
-
-    Write-Host -ForegroundColor Cyan "`nChanging all AD passwords except admin and binddn`n"
-    $container = "OU=MailUsers, DC=$subd, DC=$tld"
-    $fqnUsers = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $container
-    
-    # $users = (Get-ADUser -Filter {SamAccountName -NotLike "Administrator" -and SamAccountName -NotLike "Guest" -and SamAccountName -NotLike "krbtgt" -and SamAccountName -NotLike "*_*" -and SamAccountName -NotLike "DefaultAccount"}).SamAccountName
-    $iterator = 0;
+    $samUsers = (Get-ADUser -Filter {SamAccountName -NotLike "Administrator" -and SamAccountName -NotLike "Guest" -and SamAccountName -NotLike "krbtgt" -and SamAccountName -NotLike "*_*" -and SamAccountName -NotLike "DefaultAccount"}).SamAccountName
 
     New-Variable -Name hashTable -Visibility Public -Value @{}
-    $host.UI.RawUI.foregroundcolor = "darkgray"
-    foreach ($user in $fqnUsers)
+    foreach ($user in $samUsers)
     {
         $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword "$passLen") -AsPlainText -Force;
-        # $canUserName = "$user".Trim() -replace '[CN=]{3}|[\,].*','';
-        # Write-Host "Changing the password of $canUserName";
+        Write-Host -ForegroundColor DarkGray "Updating " -NoNewline
+        Write-Host -ForegroundColor Cyan $user -NoNewline
+        Write-Host -ForegroundColor DarkGray " password and enabling";
         Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword;
         $encrypted = ConvertFrom-SecureString -SecureString $securePassword;
-        Write-Host "Now enabling $user account";
         Enable-ADAccount -Identity $user;
-        Out-File $env:userprofile\desktop\user_passwds_list.txt -Append -InputObject $user, $encrypted,""
-        Write-Host "Adding $user to the hash table"
+        Write-Host -ForegroundColor DarkGray "Adding $user to the hash table"
         $hashTable.Add($user,$encrypted)
-        $iterator++;
     }
-    Write-Host -ForegroundColor Cyan "`n`"$env:USERPROFILE\Desktop\user_passwds_list.txt`" has list of users and passwords"
     $hashTable | Export-Clixml -Path $env:userprofile\Desktop\securePasswords.xml
-    Write-Host -ForegroundColor Cyan "`"%localappdata%\securePasswords.xml`" has AD users .xml db"
+    Write-Host -ForegroundColor Cyan "`"$env:userprofile\Desktop\securePasswords.xml`" has AD users db"
 }
 
 # --------- update the admin password ---------
@@ -174,46 +160,44 @@ function updateBinddnPassword{
 function retrievePlainPasswords {
     Write-Host -ForegroundColor Green "Retreives plaintext AD password(s)"    
     $hashtable = Import-Clixml $env:userprofile\Desktop\securePasswords.xml
-    #$host.UI.RawUI.foregroundcolor = "darkgray"
-    Write-Host -ForegroundColor Cyan "1) Print all to console.`n2) Saves all to `"all_user_passwords.txt`".`n3) Prompt for a single username.`n"
+    Write-Host -ForegroundColor Cyan "`n1) Print all plaintext to console.`n2) Save all plaintext to `"$env:userprofile\Desktop\all_user_passwords.txt`".`n3) Retrieve single plaintext using SamAccountName.`n"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
     $switch = Read-Host
     switch ($switch) {
         1 {
             foreach ($key in $hashTable.GetEnumerator()) {
-                #"The key $($key.Name) is $($key.Value)"
-                $PlainPassword = "$($key.Value)"
+                $PlainPassword = $key.Value
                 $SecurePassword = ConvertTo-SecureString $PlainPassword
                 $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
                 $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
                 [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
-                #$host.UI.RawUI.foregroundcolor = "darkgray"
-                Write-Host -ForegroundColor Cyan "$($key.Name)'s password is:" -NoNewline; Write-Host -ForegroundColor DarkGray " $UnsecurePassword`n" -NoNewline
+                Write-Host -ForegroundColor Cyan $key.Name -NoNewline; 
+                Write-Host ":" -NoNewline
+                Write-Host -ForegroundColor DarkGray $UnsecurePassword
             }
         }
         2 {
             foreach ($key in $hashTable.GetEnumerator()) {
-                #"The key $($key.Name) is $($key.Value)"
                 $PlainPassword = "$($key.Value)"
                 $SecurePassword = ConvertTo-SecureString $PlainPassword
                 $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
                 $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
                 [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
                 #$host.UI.RawUI.foregroundcolor = "darkgray"
-                Out-File -FilePath "$env:userprofile\desktop\Script_Output\all_user_passwords.txt" -InputObject "$($key.Name):$UnsecurePassword`n" -Append
+                Out-File -FilePath "$env:userprofile\Desktop\all_user_passwords.txt" -InputObject "$($key.Name):$UnsecurePassword`n" -Append
             }                
-            Write-Host -ForegroundColor Cyan "All plaintext passwords are saved to `"Script_Output\all_user_passwords.txt`""
+            Write-Host -ForegroundColor Cyan "All plaintext passwords saved to `"$env:userprofile\Desktop\all_user_passwords.txt`""
         }
         3 {
-            $host.UI.RawUI.foregroundcolor = "magenta"
-            $username = Read-Host "Enter a full username to retreive the password"    
+            $username = Read-Host "Enter SamAccountName to retreive the plaintext password"    
             $PlainPassword = $hashtable."$username"
             $SecurePassword = ConvertTo-SecureString $PlainPassword
             $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
             $UnsecurePassword = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
             [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
-            $host.UI.RawUI.foregroundcolor = "darkgray"
-            Write-Host "The $username password is: $UnsecurePassword`n"
+            Write-Host -ForegroundColor Cyan `n$username -NoNewline
+            Write-Host ":" -NoNewline
+            Write-Host -ForegroundColor DarkGray $UnsecurePassword`n
         }
     }
 }
