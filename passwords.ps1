@@ -66,25 +66,35 @@ function New-CtmADComplexPassword
     Write-Host -ForegroundColor Cyan "Creation of hashes used in pass the hash attack reg setting:"
     reg query HKLM\System\CurrentControlSet\Control\Lsa /f NoLMHash
 
+    Write-Host -ForegroundColor Cyan "`nParsing the domain name"
+    $domain = "$(wmic computersystem get domain | Select-Object -skip 1)".Trim();
+    $subd = $domain.Split('.')[0];
+    $tld = $domain.Split('.')[1];
+    
     $passLen = Read-Host "`nEnter the password length (0-25)"
 
-    Write-Host -ForegroundColor Cyan "`nReplacing all AD passwords`n"
-    Write-Host -ForegroundColor Cyan "Skipping service, admin, guest, and default accounts`n"
-    $users = (Get-ADUser -Filter {SamAccountName -NotLike "Administrator" -and SamAccountName -NotLike "Guest" -and SamAccountName -NotLike "krbtgt" -and SamAccountName -NotLike "*_*" -and SamAccountName -NotLike "DefaultAccount"}).SamAccountName
+    Write-Host -ForegroundColor Cyan "`nChanging all AD passwords except admin and binddn`n"
+    $container = "OU=MailUsers, DC=$subd, DC=$tld"
+    $fqnUsers = Get-ADUser -Filter * -SearchScope Subtree -SearchBase $container
     
+    # $users = (Get-ADUser -Filter {SamAccountName -NotLike "Administrator" -and SamAccountName -NotLike "Guest" -and SamAccountName -NotLike "krbtgt" -and SamAccountName -NotLike "*_*" -and SamAccountName -NotLike "DefaultAccount"}).SamAccountName
+    $iterator = 0;
+
     New-Variable -Name hashTable -Visibility Public -Value @{}
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    foreach ($user in $users)
+    foreach ($user in $fqnUsers)
     {
-        $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword "$passLen") -AsPlainText -Force
-        Write-Host "Changing the password of $user"
-        Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword
-        $encrypted = ConvertFrom-SecureString -SecureString $securePassword
-        Write-Host "Now enabling $user account"
-        Enable-ADAccount -Identity $user
+        $securePassword = ConvertTo-SecureString (New-CtmADComplexPassword "$passLen") -AsPlainText -Force;
+        # $canUserName = "$user".Trim() -replace '[CN=]{3}|[\,].*','';
+        # Write-Host "Changing the password of $canUserName";
+        Set-ADAccountPassword -Identity $user -Reset -NewPassword $securePassword;
+        $encrypted = ConvertFrom-SecureString -SecureString $securePassword;
+        Write-Host "Now enabling $user account";
+        Enable-ADAccount -Identity $user;
         Out-File $env:userprofile\desktop\user_passwds_list.txt -Append -InputObject $user, $encrypted,""
         Write-Host "Adding $user to the hash table"
         $hashTable.Add($user,$encrypted)
+        $iterator++;
     }
     Write-Host -ForegroundColor Cyan "`n`"$env:USERPROFILE\Desktop\user_passwds_list.txt`" has list of users and passwords"
     $hashTable | Export-Clixml -Path $env:userprofile\Desktop\securePasswords.xml
