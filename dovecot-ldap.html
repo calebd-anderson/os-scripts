@@ -19,11 +19,13 @@
         <h2>create local vmail user</h2>
         <code>groupadd -g 10000 vmail</code>
         <code>useradd -u 10000 -g 10000 -s /bin/false vmail</code>
+        <!-- <code>useradd -u 10000 -g 10000 -s /bin/false -m -d /etc/dovecot/users vmail</code> -->
+        <h2>create virtual mail directory</h2>
+        <code>mkdir /etc/dovecot/users</code>
         <code>chown vmail:vmail /etc/dovecot/users/</code>
         <code>chmod 700 /etc/dovecot/users/</code>
-        <!-- <code>useradd -u 10000 -g 10000 -s /bin/false -m -d /etc/dovecot/users vmail</code> -->
     </div>
-    <h2>config</h2>
+    <h2>ldap/ad config</h2>
     <code>vi /etc/dovecot/dovecot-ldap.conf.ext</code>
     <pre>
     hosts           = ad.metro-ccdc.lab:389
@@ -36,34 +38,79 @@
     #scope           = subtree
     #deref           = never
 
-    #user_filter     = (&(objectClass=Person)(sAMAccountName=%n))
-    #pass_filter     = (&(objectClass=Person)(sAMAccountName=%n))
+    <em>#user_filter     = (&(objectClass=Person)(sAMAccountName=%n))</em>
+    <em>#pass_filter     = (&(objectClass=Person)(sAMAccountName=%n))</em>
 
     user_filter     = (&(objectClass=Person)(userPrincipalName=%u))
     pass_filter     = (&(objectClass=Person)(userPrincipalName=%u))
 
     pass_attrs      = userPassword=password
-    # consider getting extra pass_attrs from LDAP
-    #pass_attrs      = uid=uid,userPassword=password
+    <em># consider getting extra pass_attrs from LDAP</em>
+    <em>#pass_attrs      = uid=uid,userPassword=password</em>
 
     user_attrs      = =home=/etc/dovecot/users/%Ld/%Ln/Maildir/,=mail=maildir:/etc/dovecot/users/%Ld/%Ln/Maildir/,=uid=10000,=gid=10000
-    # consider getting extra user_attrs from LDAP
-    #user_attrs      = unixHomeDirectory=home=,unixHomeDirectory=mail=maildir:,uidNumber=uid=,=gid=10000
+    <em># consider getting extra user_attrs from LDAP</em>
+    <em>#user_attrs      = unixHomeDirectory=home=,unixHomeDirectory=mail=maildir:,uidNumber=uid=,=gid=10000</em>
     </pre>
     <div>
-        <h3>symlink so passdb/userdb</h3>
+        <h3>symlink</h3>
         <code>ln -s /etc/dovecot/dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext</code>
         <code>vi +21 /etc/dovecot/conf.d/auth-ldap.conf.ext</code>
         <pre>
     userdb {
         driver = ldap
-        + args = /etc/dovecot/dovecot-ldap-userdb.conf.ext
         - args = /etc/dovecot/dovecot-ldap.conf.ext
+        + args = /etc/dovecot/dovecot-ldap-userdb.conf.ext
     }
         </pre>
     </div>
+    
+    <h2>/etc/dovecot/conf.d/auth-ldap.conf.ext</h2>
+    <pre>
+    # Authentication for LDAP users. Included from 10-auth.conf.
+    #
+    # &lt;doc/wiki/AuthDatabase.LDAP.txt&gt;
+
+    passdb {
+        driver = ldap
+        <em># Path for LDAP configuration file, see example-config/dovecot-ldap.conf.ext</em>
+        <span style="background-color: green; color: white;">args = /etc/dovecot/dovecot-ldap.conf.ext</span>
+        <em># extras</em>
+        #pass_attrs = uid=user
+    }
+
+    # "prefetch" user database means that the passdb already provided the
+    # needed information and there's no need to do a separate userdb lookup.
+    # &lt;doc/wiki/UserDatabase.Prefetch.txt&gt;
+    #userdb {
+        #driver = prefetch
+    #}
+
+    userdb {
+        driver = ldap
+        <span style="background-color: green; color: white;">args = /etc/dovecot/dovecot-ldap-userdb.conf.ext</span>
+        <em># Default fields can be used to specify defaults that LDAP may override</em>
+        #default_fields = home=/home/virtual/%u
+        <em># extras</em>
+        #user_attrs = unixHomeDirectory=home,uidNumber=uid,gidNumber=gid
+    }
+
+    # If you don't have any user-specific settings, you can avoid the userdb LDAP
+    # lookup by using userdb static instead of userdb ldap, for example:
+    # &lt;doc/wiki/UserDatabase.Static.txt&gt;
+    #userdb {
+        #driver = static
+        #args = uid=vmail gid=vmail home=/var/vmail/%u
+    #}
+
+    #userdb {
+        #driver = static
+        #args = uid=vmail gid=vmail home=/home/vmail/%n/Maildir/
+    #}
+    </pre>
+
     <div>
-        <h2>enable through comment</h2>
+        <h2>enable through un/comment</h2>
         <code>vi /etc/dovecot/conf.d/10-auth.conf</code>
         <pre>
         - !include auth-system.conf.ext
@@ -72,10 +119,6 @@
         + !include auth-ldap.conf.ext
         </pre>
     </div>
-    <!-- <h2>Dovecot variable syntax</h2>
-    <img src="assets/syntax-1.png">
-    <h2>OpenLDAP (ldapsearch) - Syntax</h2>
-    <img src="assets/syntax-2.png"> -->
 </body>
 
 </html>
