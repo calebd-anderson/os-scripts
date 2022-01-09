@@ -5,14 +5,15 @@
   <title>Roundcube</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <h1>Roundcube Setup</h1>
-  <code>vi +10 /etc/httpd/conf.d/roundcubemail.conf</code>
   <div><a href="https://httpd.apache.org/docs/2.4/mod/mod_authz_core.html">mod_authz_core.html (LDAP)</a></div>
+  <h2>httpd</h2>
+  <code>vi +10 /etc/httpd/conf.d/roundcubemail.conf</code>
   <pre>
-<code>
   &lt;Directory /usr/shara/roundcubemail/&gt;
     &lt;IfModule mod_authz_core.c&gt;
         # Apache 2.4
@@ -29,20 +30,19 @@
         Allow from ::1
     &lt;/IfModule&gt;
   &lt;/Directory&gt;
-</code>
   </pre>
   <h2>Config</h2>
   <div>
-    <h4>Variable: <code>smtp_auth_type</code></h4>
+    <h3>smtp_auth_type =</h3>
     <code>vi +248 /etc/roundcubemail/config.inc.php</code>
   </div>
   <div>
-    <h2>enable_installer</h2>
+    <h3>enable_installer</h3>
     <code>rm -rf /usr/share/roundcubemail/installer</code>
     <code>vi +297 /etc/roundcube/config.inc.php</code>
   </div>
   <div>
-    <h2>product_name</h2>
+    <h3>product_name</h3>
     <code>vi +4677 /etc/roundcube/config.inc.php</code>
   </div>
   <h2>to-do</h2>
