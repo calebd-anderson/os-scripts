@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>PHP</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>PHP Setup and Security</h1>
+  <div>
+    <h2>Config</h2>
+    <code>vi /etc/php.ini</code>
+    <h3>disable_functions</h3>
+    <code>vi +305 /etc/php.ini</code>
+    <code>systemctl restart httpd</code>
+  </div>
+  <div>
+      <h2>php cli</h2>
+      <code>php -h</code>
+      <h3>lint</h3>
+      <code>php -l &lt;file&gt;</code>
+      <h3>function info</h3>
+      <code>php --rf passthru</code>
+  </div>
+</body>
+
+</html>

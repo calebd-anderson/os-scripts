@@ -56,6 +56,27 @@
     <code>vi +61 /etc/dovecot/dovecot.conf</code>
     <code>mail_debug = yes</code>
   </div>
-
+  <div>
+    <h2>doveadm</h2>
+    <code>doveadm auth test [user]</code>
+    <code>doveadm user [user]</code>
+  </div>
+  <div>
+    <h2>logging</h2>
+    <div>10-logging.conf</div>
+    <code>doveconf auth_verbose</code>
+    <code>doveconf auth_debug</code>
+    <code>doveconf mail_debug</code>
+    <code>verbose_proctitle</code>
+  </div>
+  <div>
+    <h2>master user</h2>
+    <code>vi /etc/dovecot/conf.d/auth-master.conf.ext</code>
+    <code>vi /etc/dovecot/conf.d/10-auth.conf</code>
+    <div>+ !include auth-master.conf.ext</div>
+    <div>- #!include auth-master.conf.ext</div>
+    <code>vi /etc/dovecot/master-users</code>
+    <div>adminuser:{PLAIN}secretsecret::::::</div>
+  </div>
 </body>
 </html>

@@ -10,25 +10,37 @@
 
 <body>
     <h1>LDAP - Postfix</h1>
-    <a href="http://acidx.net/wordpress/2014/06/installing-a-mailserver-with-postfix-dovecot-sasl-ldap-roundcube/">reference</a>
+    <ul>
+        <li><a href="http://acidx.net/wordpress/2014/06/installing-a-mailserver-with-postfix-dovecot-sasl-ldap-roundcube/">reference 1</a></li>
+        <li><a href="https://www.howtoforge.com/postfix-dovecot-authentication-against-active-directory-on-centos-5.x">reference 2</a></li>
+    </ul>
     <div>
         <h2>main.cf</h2>
         <code>vi /etc/postfix/main.cf</code>
-        <h3>smtpd_banner (573)</h3>
+        <h3>smtpd_banner (line 573)</h3>
         <div>smtpd_banner = $myhostname ESMTP $mail_name (Fedora)</div>
+        <div>smtpd_banner = $myhostname ESMTP $mail_name ($mail_version) (Fedora)</div>
     </div>
     <div>
-        <h2>ldap_virtual_recipients.cf</h2>
+        <h2>master.cf</h2>
+        <code>vi /etc/postfix/master.cf</code>
+        <pre>
+        dovecot   unix  -       n       n       -       -       pipe
+            flags=DRhu user=vmail:vmail argv=/usr/libexec/dovecot/deliver -f ${sender} -d ${recipient}
+        </pre>
+    </div>
+    <div>
+        <h2>ad_virtual_recipients.cf</h2>
         <code>vi /etc/postfix/ldap/ldap_virtual_recipients.cf</code>
         <pre>
         server_host = ldap://ad.metro-ccdc.lab
         server_port = 389
-        search_base = cn=Users,dc=metro-ccdc,dc=lab
+        search_base = ou=MailUsers,dc=metro-ccdc,dc=lab
         version = 3
         bind = yes
-        bind_dn = cn=caleb,cn=Users,dc=metro-ccdc,dc=lab
-        bind_pw = ***REMOVED***
-        query_filter = (&(mail=%s))
+        bind_dn = cn=vmail,cn=Users,dc=metro-ccdc,dc=lab
+        bind_pw = changeME!
+        query_filter = mail=%s
         result_attribute = mail
         </pre>
         <h3>test</h3>
@@ -61,6 +73,39 @@
         /^(\[1\.2\.3\.4\])$/		REJECT Hostname Abuse: $1
         </pre>
     </div>
+    <div>
+        <h2>useful commands</h2>
+        <h3>config</h3>
+            <h4>all Postfix parameters and their values</h4>
+                <code>postconf</code>
+            <h4>give value of a parameter</h4>
+                <code>postconf smtpd_tls_security_level</code>
+            <h4>all paramaters explicitly set in main.cf</h4>
+                <code>postconf -n</code>
+            <h3>give default values</h4>
+                <code>postconf -d</code>
+            <h4>defualt value of a given parameter</h4>
+                <code>postconf -d alias_maps</code>
+        <h3>queue</h3>
+            <h4>all mail in queue</h4>
+                <code>postqueue -p</code>
+            <h4>flush the queue (try to send)</h4>
+                <code>postqueue -f</code>
+            <h4>Delete an email from the queue (ids can be found in maillog)</h4>
+                <code>postsuper -d [id]</code>
+            <h4>delete all from queue</h4>
+                <code>postsuper -d ALL</code>
+            <h4>display message in queue</h4>
+                <code>postcat -q [messageid]</code>
+    </div>
+    <div>
+        <h2>logging</h2>
+        <code>egrep '(reject|warning|error|fatal|panic):' /var/log/maillog</code>
+    </div>
+    <h2>important paramaters</h2>
+    <code>postconf local_recipient_maps</code>
+
+
 </body>
 
 </html>

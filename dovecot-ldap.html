@@ -12,28 +12,31 @@
     <h1>LDAP - Dovecot</h1>
     <div>
         <code>yum install -y openldap*</code>
-        <code>ldapsearch -h ccdc-ad.lab -b cn=users,dc=metro-ccdc,dc=lab -LLL -x -W -D cn=caleb,cn=users,dc=metro-ccdc,dc=lab</code>
+        <div>create vmail user in AD</div>
+        <code>ldapsearch -h ad.metro-ccdc.lab -b ou=mailusers,dc=metro-ccdc,dc=lab -LLL -x -W -D cn=vmail,cn=users,dc=metro-ccdc,dc=lab</code>
     </div>
     <div>
         <h2>create vmail user</h2>
         <code>groupadd -g 10000 vmail</code>
         <code>useradd -u 10000 -g 10000 -s /bin/false vmail</code>
+        <code>chown vmail:vmail /etc/dovecot/users/</code>
+        <code>chmod 700 /etc/dovecot/users/</code>
+        <!-- <code>useradd -u 10000 -g 10000 -s /bin/false -m -d /etc/dovecot/users vmail</code> -->
     </div>
     <h2>config</h2>
     <code>vi /etc/dovecot/dovecot-ldap.conf.ext</code>
     <pre>
-    hosts           = ccdc-ad.lab:389
+    hosts           = ad.metro-ccdc.lab:389
     ldap_version    = 3
     auth_bind       = yes
     dn              = vmail
     dnpass          = changeME!
     base            = cn=users,dc=metro-ccdc,dc=lab
-    # scope           = subtree
-    # deref           = never
-    user_filter     = (&(objectClass=organizationalPerson)(sAMAccountName=%n))
-    pass_filter     = (&(objectClass=organizationalPerson)(sAMAccountName=%n))
+    #scope           = subtree
+    #deref           = never
+    user_filter     = (&(objectClass=Person)(sAMAccountName=%n))
+    pass_filter     = (&(objectClass=Person)(sAMAccountName=%n))
     pass_attrs      = userPassword=password
-    # default_pass_scheme = CRYPT
     user_attrs      = =home=/home/vmail/%Ln/Maildir/,=mail=maildir:/home/vmail/%Ln/Maildir/,=uid=10000,=gid=10000
     </pre>
     <div>
@@ -58,10 +61,10 @@
         + !include auth-ldap.conf.ext
         </pre>
     </div>
-    <h2>Dovecot variable syntax</h2>
+    <!-- <h2>Dovecot variable syntax</h2>
     <img src="assets/syntax-1.png">
     <h2>OpenLDAP (ldapsearch) - Syntax</h2>
-    <img src="assets/syntax-2.png">
+    <img src="assets/syntax-2.png"> -->
 </body>
 
 </html>
