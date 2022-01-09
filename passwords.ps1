@@ -89,7 +89,7 @@ function New-CtmADComplexPassword
 
 # --------- update the admin password ---------
 function updateAdminPassword {
-    Write-Host -ForegroundColor Green "`nChanges Admin password and name"
+    Write-Host -ForegroundColor Green "`nChanges Admin password"
     Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
 
@@ -101,7 +101,7 @@ function updateAdminPassword {
 
     Write-Host -ForegroundColor Cyan "Changing the admin password"
     $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb"
-    $host.UI.RawUI.foregroundcolor = "magenta"
+    #$host.UI.RawUI.foregroundcolor = "magenta"
     $securePassword = Read-Host "`nEnter a new Administrator password" -AsSecureString
     Set-ADAccountPassword -Identity $admin -Reset -NewPassword $securePassword
     <# encrypt and export
@@ -117,7 +117,7 @@ function updateAdminPassword {
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
     #>
     Write-Host -ForegroundColor Cyan "admin password has been updated"
-    $host.UI.RawUI.foregroundcolor = "white"
+    #$host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
@@ -128,15 +128,15 @@ function updateBinddnPassword{
     Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
 
-    Write-Host "Parsing the domain name"
+    Write-Host -ForegroundColor Cyan  "Parsing the domain name"
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
     $domaina = "$domain".Trim() -replace '.\b\w+', ''
     $domainb = "$domain".trim() -replace '^\w+\.', ''
 
-    Write-Host "Changing binddn password"
+    Write-Host -ForegroundColor Cyan "Changing binddn password"
     $binddn = "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
-    $host.UI.RawUI.foregroundcolor = "magenta"
+    #$host.UI.RawUI.foregroundcolor = "magenta"
     $securePassword = Read-Host "`nEnter a new binddn password" -AsSecureString
     Set-ADAccountPassword -Identity $binddn -Reset -NewPassword $securePassword
     <# encrypt and export
@@ -153,6 +153,7 @@ function updateBinddnPassword{
     #>
     Write-Host -ForegroundColor Cyan "binddn user password has been updated - now enabling"
     Enable-ADAccount -Identity $binddn
+    #$host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
