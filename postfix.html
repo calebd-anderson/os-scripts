@@ -4,7 +4,7 @@
   <title>Postfix</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Postfix Setup</h1>
@@ -23,12 +23,27 @@
         <td>smtps</td>
     </tr>
   </table>
-  <h2>config</h2>
-  <code>postconf</code>
+  <h2>setting</h2>
+  <code>alternatives --config mta</code>
   <div>
-      <div>Relay servers:</div>
-      <div>Variable: <code>mynetworks</code></div>
+    <h2>config</h2>
+    <code>postconf</code>
+    <h3>myhostname</h3>
+      <code>vi +75 /etc/postfix/main.cf</code>
+    <h3>mydomain</h3>
+      <code>vi +83 /etc/postfix/main.cf</code>
+    <h3>myorigin</h3>
+      <code>vi +99 /etc/postfix/main.cf</code>
+    <h3>inet_interfaces = all</h3>
+      <code>vi +113 /etc/postfix/main.cf</code>
+    <h3>inet_protocols = ipv4</h3>
+      <code>vi +119 /etc/postfix/main.cf</code>
+    <h3>mydestination</h3>
+      <code>vi +165 /etc/postfix/main.cf</code>
+    <h3>mynetworks</h3>
       <code>vi +264 /etc/postfix/main.cf</code>
+    <h3>home_mailbox</h3>
+      <code>vi +419 /etc/postfix/main.cf</code>
   </div>
 </body>
 </html>

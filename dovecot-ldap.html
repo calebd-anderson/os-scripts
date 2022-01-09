@@ -12,11 +12,11 @@
     <h1>LDAP - Dovecot</h1>
     <div>
         <code>yum install -y openldap*</code>
-        <div>create vmail user in AD</div>
-        <code>ldapsearch -h ad.metro-ccdc.lab -b ou=mailusers,dc=metro-ccdc,dc=lab -LLL -x -W -D cn=vmail,cn=users,dc=metro-ccdc,dc=lab</code>
+        <div>create binddn user in AD</div>
+        <code>ldapsearch -h ad.metro-ccdc.lab -b ou=mailusers,dc=metro-ccdc,dc=lab -LLL -x -W -D cn=binddn,cn=users,dc=metro-ccdc,dc=lab</code>
     </div>
     <div>
-        <h2>create vmail user</h2>
+        <h2>create local vmail user</h2>
         <code>groupadd -g 10000 vmail</code>
         <code>useradd -u 10000 -g 10000 -s /bin/false vmail</code>
         <code>chown vmail:vmail /etc/dovecot/users/</code>
@@ -29,15 +29,26 @@
     hosts           = ad.metro-ccdc.lab:389
     ldap_version    = 3
     auth_bind       = yes
-    dn              = vmail
+    dn              = binddn
     dnpass          = changeME!
-    base            = cn=users,dc=metro-ccdc,dc=lab
+    #base            = cn=users,dc=metro-ccdc,dc=lab
+    base            = ou=mailusers,dc=metro-ccdc,dc=lab
     #scope           = subtree
     #deref           = never
-    user_filter     = (&(objectClass=Person)(sAMAccountName=%n))
-    pass_filter     = (&(objectClass=Person)(sAMAccountName=%n))
+
+    #user_filter     = (&(objectClass=Person)(sAMAccountName=%n))
+    #pass_filter     = (&(objectClass=Person)(sAMAccountName=%n))
+
+    user_filter     = (&(objectClass=Person)(userPrincipalName=%u))
+    pass_filter     = (&(objectClass=Person)(userPrincipalName=%u))
+
     pass_attrs      = userPassword=password
-    user_attrs      = =home=/home/vmail/%Ln/Maildir/,=mail=maildir:/home/vmail/%Ln/Maildir/,=uid=10000,=gid=10000
+    # consider getting extra pass_attrs from LDAP
+    #pass_attrs      = uid=uid,userPassword=password
+
+    user_attrs      = =home=/etc/dovecot/users/%Ld/%Ln/Maildir/,=mail=maildir:/etc/dovecot/users/%Ld/%Ln/Maildir/,=uid=10000,=gid=10000
+    # consider getting extra user_attrs from LDAP
+    #user_attrs      = unixHomeDirectory=home=,unixHomeDirectory=mail=maildir:,uidNumber=uid=,=gid=10000
     </pre>
     <div>
         <h3>symlink so passdb/userdb</h3>

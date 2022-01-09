@@ -30,59 +30,19 @@
         </pre>
     </div>
     <div>
-        <h2>ad_virtual_recipients.cf</h2>
-        <code>vi /etc/postfix/ldap/ldap_virtual_recipients.cf</code>
-        <pre>
-        server_host = ldap://ad.metro-ccdc.lab
-        server_port = 389
-        search_base = ou=MailUsers,dc=metro-ccdc,dc=lab
-        version = 3
-        bind = yes
-        bind_dn = cn=vmail,cn=Users,dc=metro-ccdc,dc=lab
-        bind_pw = changeME!
-        query_filter = mail=%s
-        result_attribute = mail
-        </pre>
         <h3>test</h3>
         <code>postmap -q 'calebtree@metro-ccdc.lab' ldap:/etc/postfix/ldap/ldap_virtual_recipients.cf</code>
     </div>
     <div>
-        <h2>virtual_domains</h2>
-        <code>vi /etc/postfix/ldap/virtual_domains</code>
-        <pre>
-        # Domain		    Anything
-        metro-ccdc.lab		OK
-        </pre>
-        <code>postmap hash:/etc/postfix/ldap/virtual_domains</code>
-    </div>
-    <div>
-        <h2>drop.cidr</h2>
-        <code>vi /etc/postfix/ldap/drop.cidr</code>
-        <pre>
-        # IP/CIDR			Action
-        1.2.3.0/24			REJECT Blacklisted
-        </pre>
-    </div>
-    <div>
-        <h2>identitycheck.pcre</h2>
-        <code>vi /etc/postfix/ldap/identitycheck.pcre</code>
-        <pre>
-        # Identity (RegEx)		Action
-        /^(mail\.example\.com)$/	REJECT Hostname Abuse: $1
-        /^(1\.2\.3\.4)$/		REJECT Hostname Abuse: $1
-        /^(\[1\.2\.3\.4\])$/		REJECT Hostname Abuse: $1
-        </pre>
-    </div>
-    <div>
-        <h2>useful commands</h2>
+        <h2>commands</h2>
         <h3>config</h3>
             <h4>all Postfix parameters and their values</h4>
                 <code>postconf</code>
-            <h4>give value of a parameter</h4>
-                <code>postconf smtpd_tls_security_level</code>
-            <h4>all paramaters explicitly set in main.cf</h4>
+            <h4>value of a parameter</h4>
+                <code>postconf [parameter]</code>
+            <h4>all parameters explicitly set in main.cf</h4>
                 <code>postconf -n</code>
-            <h3>give default values</h4>
+            <h3>default values</h4>
                 <code>postconf -d</code>
             <h4>defualt value of a given parameter</h4>
                 <code>postconf -d alias_maps</code>
@@ -95,16 +55,24 @@
                 <code>postsuper -d [id]</code>
             <h4>delete all from queue</h4>
                 <code>postsuper -d ALL</code>
-            <h4>display message in queue</h4>
+            <h4>read message in queue</h4>
                 <code>postcat -q [messageid]</code>
     </div>
     <div>
         <h2>logging</h2>
         <code>egrep '(reject|warning|error|fatal|panic):' /var/log/maillog</code>
     </div>
-    <h2>important paramaters</h2>
-    <code>postconf local_recipient_maps</code>
 
+    <h2>main.cf</h2>
+    <pre>
+    ldapaliases_server_host = ad.metro-ccdc.lab
+    ldapaliases_search_base = ou=mailusers,dc=metro-ccdc,dc=lab
+    ldapaliases_query_filter = mail=%s
+    ldapaliases_result_attribute = mail
+    ldapaliases_bind = yes
+    ldapaliases_bind_dn = CN=binddn,CN=Users,DC=metro-ccdc,DC=lab
+    ldapaliases_bind_pw = changeME!
+    </pre>
 
 </body>
 

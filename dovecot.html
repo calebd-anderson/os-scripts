@@ -9,10 +9,8 @@
 </head>
 <body>
   <h1>Dovecot Setup</h1>
-  <a href="https://www.server-world.info/en/note?os=Fedora_21&p=mail&f=2">server-world page</a>
-  <code>doveconf</code> <div>in config files</div>
-  <code>doveconf -n</code> <div>not in config files</div>
-  <code>doveconf -N</code> <div>all including defaults</div>
+  <a href="https://www.server-world.info/en/note?os=Fedora_21&p=mail&f=2">server-world Fedora 21</a>
+  
   <h2>ports</h2>
   <table>
     <tr>
@@ -37,37 +35,48 @@
     </tr>
   </table>
 
-  <h2>protocols</h2>
   <div>
-    <code>vi +24 /etc/dovecot/dovecot.conf</code>
-    <code>protocols = imap pop3 lmtp</code>
+    <h2>doveconf</h2>
+    <h3>in config files</h3>
+      <code>doveconf</code>
+    <h3>not in config files</h3>
+      <code>doveconf -n</code>
+    <h3>all including defaults</h3>
+      <code>doveconf -N</code>
   </div>
+  
   <div>
-    <code>vi +102 /etc/dovecot/dovecot.conf</code>
-    <code>!include_try local.conf</code>
+    <h2>dovecot</h2>
+      <code>dovecot --build-options</code>
   </div>
-  <div>
-    <code>vi +24 /etc/dovecot/conf.d/10-logging.conf</code>
-    <code>auth_verbose = yes</code>
-    <code>vi +34 /etc/dovecot/conf.d/10-logging.conf</code>
-    <code>auth_debug = yes</code>
-    <code>vi +42 /etc/dovecot/conf.d/10-logging.conf</code>
-    <code>mail_debug = yes</code>
-    <code>vi +61 /etc/dovecot/dovecot.conf</code>
-    <code>mail_debug = yes</code>
-  </div>
+
   <div>
     <h2>doveadm</h2>
     <code>doveadm auth test [user]</code>
     <code>doveadm user [user]</code>
+    <code>doveadm mailbox status -u cddunn@metro-ccdc.lab all '*'</code>
+    <code>doveadm mailbox status -u cddunn@metro-ccdc.lab -t all '*'</code>
+    <code>doveadm search -u peer@example.com mailbox INBOX subject Postfix</code>
+  </div>
+
+  <h2>config</h2>
+  <div>
+    <h3>protocols</h3>
+    <code>vi +24 /etc/dovecot/dovecot.conf</code>
+    <code>protocols = imap pop3 lmtp</code>
   </div>
   <div>
     <h2>logging</h2>
-    <div>10-logging.conf</div>
-    <code>doveconf auth_verbose</code>
-    <code>doveconf auth_debug</code>
-    <code>doveconf mail_debug</code>
-    <code>verbose_proctitle</code>
+    <h4>auth_verbose = yes</h4>
+    <code>vi +24 /etc/dovecot/conf.d/10-logging.conf</code>
+    <h4>auth_debug = yes</h4>
+    <code>vi +34 /etc/dovecot/conf.d/10-logging.conf</code>
+    <h4>mail_debug = yes</h4>
+    <code>vi +42 /etc/dovecot/conf.d/10-logging.conf</code>
+    <h4>verbose_proctitle = yes</h4>
+    <code>vi +61 /etc/dovecot/dovecot.conf</code>
+    <code>doveadm log find</code>
+    <code>doveadm log errors</code>
   </div>
   <div>
     <h2>master user</h2>
