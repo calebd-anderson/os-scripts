@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>SELinux</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>SELinux</h1>
+    <pre>/etc/selinux/</pre>
+    <pre>/var/log/audit/</pre>
+    <div>
+      <h2>enumerate</h2>
+      <code>id -Z</code>
+      <code>sestatus</code>
+      <code>ls -Z /etc/dovecot/users</code>
+
+      <code>getsebool -a</code>
+      <code>setsebool -P</code>
+
+      <h2>config</h2>
+      <code>yum install -y policycoreutils-python</code>
+      <code>semanage fcontext -a -t user_home_t /etc/dovecot/users</code>
+
+      <h2>loggs</h2>
+      <code>systemctl status auditd</code>
+      <code>aureport | grep AVC</code>
+      <code>ausearch -m avc</code>
+      <code>tail /var/log/audit/audit.log</code>
+    </div>
+
+</body>
+
+</html>

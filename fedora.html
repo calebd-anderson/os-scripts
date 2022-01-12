@@ -66,6 +66,7 @@
     <h3>ipv4.method (static/auto)</h3>
       <div> nmcli c modify [devid] ipv4.method auto</div>
     <h4>Disable ipv6</h4>
+    <code>vi /proc/sys/net/ipv6/conf/eno16777736/disable_ipv6 </code>
       <code>vi /etc/sysctl.conf</code>
       <pre>
   net.ipv6.conf.all.disable.ipv6=1

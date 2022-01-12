@@ -23,7 +23,7 @@
         <td>smtps</td>
     </tr>
   </table>
-  <h2>setting</h2>
+  <h2>fedora setting</h2>
   <code>alternatives --config mta</code>
   <div>
     <h2>config</h2>
@@ -42,12 +42,30 @@
       <code>vi +165 /etc/postfix/main.cf</code>
     <h3>mynetworks</h3>
       <code>vi +264 /etc/postfix/main.cf</code>
+      <div>172.20.240.0/24 172.20.241.0/24 172.20.242.0/24</div>
     <h3>home_mailbox</h3>
       <code>vi +419 /etc/postfix/main.cf</code>
+
+    <code>vi /etc/postfix/main.cf</code>
+    <h3>smtpd_banner</h3>
+    <code>vi +573 /etc/postfix/main.cf</code>
+    <div>smtpd_banner = $myhostname ESMTP $mail_name (Fedora)</div>
+    <div>smtpd_banner = $myhostname ESMTP $mail_name ($mail_version) (Fedora)</div>
   </div>
-  <div>master.cf</div>
-  <div>chroot</div>
-  <div>/usr/share/doc/postfix/examples/chroot-setup/LINUX2</div>
-  <div>/var/spool/postfix</div>
+  <div>
+    <h3>chroot (/var/spool/postfix)</h3>
+    <code>cp /usr/share/doc/postfix/examples/chroot-setup/LINUX2 chroot-smtp.sh</code>
+    <code>chmod +x chroot-smtp.sh</code>
+    <code>./chroot-smtp.sh</code>
+    <code>vi /etc/postfix/master.cf</code>
+    <code>postfix reload</code>
+  </div>
+
+
+  <div>
+    <h2>logging</h2>
+    <code>egrep '(reject|warning|error|fatal|panic):' /var/log/maillog</code>
+  </div>
+
 </body>
 </html>
