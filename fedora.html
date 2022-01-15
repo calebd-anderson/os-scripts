@@ -64,7 +64,7 @@
       <code>dhclient -r</code>
       <code>dhclient</code>
     <h3>ipv4.method (static/auto)</h3>
-      <div> nmcli c modify [devid] ipv4.method auto</div>
+      <code>nmcli c modify [devid] ipv4.method auto</code>
     <h4>Disable ipv6</h4>
     <code>vi /proc/sys/net/ipv6/conf/eno16777736/disable_ipv6 </code>
       <code>vi /etc/sysctl.conf</code>
@@ -81,7 +81,7 @@
     <h4>tcpdump</h4>
     <code>tcpdump -nni &lt;interfaceID&gt; tcp and port 80</code>
   </div>
-  <h2>Services</h2>
+  <h2>Enumerate Services</h2>
   <code>systemctl --type=service --state=running</code>
   <h2>Users</h2>
   <div>
@@ -144,8 +144,7 @@
   </div>
   <div>
     <h3>repo list</h3>
-    <a
-      href="https://docs.fedoraproject.org/en-US/Fedora/21/html/System_Administrators_Guide/sec-Configuring_Yum_and_Yum_Repositories.html">https://docs.fedoraproject.org/en-US/Fedora/21/html/System_Administrators_Guide/sec-Configuring_Yum_and_Yum_Repositories.html</a>
+    <a href="https://docs.fedoraproject.org/en-US/Fedora/21/html/System_Administrators_Guide/sec-Configuring_Yum_and_Yum_Repositories.html">reference</a>
     <code>/etc/yum.conf</code>
     <code>/etc/yum.repos.d</code>
   </div>
@@ -156,21 +155,28 @@
     <code>journalctl -xe</code>
     <code>journalctl -u sshd.service</code>
   </div>
-  <h2>to-do</h2>
-  <div>sticky bit world writable page 65 fedora 19 cis</div>
-  <div>get some shas of binaries</div>
   <div>
-    <div>~/&lt;user&gt;/.ssh</div>
-      <div>/etc/ssh/</div>
+    <h2>gpg</h2>
+    <code>gpg --gen-key</code>
+    <code>gpg --fingerprint</code>    
+    <code>gpg --list-keys</code>    
+    <code>gpg --encrypt --recipient 'caleb@mail.metro-ccdc.lab' --output fedora_users.csv.enc fedora_users.csv</code>    
+    <code>gpg --decrypt --output fedora_users.csv fedora_users.csv.enc</code>
   </div>
   <div>
     <h2>processes</h2>
     <code>jobs</code>
     <code>fg %1</code>
   </div>
+  <h2>to-do</h2>
+  <div>sticky bit world writable page 65 fedora 19 cis</div>
+  <div>get some shas of binaries</div>
   <div>
-    /etc/crontab
+    <pre>~/&lt;user&gt;/.ssh</pre>
+    <pre>/etc/ssh/</pre>
+    <pre>/etc/crontab</pre>
   </div>
+
 </body>
 
 </html>
