@@ -19,6 +19,9 @@
         <h2>create local vmail user</h2>
         <code>groupadd -g 10000 vmail</code>
         <code>useradd -u 10000 -g 10000 -s /bin/false vmail</code>
+        <h3>or create system user</h3>
+        <code>groupadd -g 5000 -r vmail</code>
+        <code>adduser --system --home /srv/vmail --uid 5000 --gid 5000  vmail</code>
         <!-- <code>useradd -u 10000 -g 10000 -s /bin/false -m -d /etc/dovecot/users vmail</code> -->
         <h2>create virtual mail directory</h2>
         <code>mkdir /etc/dovecot/users</code>

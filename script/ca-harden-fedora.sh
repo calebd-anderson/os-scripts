@@ -102,7 +102,7 @@ IPTABLES_STATUS_VERBOSE=\"no\"
 # Print a counter/number for every rule in the status output.
 IPTABLES_STATUS_LINENUMBERS=\"yes\"" > /etc/sysconfig/iptables-config
 
-# audit usable system accounts
+# audit system accounts with logins
 awk -F: '($1!="root" && $1!~/^\+/ && $3<'"$(awk '/^\s*UID_MIN/{print $2}' /etc/login.defs)"') {print $1}' /etc/passwd | xargs -I '{}' passwd -S '{}' | awk '($2!="L" && $2!="LK") {print $1}' > audit_system_users.txt
 echo "usable system accounts in \"audit_system_users.txt\"\n"
 

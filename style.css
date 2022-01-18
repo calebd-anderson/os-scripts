@@ -5,3 +5,7 @@ div > code {
 code::before {
     content: "]# ";
 }
+
+.path {
+    font-family: monospace; 
+}

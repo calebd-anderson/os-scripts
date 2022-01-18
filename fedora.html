@@ -10,7 +10,10 @@
 
 <body>
   <h1>Fedora</h1>
-  <code>yum remove -y cockpit</code>
+  <div>
+    <code>yum remove -y cockpit</code>
+    <code>yum update -y</code>
+  </div>
   <h2>hostname</h2>
   <div>
     <code>hostnamectl set-hostname [dc].[dc].[tld]</code>
@@ -26,8 +29,8 @@
   </div>
   <h2>network</h2>
   <h3>paths</h3>
-    <div>/etc/sysconfig/network-scripts/ifcfg-[eno...]</div>
-    <div>/etc/NetworkManager/system-connections/</div>
+    <div class="path">/etc/sysconfig/network-scripts/ifcfg-[eno...]</div>
+    <div class="path">/etc/NetworkManager/system-connections/</div>
   <div>
     <h3>gateway</h3>
     <code>route add default gw 192.168.1.2 [devID]</code>
@@ -86,10 +89,12 @@
   <h2>Users</h2>
   <div>
     <h3>nologon paths</h3>
-    <div>/sbin/nologin</div>
-    <div>/usr/sbin/nologin</div>
+    <div class="path">/sbin/nologin</div>
+    <div class="path">/usr/sbin/nologin</div>
     <h3>Audit usable system accounts (page 407 fedora 28 cis)</h3>
-    <code>awk -F: '($1!="root" && $1!~/^\+/ && $3&lt;'"$(awk '/^\s*UID_MIN/{print $2}' /etc/login.defs)"') {print $1}' /etc/passwd | xargs -I '{}' passwd -S '{}' | awk '($2!="L" && $2!="LK") {print $1}'</code>
+      <code>awk -F: '($1!="root" && $1!~/^\+/ && $3&lt;'"$(awk '/^\s*UID_MIN/{print $2}' /etc/login.defs)"') {print $1}' /etc/passwd | xargs -I '{}' passwd -S '{}' | awk '($2!="L" && $2!="LK") {print $1}'</code>
+    <h3>List system accounts</h3>
+      <code>awk -F: '($3 &lt; 500) { print $1 }' /etc/passwd</code>
   </div>
   <div>
     <h3>List all users</h3>
@@ -110,14 +115,15 @@
     <code>grep -E '^UID_MIN|^UID_MAX' /etc/login.defs</code>
     <code>getent passwd {1000..6000}</code>
   </div>
-  <div>
-    <h3>List system accounts</h3>
-    <code>awk -F: '($3 &lt; 500) {print $1 }' /etc/passwd</code>
-  </div>
+
   <h3>Create email user</h3>
   <code>useradd --create-home -s /sbin/nologin user1; passwd user1</code>
-  <h3>Delete user</h3>
-  <code>userdel -r user1</code>
+  <div>
+    <h3>Delete user</h3>
+      <code>userdel -r user1</code>
+      <code>userdel -f user1</code>
+      <code>userdel -Z user1</code>
+  </div>
   <h3>ID info</h3>
   <code>id &lt;username&gt;</code>
   <h3>Info</h3>
@@ -136,11 +142,11 @@
   </div>
   <div>
     <h3>PAM (page 431 fedora 19 cis)</h3>
-    <code>grep '^\s*minlen\s*' /etc/security/pwquality.conf</code>
-    <code>authconfig --passminlen=8 --update</code>
-    <code>grep "^lcredit" /etc/security/pwquality.conf</code>
-    <code>authconfig --enablereqlower --update</code>
-    <a href="https://ostechnix.com/how-to-set-password-policies-in-linux/">reference</a>
+      <a href="https://ostechnix.com/how-to-set-password-policies-in-linux/">reference</a>
+      <code>grep '^\s*minlen\s*' /etc/security/pwquality.conf</code>
+      <code>authconfig --passminlen=8 --update</code>
+      <code>grep "^lcredit" /etc/security/pwquality.conf</code>
+      <code>authconfig --enablereqlower --update</code>
   </div>
   <div>
     <h3>repo list</h3>
@@ -156,14 +162,6 @@
     <code>journalctl -u sshd.service</code>
   </div>
   <div>
-    <h2>gpg</h2>
-    <code>gpg --gen-key</code>
-    <code>gpg --fingerprint</code>    
-    <code>gpg --list-keys</code>    
-    <code>gpg --encrypt --recipient 'caleb@mail.metro-ccdc.lab' --output fedora_users.csv.enc fedora_users.csv</code>    
-    <code>gpg --decrypt --output fedora_users.csv fedora_users.csv.enc</code>
-  </div>
-  <div>
     <h2>processes</h2>
     <code>jobs</code>
     <code>fg %1</code>
@@ -172,9 +170,9 @@
   <div>sticky bit world writable page 65 fedora 19 cis</div>
   <div>get some shas of binaries</div>
   <div>
-    <pre>~/&lt;user&gt;/.ssh</pre>
-    <pre>/etc/ssh/</pre>
-    <pre>/etc/crontab</pre>
+    <div class="path">~/&lt;user&gt;/.ssh</div>
+    <div class="path">/etc/ssh/</div>
+    <div class="path">/etc/crontab</div>
   </div>
 
 </body>
