@@ -16,6 +16,29 @@ iptables -P FORWARD DROP
 iptables -P INPUT DROP
 iptables -P OUTPUT DROP
 
+# logging
+iptables -A INPUT -p tcp ! --syn -m state --state NEW -m limit --limit 1/min -j LOG --log-prefix "SYN packet flood: "
+iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+
+iptables -A INPUT -f -m limit --limit 1/min -j LOG --log-prefix "Fragmented packet: "
+iptables -A INPUT -f -j DROP
+
+iptables -A INPUT -p tcp --tcp-flags ALL ALL -m limit --limit 1/min -j LOG --log-prefix "XMAS packet: "
+iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+
+iptables -A INPUT -p tcp --tcp-flags ALL NONE -m limit --limit 1/min -j LOG --log-prefix "NULL packet: "
+iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+
+iptables -A INPUT -p icmp -m limit --limit 3/sec -j ACCEPT
+iptables -A INPUT -p icmp -m limit --limit 1/minute -j LOG --log-prefix "ICMP Flood: "
+
+#iptables -A OUTPUT -f -m limit --limit 1/min -j LOG --log-prefix "Hacked Client "
+#iptables -A OUTPUT -p tcp --dport 31337:31340 --sport 31337:31340 -j DROP
+
+iptables -A OUTPUT -m limit --limit 2/min -j LOG --log-prefix "Output-Dropped: " --log-level 4
+iptables -A INPUT -m limit --limit 2/min -j LOG --log-prefix "Input-Dropped: " --log-level 4
+iptables -A FORWARD -m limit --limit 2/min -j LOG --log-prefix "Forward-Dropped: " --log-level 4
+
 # setup my services
 iptables -A INPUT -p tcp -m multiport --dports 25,80,110,143 -m state --state NEW,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -p tcp -m multiport --sports 25,80,110,143 -m state --state NEW,ESTABLISHED -j ACCEPT
@@ -25,6 +48,11 @@ iptables -A OUTPUT -p tcp -m multiport --dports 389,443 -m state --state NEW,EST
 iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
+
+# save iptables
+iptables-save > /etc/sysconfig/iptables
+
+echo kern.warning	/var/log/iptables.log >> /etc/rsyslog.conf
 
 # disable ipv6
 echo 'net.ipv6.conf.all.disable_ipv6=1' >> /etc/sysctl.conf
