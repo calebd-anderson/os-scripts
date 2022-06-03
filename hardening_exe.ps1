@@ -16,7 +16,7 @@ Param(
     [switch]$firewallRules,
     [switch]$removeIsass,
     [switch]$ports,
-    [switch]$loopPing,
+    [switch]$pingSweep,
     [switch]$dateChanged,
     [switch]$startups,
     [switch]$makeADBackup,
@@ -1224,12 +1224,10 @@ if($changePBinddn){
 #region User Query
 #--------- extract more info on pid ---------
 function morePIDInfo {
-    $host.UI.RawUI.foregroundcolor = "green"
-    Write-Host "Displays more info on PID(s)"
+    Write-Host "Displays more info on PID(s)" -ForegroundColor Green
     $host.UI.RawUI.foregroundcolor = "darkgray"
     tasklist.exe
-    $host.UI.RawUI.foregroundcolor = "magenta"
-    Write-Host -ForegroundColor Cyan "Enter a PID to get its properties: " -NoNewline
+    Write-Host -ForegroundColor Cyan "Enter a PID to get its properties: " -NoNewline -ForegroundColor Magenta
     $host.UI.RawUI.foregroundcolor = "cyan"
     $aPID = Read-Host
     Write-Host "Displaying properties of $aPID"
@@ -1845,18 +1843,18 @@ function processes {
 if($processes) {
     processes
 }
-# --------- loop ping ---------
-function loopPing {
+# --------- ping sweep ---------
+function pingSweep {
     Write-Host -ForegroundColor Green "`nEnumerates a class C subnet"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     ipconfig /all
     $host.UI.RawUI.foregroundcolor = "magenta"
-    $network = Read-Host "Enter the class C subnet (255.255.255) portion you would like to loop ping (<255.255.255>.[loop])"
+    $network = Read-Host "Enter the class C subnet (255.255.255.0) portion you would like ping sweep (<255.255.255>.[loop])"
     $host.UI.RawUI.foregroundcolor = "darkgray"
     cmd /c "for /L %I in (1,1,254) do ping -w 30 -n 1 $network.%I | find `"Reply`" >> `"$env:USERPROFILE\desktop\$network`_ping_loop.txt`""
 }
-if($loopPing) {
-    loopPing
+if($pingSweep) {
+    pingSweep
 }
 # --------- order directory by date changed ---------
 function dateChanged {
@@ -2570,7 +2568,7 @@ function avail {
     pickAKB (Provides applicable KB info then prompts for KB and downloads <KB>.msu to `"downloads`")
     GPTool (opens GP info tool)"
     Write-Host -ForegroundColor Gray -BackgroundColor DarkCyan "`n------- Extra: -------
-    loopPing (ping all IP addresses in a class C network)
+    pingSweep (ping all IP addresses in a class C network)
     ports (displays common ports file)
     dateChanged (Provide files by date changed)
     morePIDInfo (enter a PID for more info)
