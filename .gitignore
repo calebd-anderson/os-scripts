@@ -1,2 +1,5 @@
 .gitsecret/keys/random_seed
 !*.secret
+script/root_history_from_start.txt
+script/passlist.txt
+script/create-users.sh
