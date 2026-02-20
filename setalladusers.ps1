@@ -1,6 +1,6 @@
 Import-Module ActiveDirectory
 
-# import user hashtable from getalladusers.psq
+# import user hashtable from getalladusers.ps1
 $hashtable = Import-Clixml $env:userprofile\Desktop\ad_users_hashtable.xml
 $uid = 1000
 foreach ($key in $hashTable.GetEnumerator()) {
