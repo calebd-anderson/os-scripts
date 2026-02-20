@@ -84,24 +84,20 @@ function New-CtmADComplexPassword
         $hashTable.Add($user,$encrypted)
     }
     $hashTable | Export-Clixml -Path $env:userprofile\Desktop\securePasswords.xml
-    Write-Host -ForegroundColor Cyan "`n`"$usrPaswdDb`" has the AD user/password db.`n"
+    Write-Host -ForegroundColor Cyan "`n`"$env:userprofile\Desktop\securePasswords.xml`" has the AD user/password db.`n"
 }
 
 # --------- update the admin password ---------
 function updateAdminPassword {
-    Write-Host -ForegroundColor Green "`nChanges Admin password"
+    Write-Host -ForegroundColor Green "`nChanges Admin password and name"
     Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
 
-    Write-Host -ForegroundColor Cyan "Parsing the domain name"
-    $domain = wmic computersystem get domain | Select-Object -skip 1
-    $domain = "$domain".Trim()
-    $domaina = "$domain".Trim() -replace '.\b\w+', ''
-    $domainb = "$domain".trim() -replace '^\w+\.', ''
+    Write-Host -ForegroundColor Cyan "Getting AD user admin"
+    $admin = Get-ADUser Administrator
 
     Write-Host -ForegroundColor Cyan "Changing the admin password"
-    $admin = "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb"
-    #$host.UI.RawUI.foregroundcolor = "magenta"
+    $host.UI.RawUI.foregroundcolor = "magenta"
     $securePassword = Read-Host "`nEnter a new Administrator password" -AsSecureString
     Set-ADAccountPassword -Identity $admin -Reset -NewPassword $securePassword
     <# encrypt and export
@@ -117,7 +113,7 @@ function updateAdminPassword {
     $hashTable | Export-Clixml -Path $env:userprofile\appdata\local\securePasswords.xml
     #>
     Write-Host -ForegroundColor Cyan "admin password has been updated"
-    #$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
@@ -128,15 +124,11 @@ function updateBinddnPassword{
     Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
 
-    Write-Host -ForegroundColor Cyan  "Parsing the domain name"
-    $domain = wmic computersystem get domain | Select-Object -skip 1
-    $domain = "$domain".Trim()
-    $domaina = "$domain".Trim() -replace '.\b\w+', ''
-    $domainb = "$domain".trim() -replace '^\w+\.', ''
+    Write-Host -ForegroundColor Cyan "Getting AD user binddn"
+    $binddn = Get-ADUser binddn
 
     Write-Host -ForegroundColor Cyan "Changing binddn password"
-    $binddn = "CN=binddn,CN=Users,DC=$domaina,DC=$domainb"
-    #$host.UI.RawUI.foregroundcolor = "magenta"
+    $host.UI.RawUI.foregroundcolor = "magenta"
     $securePassword = Read-Host "`nEnter a new binddn password" -AsSecureString
     Set-ADAccountPassword -Identity $binddn -Reset -NewPassword $securePassword
     <# encrypt and export
@@ -153,25 +145,22 @@ function updateBinddnPassword{
     #>
     Write-Host -ForegroundColor Cyan "binddn user password has been updated - now enabling"
     Enable-ADAccount -Identity $binddn
-    #$host.UI.RawUI.foregroundcolor = "white"
+    $host.UI.RawUI.foregroundcolor = "white"
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
 
 function retrievePlainPasswords {
-    $usrPaswdDb = "$env:userprofile\Desktop\securePasswords.xml"
-    $hastableExists = Test-Path -Path $usrPaswdDb;
-    Write-Host -ForegroundColor Green "Retreives plaintext AD password(s)`n"  
-    if($hastableExists) {
-        $hashtable = Import-Clixml $usrPaswdDb
+    if(Test-Path -Path $env:userprofile\Desktop\securePasswords.xml) {
+        $hashtable = Import-Clixml $env:userprofile\Desktop\securePasswords.xml
         Write-Host "Loaded AD users hashtable: " -NoNewline
-        Write-Host -ForegroundColor Green $hastableExists
+        Write-Host -ForegroundColor Green "True"        
     } else {
         Write-Host "Loaded AD users hashtable: " -NoNewline
-        Write-Host -ForegroundColor Red $hastableExists
+        Write-Host -ForegroundColor Red "False"
     }
-      
-    Write-Host -ForegroundColor Cyan "`n1) Update and save all user passwords to $usrPaswdDb.`n2) Update binddn password.`n3) Update Administrator password.`n4) Print all plaintext to console.`n5) Save all plaintext to `"$env:userprofile\Desktop\all_user_passwords.txt`". (risky!)`n6) Retrieve single plaintext using SamAccountName.`n"
+    Write-Host -ForegroundColor Green "Retreives plaintext AD password(s)"    
+    Write-Host -ForegroundColor Cyan "`n1) Update all user passwords.`n2) Update binddn password.`n3) Update Administrator password.`n4) Print all plaintext to console.`n5) Save all plaintext to `"$env:userprofile\Desktop\all_user_passwords.txt`". (risky!)`n6) Retrieve single plaintext using SamAccountName.`n"
     Write-Host -ForegroundColor Magenta "Choose one: " -NoNewline
     $switch = Read-Host
     switch ($switch) {
@@ -223,3 +212,4 @@ function retrievePlainPasswords {
 }
 
 retrievePlainPasswords
+
