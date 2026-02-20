@@ -206,7 +206,7 @@ function retrievePlainPasswords {
                 #$host.UI.RawUI.foregroundcolor = "darkgray"
                 Out-File -FilePath "$env:userprofile\Desktop\all_user_passwords.txt" -InputObject "$($key.Name):$UnsecurePassword`n" -Append
             }                
-            Write-Host -ForegroundColor Cyan "All plaintext passwords saved to `"$u`""
+            Write-Host -ForegroundColor Cyan "All plaintext passwords saved to `"$env:userprofile\Desktop\all_user_passwords.txt`""
         }
         6 {
             $username = Read-Host "Enter SamAccountName to retreive the plaintext password"    

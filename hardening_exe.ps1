@@ -977,7 +977,7 @@ if($changeDCMode){
     changeDCMode
 }
 # --------- enable LockoutDuration 00:40:00, LockoutObservationWindow 00:20:00, ComplexityEnabled $True, MaxPasswordAge 10.00:00:00, MinPasswordLength 12 ---------
-function passPolicy{
+function passPolicy {
     Write-Host -ForegroundColor Green "`nSetting default domain password policies"
     $host.UI.RawUI.foregroundcolor = "cyan"
     Write-Host "Importing ActiveDirectory module"
@@ -1006,13 +1006,13 @@ function passPolicy{
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($passPolicy){
+if($passPolicy) {
     passPolicy
 }
 # --------- Main password changer ---------
 # password complexity code credit to: https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51
 #disable reverse encryption policy then change all DC user passwords except admin and binddn
-function changePass{
+function changePass {
     #region scriptkitty
     function Confirm-CtmADPasswordIsComplex
     {
@@ -1490,22 +1490,23 @@ if($plainPass){
 
 #region User Edits
 # --------- Set admin sensitive, password required all, remove members from Schema Admins ---------
-function userPols{
+function userPols {
+    makeOutDir
     Write-Host -ForegroundColor Green "`nEnabling special user policies"
     Write-Host -ForegroundColor Cyan "Importing ActiveDirectory module"
     Import-Module ActiveDirectory
     Write-Host -ForegroundColor Cyan "Users that don't require a password:"
     $host.UI.RawUI.foregroundcolor = "darkgray"
-    Get-ADUser -Filter {PasswordNotRequired -eq $true}    
-    Get-ADUser -Filter {PasswordNotRequired -eq $true} | Set-ADUser -PasswordNotRequired $false
+    Get-ADUser -Filter {PasswordNotRequired -eq $True}    
+    Get-ADUser -Filter {PasswordNotRequired -eq $True} | Set-ADUser -PasswordNotRequired $False
     Write-Host -ForegroundColor Cyan "All above users now require a password even Guest account :-)"
     Write-Host -ForegroundColor Cyan "Enabling admin sensitive (not delegated)"
     Write-Host -ForegroundColor Cyan "Compiling the domain"
     $domain = wmic computersystem get domain | Select-Object -skip 1
     $domain = "$domain".Trim()
-    $domaina = "$domain".Trim() -replace '.\b\w+', '' #prefix
-    $domainb = "$domain".trim() -replace '^\w+\.', '' #suffix
-    Set-ADUser -Identity "CN=Administrator,CN=Users,DC=$domaina,DC=$domainb" -AccountNotDelegated $true
+    $domainPrefix = "$domain".Trim() -replace '.\b\w+', '' #prefix
+    $domainSuffix = "$domain".trim() -replace '^\w+\.', '' #suffix
+    Set-ADUser -Identity "CN=Administrator,CN=Users,DC=$domainPrefix,DC=$domainSuffix" -AccountNotDelegated $True
     Write-Host -ForegroundColor Cyan "Removing all members from 'Schema Admins' AD group"
     #Remove-ADGroupMember -Identity Schema Admins -Members Administrator -Confirm:$False
     $Group = "Schema Admins"
@@ -1527,7 +1528,7 @@ function userPols{
     Write-Host "Press any key to continue . . ."; $HOST.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | OUT-NULL
     $HOST.UI.RawUI.Flushinputbuffer()
 }
-if($userPols){
+if($userPols) {
     userPols
 }
 # --------- disable guest account ---------
