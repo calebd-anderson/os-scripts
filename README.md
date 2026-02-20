@@ -13,6 +13,20 @@
     https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
     - 🔥 Use the executable from CLI and pass function names (below) as arguments/switches.
 
+### Microsoft Technet Scripts Retired
+[Announcement](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)  
+WebArchive Hack [credit](https://eskonr.com/2021/02/did-you-miss-to-download-your-samples-from-technet-gallery-here-is-how-you-can-do-it/):
+`http://web.archive.org/web/20200318065516/<TechnetURL>`  
+
+New Scripts Locations:  
+https://github.com/MicrosoftArchive  
+https://learn.microsoft.com/en-us/samples/browse/  
+https://www.powershellgallery.com/  
+
+Community Scripts:  
+https://rlmueller.net/Gallery.htm  
+https://github.com/MScholtes/TechNet-Gallery
+
 ### Script Goals/To-Do:  
 Disable unecessary services  
 KB research and implementation  
