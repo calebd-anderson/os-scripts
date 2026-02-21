@@ -1,7 +1,8 @@
 
 # Windows Server Hardening
+Windows Server scripts inspired by research from my time on the Metropolitan State University CCDC team in 2020.
 ### This script served as a study of Windows Server R2 security hardening.  
-##### 💬 Inspired by research from my Metro State 2020 CCDC team.
+
 **Disclaimer**: This script was built to be run in a VM for testing and educational purposes. It was not built for a production environment nor for malicious purposes.  
 
 ### There are two versions:  
