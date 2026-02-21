@@ -1,4 +1,4 @@
 # CCDC
 
-- [Fedora Linux Server Hardening](./fedora/README.md)
-- [Windows Server Hardening](./windows-server/README.md)
+- [Fedora Linux Server Hardening](./fedora)
+- [Windows Server Hardening](./windows-server)
