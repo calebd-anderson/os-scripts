@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Injects</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>Injects</h1>
+  <div>
+    <h2>NTP</h2>
+    <h3>NTP Client installed?</h3>
+      <code>rpm -q chrony</code>
+      <code>rpm -q ntp</code>
+    <h3>Verify Remote Servers</h3>
+      <code>grep -E "^(server|pool)" /etc/chrony.conf</code>
+      <code>grep -E "^(server|pool)" /etc/ntp.conf</code>
+    <h3>Options</h3>
+      <code>grep ^OPTIONS /etc/sysconfig/chronyd</code>
+      <code>grep "^OPTIONS" /etc/sysconfig/ntpd</code>
+      <code>grep "^ExecStart" /usr/lib/systemd/system/ntpd.service</code>
+    <h3><code>chronyc</code></h3>
+      <code>vi /etc/chrony.conf</code>
+      <code>chronyc tracking</code>
+      <code>chronyc sources</code>
+      <code>chronyc sourcestats</code>
+    <h3>Set NTP Server</h3>
+      <h4>ntpdate</h4>
+        <code>vi /etc/ntp/step-tickers</code>
+      <h4>ntpd</h4>
+        <code>vi +21 /etc/ntp.conf</code>
+        <div>192.168.69.71 iburst prefer</div>
+        <h4>force resync</h4>
+          <code>service ntpd stop</code>
+          <code>ntpd -gq</code>
+          <code>service ntpd start</code>
+        <h4>get status</h4>
+          <code>ntpstat</code>
+          <code>timedatectl</code>
+        <div>/etc/systemd/timesyncd.conf</div>
+        <code>timedatectl list-timezones</code>
+        <code>timedatectl set-timezone America/Chicago</code>
+        <code>ntpq -p</code>
+        <code>ntpdate [server]</code>
+      <h2>Web Presense Integrity</h2>
+        <code>yum search inotify-tools</code>
+        <code>yum install -y inotify-tools</code>
+        <code>inotifywait -m -r /usr/share/roundcubemail/ &</code>
+      <h2>Invintory report</h2>
+        <code></code>
+
+  </div>
+</body>
+
+</html>

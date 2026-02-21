@@ -1,0 +1,11 @@
+div > code {
+    display: block;
+}
+
+code::before {
+    content: "]# ";
+}
+
+.path {
+    font-family: monospace; 
+}

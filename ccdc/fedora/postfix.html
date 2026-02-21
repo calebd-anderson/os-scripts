@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Postfix</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Postfix Setup</h1>
+  <h2>ports</h2>
+  <table>
+    <tr>
+        <th>port</th>
+        <th>service</th>
+    </tr>
+    <tr>
+        <td>25</td>
+        <td>smtp</td>
+    </tr>
+    <tr>
+        <td>587</td>
+        <td>smtps</td>
+    </tr>
+  </table>
+  <h2>fedora setting</h2>
+  <code>alternatives --config mta</code>
+  <div>
+    <h2>config</h2>
+    <code>postconf</code>
+    <h3>myhostname</h3>
+      <code>vi +75 /etc/postfix/main.cf</code>
+    <h3>mydomain</h3>
+      <code>vi +83 /etc/postfix/main.cf</code>
+    <h3>myorigin</h3>
+      <code>vi +99 /etc/postfix/main.cf</code>
+    <h3>inet_interfaces = all</h3>
+      <code>vi +113 /etc/postfix/main.cf</code>
+    <h3>inet_protocols = ipv4</h3>
+      <code>vi +119 /etc/postfix/main.cf</code>
+    <h3>mydestination</h3>
+      <code>vi +165 /etc/postfix/main.cf</code>
+    <h3>mynetworks</h3>
+      <code>vi +264 /etc/postfix/main.cf</code>
+      <div>172.20.240.0/24 172.20.241.0/24 172.20.242.0/24</div>
+    <h3>home_mailbox</h3>
+      <code>vi +419 /etc/postfix/main.cf</code>
+
+    <code>vi /etc/postfix/main.cf</code>
+    <h3>smtpd_banner</h3>
+    <code>vi +573 /etc/postfix/main.cf</code>
+    <div>smtpd_banner = $myhostname ESMTP $mail_name (Fedora)</div>
+    <div>smtpd_banner = $myhostname ESMTP $mail_name ($mail_version) (Fedora)</div>
+  </div>
+  <div>
+    <h3>chroot (/var/spool/postfix)</h3>
+    <code>cp /usr/share/doc/postfix/examples/chroot-setup/LINUX2 chroot-smtp.sh</code>
+    <code>chmod +x chroot-smtp.sh</code>
+    <code>./chroot-smtp.sh</code>
+    <code>vi /etc/postfix/master.cf</code>
+    <code>postfix reload</code>
+  </div>
+
+
+  <div>
+    <h2>logging</h2>
+    <code>egrep '(reject|warning|error|fatal|panic):' /var/log/maillog</code>
+  </div>
+
+</body>
+</html>

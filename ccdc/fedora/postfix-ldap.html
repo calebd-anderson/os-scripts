@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>LDAP - Postfix</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>LDAP - Postfix</h1>
+    <ul>
+        <li><a href="http://acidx.net/wordpress/2014/06/installing-a-mailserver-with-postfix-dovecot-sasl-ldap-roundcube/">reference 1</a></li>
+        <li><a href="https://www.howtoforge.com/postfix-dovecot-authentication-against-active-directory-on-centos-5.x">reference 2</a></li>
+    </ul>
+    <div>
+        <h2>main.cf</h2>
+        <h3>LDAP</h3>
+        <pre>
+    ldapaliases_server_host = ad.clownfish.com
+    ldapaliases_search_base = ou="mail users",dc=ad,dc=clownfish,dc=com
+    ldapaliases_query_filter = userPrincipalName=%s
+    ldapaliases_result_attribute = userPrincipalName
+    ldapaliases_bind = yes
+    ldapaliases_bind_dn = cn=binddn,ou="mail users",dc=ad,dc=clownfish,dc=com
+    ldapaliases_bind_pw = changeME!
+        </pre>
+    </div>
+    <div>
+        <h2><s>master.cf - dovecot-lda</s></h2>
+        <code>vi /etc/postfix/master.cf</code>
+        <pre>
+        dovecot   unix  -       n       n       -       -       pipe
+            flags=DRhu user=vmail:vmail argv=/usr/libexec/dovecot/deliver -f ${sender} -d ${recipient}
+        </pre>
+    </div>
+    <div>
+        <h3>test</h3>
+        <code><s>postmap -q 'calebtree@metro-ccdc.lab' ldap:/etc/postfix/ldap/ldap_virtual_recipients.cf</s></code>
+        <code>postmap -q 'calebtree@metro-ccdc.lab' ldap:ldapaliases</code>
+    </div>
+    <div>
+        <h2>commands</h2>
+        <h3>config</h3>
+            <h4>all Postfix parameters and their values</h4>
+                <code>postconf</code>
+            <h4>value of a parameter</h4>
+                <code>postconf [parameter]</code>
+            <h4>all parameters explicitly set in main.cf</h4>
+                <code>postconf -n</code>
+            <h3>default values</h4>
+                <code>postconf -d</code>
+            <h4>defualt value of a given parameter</h4>
+                <code>postconf -d alias_maps</code>
+        <h3>queue</h3>
+            <h4>all mail in queue</h4>
+                <code>postqueue -p</code>
+            <h4>flush the queue (try to send)</h4>
+                <code>postqueue -f</code>
+            <h4>Delete an email from the queue (ids can be found in maillog)</h4>
+                <code>postsuper -d [id]</code>
+            <h4>delete all from queue</h4>
+                <code>postsuper -d ALL</code>
+            <h4>read message in queue</h4>
+                <code>postcat -q [messageid]</code>
+    </div>
+</body>
+
+</html>

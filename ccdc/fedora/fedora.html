@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Fedora</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>Fedora</h1>
+  <div>
+    <code>yum remove -y cockpit</code>
+    <code>yum update -y</code>
+  </div>
+  <h2>hostname</h2>
+  <div>
+    <code>hostnamectl set-hostname [dc].[dc].[tld]</code>
+    <code>hostname -f[s][i]</code>
+    <div class="path">/etc/hostname</div>
+    <div class="path">/etc/hosts</div>
+  </div>
+  <div>
+    <h2>system enumeration</h2>
+    <code>uname -r</code>
+    <code>uname -o</code>
+    <code>lscpu</code>
+    <code>cat /etc/issue</code>
+  </div>
+  <h2>network</h2>
+  <h3>config paths</h3>
+    <div class="path">/etc/sysconfig/network-scripts/ifcfg-[eno...]</div>
+    <div class="path">/etc/NetworkManager/system-connections/</div>
+  <div>
+    <h3>gateway config</h3>
+    <code>route add default gw 192.168.1.2 [devID]</code>
+    <code>route -n</code>
+    <code>ip route show</code>
+    <code>netstat -rn</code>
+  </div>
+  <h3>ports and services</h3>
+  <div>
+    <code>lsof -Pni :25</code>
+    <code>netstat -tulnp</code>
+  </div>
+  <div>
+    <h3>enumeration</h3>
+    <code>nmcli d</code>
+    <code>nmcli d show [interfaceID]</code>
+    <code>ip addr show</code>
+  </div>
+  <div>
+    <h3>Modify</h3>
+    <h4>IP Address</h4>
+      <code>nmcli c modify &lt;interfaceID&gt; ipv4.addresses "[ipAddr] [gatewayIP]"</code>
+      <code>ifconfig [devID] [ip_addr] netmask [255.255.255.0]</code>
+    <h4>DNS</h4>
+      <code>nmcli c modify &lt;interfaceID&gt; ipv4.dns [nameServerIP]</code>
+      <code>vi /etc/resolv.conf</code>
+    <h3>Refresh/Restart interface</h3>
+      <code>ip addr flush dev eno16777736</code>
+      <code>nmcli c down &lt;deviceID&gt;; nmcli c up &lt;deviceID&gt;</code>
+      <code>systemctl restart network.service</code>
+      <code>systemctl restart NetworkManager</code>
+    <h3>force reconnect</h3>
+      <code>nmcli con reload [devid]</code>
+      <code>dhclient -r</code>
+      <code>dhclient</code>
+    <h3>ipv4.method (static/auto)</h3>
+      <code>nmcli c modify [devid] ipv4.method auto</code>
+    <h4>Disable ipv6</h4>
+    <code>vi /proc/sys/net/ipv6/conf/eno16777736/disable_ipv6 </code>
+      <code>vi /etc/sysctl.conf</code>
+      <pre>
+  net.ipv6.conf.all.disable.ipv6=1
+  net.ipv6.conf.default.disable.ipv6=1
+  net.ipv6.conf.lo.disable.ipv6=1
+      </pre>
+      <code>sysctl -p</code>
+      <code>grep "^\s*linux" /boot/grub2/grub.cfg | grep -v ipv6.disable=1</code>
+  </div>
+  <div>
+    <h3>Analyze Traffic</h3>
+    <h4>tcpdump</h4>
+    <code>tcpdump -nni &lt;interfaceID&gt; tcp and port 80</code>
+  </div>
+  <h2>Enumerate Services</h2>
+  <code>systemctl --type=service --state=running</code>
+  <h2>Users</h2>
+  <div>
+    <h3>nologon paths</h3>
+    <div class="path">/sbin/nologin</div>
+    <div class="path">/usr/sbin/nologin</div>
+    <h3>Audit usable system accounts (page 407 fedora 28 cis)</h3>
+      <code>awk -F: '($1!="root" && $1!~/^\+/ && $3&lt;'"$(awk '/^\s*UID_MIN/{print $2}' /etc/login.defs)"') {print $1}' /etc/passwd | xargs -I '{}' passwd -S '{}' | awk '($2!="L" && $2!="LK") {print $1}'</code>
+    <h3>List system accounts</h3>
+      <code>awk -F: '($3 &lt; 500) { print $1 }' /etc/passwd</code>
+  </div>
+  <div>
+    <h3>List all users</h3>
+    <code>compgen -u</code>
+    <code>awk -F':' '{print $1}' /etc/passwd</code>
+  </div>
+  <div>
+    <h3>root only UID 0 (page 495 fedora 19 cis)</h3>
+    <code>awk -F: '($3 == 0) { print $1 }' /etc/passwd</code>
+    <code>getent passwd 0 | cut -d ":" -f 1</code>
+  </div>
+  <div>
+    <h3>List all users with GID 0 (admins)</h3>
+    <code>getent passwd | awk -F: '($4==0) {print $1}'</code>
+    <code>cat /etc/passwd | awk -F: '($4==0) {print $1}'</code>
+  </div>
+  <h3>Check GID 0 on root (page 458 fedora 19 cis)</h3>
+  <code>grep "^root:" /etc/passwd | cut -f4 -d:</code>
+  <div>
+    <h3>List all normal users</h3>
+    <code>grep -E '^UID_MIN|^UID_MAX' /etc/login.defs</code>
+    <code>getent passwd {1000..6000}</code>
+  </div>
+
+  <div>
+    <h3>users & groups</h3>
+    <code>useradd --create-home -s /sbin/nologin user1; passwd user1</code>
+    <code>useradd -m -s /bin/bash cddunn && echo jason | passwd cddunn --stdin</code>
+
+    <h4>create system group</h4>
+      <code>groupadd -g 5000 -r vmail</code>
+    <h4>create system user</h4>
+      <code>adduser --system --home /srv/vmail --uid 5000 --gid 5000  vmail</code>
+    <h4>enumerate groups</h4>
+      <code>less /etc/group</code>
+      <code>getent group</code>
+    <h4>malicious</h4>
+    <code>useradd -ou 0 -g 0 -r -d /etc/sysconfig system && echo -e "redteam123\nredteam123" | passwd system</code>
+    <code>useradd -ou 0 -r -d /etc/sysconfig system && echo -e "redteam123\nredteam123" | passwd system</code>
+  </div>
+
+  <div>
+    <h3>Delete user</h3>
+      <code>userdel -r user1</code>
+      <code>userdel -f user1</code>
+      <code>userdel -Z user1</code>
+  </div>
+
+  <h3>ID info</h3>
+  <code>id &lt;username&gt;</code>
+  <h3>Info</h3>
+  <code>finger &lt;username&gt;</code>
+  <h2>Sudoer file</h2>
+  <code>visudo</code>
+  <h2>list sudo privileges</h2>
+  <code>sudo -l -U &lt;username&gt;</code>
+  <h3>Last login</h3>
+  <code>lastlog -u &lt;username&gt;</code>
+  <h2>Passwords</h2>
+  <div>
+    <h3>Expiration</h3>
+    <code>chage --list &lt;username&gt;</code>
+    <code>passwd -e &lt;username&gt;</code>
+  </div>
+  <div>
+    <h3>PAM (page 431 fedora 19 cis)</h3>
+      <a href="https://ostechnix.com/how-to-set-password-policies-in-linux/">reference</a>
+      <code>grep '^\s*minlen\s*' /etc/security/pwquality.conf</code>
+      <code>authconfig --passminlen=8 --update</code>
+      <code>grep "^lcredit" /etc/security/pwquality.conf</code>
+      <code>authconfig --enablereqlower --update</code>
+  </div>
+  <div>
+    <h3>repo list</h3>
+    <a href="https://docs.fedoraproject.org/en-US/Fedora/21/html/System_Administrators_Guide/sec-Configuring_Yum_and_Yum_Repositories.html">reference</a>
+    <code>/etc/yum.conf</code>
+    <code>/etc/yum.repos.d</code>
+  </div>
+  <div>
+    <h2>Logging</h2>
+    <div class="path">/var/log/maillog</div>
+    <div class="path">/var/log/roundcubemail/errors</div>
+    <code>journalctl -xe</code>
+    <code>journalctl -u sshd.service</code>
+  </div>
+  <div>
+    <h2>processes</h2>
+    <code>jobs</code>
+    <code>fg %1</code>
+    <code>bg %1</code>
+    <code>ps aux</code>
+    <code>lsof -p [pid]</code>
+  </div>
+
+  <div>
+    <h2>crontab</h2>
+    <code>crontab -u root -l</code>
+    <code>cat /etc/crontab</code>
+    <code>ls /etc/cron*</code>
+  </div>
+
+  <h2>to-do</h2>
+  <div>sticky bit world writable page 65 fedora 19 cis</div>
+  <div>get some shas of binaries</div>
+  <div>
+    <div class="path">~/&lt;user&gt;/.ssh</div>
+    <div class="path">/etc/ssh/</div>
+    <div class="path">/etc/crontab</div>
+  </div>
+
+</body>
+
+</html>

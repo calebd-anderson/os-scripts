@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>MySQL</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>MySQL Setup</h1>
+  <a href="https://stackoverflow.com/questions/13208614/restricting-mysql-connections-from-localhost-to-improve-security">stakoverflow reference</a>
+  <div>
+    <h2>Log</h2>
+    <code>tail /var/log/mariadb/mariadb.log</code>
+  </div>
+  <div>
+    <h2>Config</h2>
+    <code>vi /etc/my.cnf</code>
+    <h3>Restrict</h3>
+    <pre>
+    [mysqld]
+    bind-address=127.0.0.1
+    </pre>
+    <code>systemctl restart mysqld</code>
+    <code>lsof -i :3306</code>
+    <code>mysql -u root -p</code>
+    <pre>MariaDB [()]> SHOW VARIABLES LIKE 'port';</pre>
+  </div>
+</body>
+
+</html>

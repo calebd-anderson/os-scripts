@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Roundcube</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>Roundcube</h1>
+  <div><a href="https://httpd.apache.org/docs/2.4/mod/mod_authz_core.html">mod_authz_core.html (LDAP)</a></div>
+  <div>
+    <h2>triage</h2>
+    <code>wget -O roundcubemail-0.7.tar.gz https://sourceforge.net/projects/roundcubemail/files/roundcubemail/0.7/roundcubemail-0.7.tar.gz/download</code>
+    <code>tar -xzf roundcubemail-0.7.tar.gz roundcubemail-0.7/index.php</code>
+  </div>
+  <h2>httpd</h2>
+  <code>vi +10 /etc/httpd/conf.d/roundcubemail.conf</code>
+  <pre>
+  &lt;Directory /usr/shara/roundcubemail/&gt;
+    &lt;IfModule mod_authz_core.c&gt;
+        # Apache 2.4
+        Require local
+        Require ip 192.168.1.2
+        Require ip 192.168.50.0/24
+        Require all granted
+    &lt;/IfModule&gt;
+    &lt;IfModule !mod_authz_core.c&gt;
+        # Apache 2.2
+        Order Deny,Allow
+        Deny from all
+        Allow from 127.0.0.1
+        Allow from ::1
+    &lt;/IfModule&gt;
+  &lt;/Directory&gt;
+  </pre>
+  <h2>Config</h2>
+  <div>
+    <h3>smtp_auth_type =</h3>
+    <code>vi +248 /etc/roundcubemail/config.inc.php</code>
+  </div>
+  <div>
+    <h3>enable_installer</h3>
+    <code>rm -rf /usr/share/roundcubemail/installer</code>
+    <code>vi +297 /etc/roundcubemail/config.inc.php</code>
+  </div>
+  <div>
+    <h3>product_name</h3>
+    <code>vi +467 /etc/roundcubemail/config.inc.php</code>
+  </div>
+  <h2>to-do</h2>
+  <ul>
+    <li></li>
+  </ul>
+</body>
+
+</html>

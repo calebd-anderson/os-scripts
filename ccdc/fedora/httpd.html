@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>HTTP</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>HTTP Setup</h1>
+  <div>
+    <h2>Listen</h2>
+    <code>vi + 42 /etc/httpd/conf/httpd.conf</code>
+    <div>Listen 0.0.0.0:80</div>
+  </div>
+  <div>
+    <h2>DocumentRoot</h2>
+    <code>vi +119 /etc/httpd/conf/httpd.conf</code>
+    <div>DocumentRoot "/usr/share/roundcubemail"</div>
+  </div>
+  <div>
+    <h2>User/Group</h2>
+    <code>vi +66 /etc/httpd/conf/httpd.conf</code>
+    <div>User apache</div>
+    <div>Group apache</div>
+  </div>
+  <div>
+    <h2>virtual hosts config</h2>
+    <code>httpd -S</code>
+  </div>
+  <div>
+    <h2>syntax check</h2>
+    <code>httpd -t</code>
+  </div>
+  <div>
+    <h2>restart httpd</h2>
+    <code>systemctl restart httpd</code>
+    <code><s>systemctl reload httpd</s></code>
+  </div>
+  <div>
+    <h2>logs</h2>
+    <code>tail /var/log/httpd/access_log</code>
+    <code>tail /var/log/httpd/error_log</code>
+  </div>
+</body>
+
+</html>

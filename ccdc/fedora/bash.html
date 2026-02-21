@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Bash</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Bash</h1>
+    <div>
+        <h2>sed</h2>
+        <h3>replace text</h3>
+            <code>sed -i 's/[THE_OLD_TERM]/[THE_NEW_TERM]/' [TARGETED_FILE]</code>
+    </div>
+    
+    <div>
+        <h2>grep</h2>
+        <h3>case sensitive</h3>
+            <code>grep -i</code>
+        <h3>line numbers</h3>
+            <code>grep -n</code>
+    </div>
+
+    <div>
+        <h2>tar</h2>
+        <h3>create tarball</h3>
+            <code>tar -czvf [outname].tar.gz [directory/file]</code>
+        <h3>extract tarball</h3>
+            <code>tar -xzvf [file].tar.gz</code>
+    </div>
+
+    <div>
+        <h2>base64 enc/dec</h2>
+        <h3>decode</h3>
+        <code>base64 -d FILE</code>
+        <h3>encode</h3>
+        <code>base64 FILE</code>
+    </div>
+
+    <div>
+        <h2>gpg</h2>
+        <code>gpg --gen-key</code>
+        <code>gpg --fingerprint</code>    
+        <code>gpg --list-keys</code>    
+        <code>gpg --encrypt --recipient 'caleb@mail.metro-ccdc.lab' --output fedora_users.csv.enc fedora_users.csv</code>    
+        <code>gpg --decrypt --output fedora_users.csv fedora_users.csv.enc</code>
+    </div>
+
+</body>
+
+</html>

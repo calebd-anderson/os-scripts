@@ -3,3 +3,9 @@ research
 .*
 *~
 url_dir
+
+.gitsecret/keys/random_seed
+!*.secret
+ccdc/fedora/script/root_history_from_start.txt
+ccdc/fedora/script/passlist.txt
+ccdc/fedora/script/create-users.sh

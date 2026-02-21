@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>iptables</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>iptables</h1>
+  <a
+    href="https://crm.vpscheap.net/index.php?rp=/knowledgebase/29/25-Most-Frequently-Used-Linux-IPTables-Rules-Examples.html">reference</a>
+  <div>
+    <h2>Disable <code>firewalld</code>:</h2>
+    <code>systemctl stop firewalld</code>
+    <code>systemctl disable firewalld</code>
+    <code>systemctl mask firewalld</code>
+  </div>
+  <div>
+    <h2>Reset (nuke the rules)</h2>
+    <code>iptables -F</code>
+    <code>iptables -X</code>
+    <code>iptables -P INPUT ACCEPT</code>
+    <code>iptables -P OUTPUT ACCEPT</code>
+    <code>iptables -P FORWARD ACCEPT</code>
+  </div>
+  <h2>Config Files</h2>
+  <div>/etc/sysconfig/iptables-config</div>
+  <div>/proc/net/[...]</div>
+  <div>/etc/protocols</div>
+  <div>
+    <!-- maybe catch all OUTPUT -->
+    <h2>Aggregate (CCDC)</h2>
+    <!-- allow incoming  -->
+    <code>iptables -A INPUT -p tcp -m multiport --dports 25,80,110,143 -m state --state NEW,ESTABLISHED -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp -m multiport --sports 25,80,110,143 -m state --state NEW,ESTABLISHED -j ACCEPT</code>
+    <code>iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</code>
+    <!-- allow outgoing -->
+    <code>iptables -A OUTPUT -p udp -m multiport --dports 53,123,389 -m state --state NEW,ESTABLISHED -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp  -m multiport --dports 389,443 -m state --state NEW,ESTABLISHED -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT</code>
+    <code>iptables -A INPUT -i lo -j ACCEPT</code>
+    <code>iptables -A OUTPUT -o lo -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow SSH - 22/tcp</h2>
+    <code>iptables -A INPUT -p tcp --dport 22 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp --sport 22 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow SMTP (postfix) - 25/tcp (?)</h2>
+    <code>iptables -A INPUT -p tcp --dport 25 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp --sport 25 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow DNS - 53/udp</h2>
+    <code>iptables -A INPUT -p udp --sport 53 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p udp --dport 53 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow HTTP (apache) - 80/tcp</h2>
+    <code>iptables -A INPUT -p tcp --dport 80 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp --sport 80 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow POP3 (dovecot) - 110/tcp</h2>
+    <code>iptables -A INPUT -p tcp --dport 110 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp --sport 110 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow NTP - 123/tcp</h2>
+    <code>iptables -A INPUT -p udp --sport 123 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p udp --dport 123 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow IMAP - 143/tcp</h2>
+    <code>iptables -A INPUT -p tcp --dport 143 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp --sport 143 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>ALLOW LDAP - 389/tcp</h2>
+    <code>iptables -A INPUT -p udp --sport 389 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p udp --dport 389 -j ACCEPT</code>
+    <code>iptables -A INPUT -p tcp --sport 389 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp --dport 389 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow HTTPS (wget) - 443/tcp</h2>
+    <code>iptables -A INPUT -p tcp --sport 443 -j ACCEPT</code>
+    <code>iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow Loopback</h2>
+    <code>iptables -A INPUT -i lo -j ACCEPT</code>
+    <code>iptables -A OUTPUT -o lo -j ACCEPT</code>
+  </div>
+  <div>
+    <h2>Allow established and related back in</h2>
+    <code>iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT</code>
+    <code><s> iptables -I INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT</s></code>
+    <code><s> iptables -I OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT</s></code>
+    <a
+      href=https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands>reference</a>
+  </div>
+  <div>
+    <h2>Allow ICMP Out</h2>
+    <code>iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT</code>
+  </div>
+  <h2>Reject IP</h2>
+  <code>iptables -A INPUT -s &lt;IPADDR&gt; -j REJECT</code>
+  <h2>Show Line Numbers</h2>
+  <code>iptables -L --line-numbers</code>
+  <h2>Delete by Line Number</h2>
+  <code>iptables -D INPUT &lt;n&gt;</code>
+  <h2>Replace by Line Number</h2>
+  <code>iptables -R &lt;chain&gt; &lt;rulenum&gt; &lt;new rule def&gt;</code>
+  <h2>Port Range</h2>
+  <code>iptables -A tableName -p protocol  --match multiport --dports portRange1:PortRange2 -j ACCEPT</code>
+  <div>
+    <h2>List Rules</h2>
+    <code>iptables -S</code>
+    <code>iptables -L -v -n</code>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Dovecot</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Dovecot Setup</h1>
+  <a href="https://www.server-world.info/en/note?os=Fedora_21&p=mail&f=2">server-world Fedora 21</a>
+  
+  <h2>standard ports</h2>
+  <table>
+    <tr>
+        <th>port</th>
+        <th>service</th>
+    </tr>
+    <tr>
+        <td>110</td>
+        <td>pop3</td>
+    </tr>
+    <tr>
+        <td>995</td>
+        <td>pop3s</td>
+    </tr>
+    <tr>
+        <td>143</td>
+        <td>imap</td>
+    </tr>
+    <tr>
+        <td>993</td>
+        <td>impaps</td>
+    </tr>
+  </table>
+
+  <div>
+    <h2>doveconf</h2>
+    <h3>in config files</h3>
+      <code>doveconf</code>
+    <h3>not in config files</h3>
+      <code>doveconf -n</code>
+    <h3>all including defaults</h3>
+      <code>doveconf -N</code>
+  </div>
+  
+  <div>
+    <h2>dovecot</h2>
+      <code>dovecot --build-options</code>
+      <code>dovecot reload</code>
+  </div>
+
+  <div>
+    <h2>doveadm</h2>
+    <code>doveadm auth test [user]</code>
+    <code>doveadm user [user]</code>
+    <code>doveadm mailbox status -u cddunn@metro-ccdc.lab all '*'</code>
+    <code>doveadm mailbox status -u cddunn@metro-ccdc.lab -t all '*'</code>
+    <code>doveadm search -u peer@example.com mailbox INBOX subject Postfix</code>
+  </div>
+
+  <h2>config</h2>
+  <div>
+    <h3>protocols</h3>
+    <code>vi +24 /etc/dovecot/dovecot.conf</code>
+    <code>protocols = imap pop3 lmtp</code>
+  </div>
+  <div>
+    <h2>logging</h2>
+    <h4>auth_verbose = yes</h4>
+    <code>vi +24 /etc/dovecot/conf.d/10-logging.conf</code>
+    <h4>auth_debug = yes</h4>
+    <code>vi +34 /etc/dovecot/conf.d/10-logging.conf</code>
+    <h4>mail_debug = yes</h4>
+    <code>vi +42 /etc/dovecot/conf.d/10-logging.conf</code>
+    <h4>verbose_proctitle = yes</h4>
+    <code>vi +61 /etc/dovecot/dovecot.conf</code>
+    <code>doveadm log find</code>
+    <code>doveadm log errors</code>
+  </div>
+  <div>
+    <h2>/etc/dovecot/conf.d/10-master.conf</h2>
+    <code>vi +96 /etc/dovecot/conf.d/10-master.conf</code>
+    <h3>variables</h3>
+    <pre>
+    #default_process_limit = 100
+    #default_client_limit = 1000
+
+    # Default VSZ (virtual memory size) limit for service processes. This is mainly
+    # intended to catch and kill processes that leak memory before they eat up
+    # everything.
+    #default_vsz_limit = 256M
+
+    # Login user is internally used by login processes. This is the most untrusted
+    # user in Dovecot system. It shouldn't have access to anything at all.
+    #default_login_user = dovenull
+
+    # Internal user is used by unprivileged processes. It should be separate from
+    # login user, so that login processes can't disturb other processes.
+    #default_internal_user = dovecot
+    </pre>
+
+    <h3>imap-login</h3>
+    <pre>
+    service imap-login {
+      inet_listener imap {
+        #port = 143
+      }
+      inet_listener imaps {
+        port = 0
+        #port = 993
+        #ssl = yes
+      }
+    
+      # Number of connections to handle before starting a new process. Typically
+      # the only useful values are 0 (unlimited) or 1. 1 is more secure, but 0
+      # is faster. &lt;doc/wiki/LoginProcess.txt&gt;
+      #service_count = 1
+    
+      # Number of processes to always keep waiting for more connections.
+      #process_min_avail = 0
+    
+      # If you set service_count=0, you probably need to grow this.
+      #vsz_limit = $default_vsz_limit
+    }      
+    </pre>
+
+    <h3>pop3-login</h3>
+    <pre>
+    service pop3-login {
+      inet_listener pop3 {
+        #port = 110
+      }
+      inet_listener pop3s {
+        port = 0
+        #port = 995
+        #ssl = yes
+      }
+    }
+    </pre>
+
+    <h3>lmtp</h3>
+    <pre>
+    service lmtp {
+      unix_listener lmtp {
+        #mode = 0666
+      }
+    
+      # Create inet listener only if you can't use the above UNIX socket
+      inet_listener lmtp {
+        <em># Avoid making LMTP visible for the entire internet</em>
+        address = 127.0.0.1
+        port = 24
+      }
+    }      
+    </pre>
+
+    <h3>imap</h3>
+    <pre>
+    service imap {
+      # Most of the memory goes to mmap()ing files. You may need to increase this
+      # limit if you have huge mailboxes.
+      #vsz_limit = $default_vsz_limit
+    
+      # Max. number of IMAP processes (connections)
+      #process_limit = 1024
+    }      
+    </pre>
+
+    <h3>pop3</h3>
+    <pre>
+    service pop3 {
+      # Max. number of POP3 processes (connections)
+      #process_limit = 1024
+    }      
+    </pre>
+
+    <h3>auth</h3>
+    <pre>
+    service auth {
+      # auth_socket_path points to this userdb socket by default. It's typically
+      # used by dovecot-lda, doveadm, possibly imap process, etc. Users that have
+      # full permissions to this socket are able to get a list of all usernames and
+      # get the results of everyone's userdb lookups.
+      #
+      # The default 0666 mode allows anyone to connect to the socket, but the
+      # userdb lookups will succeed only if the userdb returns an "uid" field that
+      # matches the caller process's UID. Also if caller's uid or gid matches the
+      # socket's uid or gid the lookup succeeds. Anything else causes a failure.
+      #
+      # To give the caller full permissions to lookup all users, set the mode to
+      # something else than 0666 and Dovecot lets the kernel enforce the
+      # permissions (e.g. 0777 allows everyone full permissions).
+      unix_listener auth-userdb {
+        #mode = 0666
+        mode = 0600
+        user = vmail
+        #group = vmail
+      }
+      user = dovecot
+    
+      # Postfix smtp-auth
+      unix_listener /var/spool/postfix/private/auth {
+        mode = 0666
+        user = postfix
+        group = postfix
+      }
+    
+      # Auth process is run as this user.
+      #user = $default_internal_user
+    }      
+    </pre>
+
+    <h3>auth-worker</h3>
+    <pre>
+    service auth-worker {
+      # Auth worker process is run as root by default, so that it can access
+      # /etc/shadow. If this isn't necessary, the user should be changed to
+      # $default_internal_user.
+      #user = root
+    }      
+    </pre>
+
+    <h3>dict</h3>
+    <pre>
+    service dict {
+      # If dict proxy is used, mail processes should have access to its socket.
+      # For example: mode=0660, group=vmail and global mail_access_groups=vmail
+      unix_listener dict {
+        #mode = 0600
+        #user =
+        #group =
+      }
+    }      
+    </pre>
+
+  </div>
+  <div>
+    <h2>master user</h2>
+    <code>vi /etc/dovecot/conf.d/auth-master.conf.ext</code>
+    <code>vi /etc/dovecot/conf.d/10-auth.conf</code>
+    <div>+ !include auth-master.conf.ext</div>
+    <div>- #!include auth-master.conf.ext</div>
+    <code>vi /etc/dovecot/master-users</code>
+    <div>adminuser:{PLAIN}secretsecret::::::</div>
+  </div>
+</body>
+</html>

