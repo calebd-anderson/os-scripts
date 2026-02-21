@@ -20,7 +20,7 @@ search_base = cn=Users,dc=metro-ccdc,dc=lab
 version = 3
 bind = yes
 bind_dn = cn=caleb,cn=Users,dc=metro-ccdc,dc=lab
-bind_pw = ***REMOVED***
+bind_pw = changeME!
 query_filter = cn=%s
 result_attribute = cn
 
