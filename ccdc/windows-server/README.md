@@ -1,22 +1,11 @@
 
 # Windows Server Hardening
-Windows Server scripts inspired by research from my time on the Metropolitan State University CCDC team in 2020.
-### This script served as a study of Windows Server R2 security hardening.  
+Windows Server PowerShell scripts inspired by my research on the Metropolitan State University CCDC team in 2020. This script was a study of Windows Server 2008 R2 security hardening.
 
-**Disclaimer**: This script was built to be run in a VM for testing and educational purposes. It was not built for a production environment nor for malicious purposes.  
+The [hardening_exe.ps1](./hardening_exe.ps1) PowerShell script is designed to be compiled into a binary executable with [PS2EXE](http://web.archive.org/web/20200318065516/https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5), which allows the script to work even with PowerShell completely disabled on the target machine.
+  - 🔥 Use the executable from CLI and pass function names (below) as arguments/switches.
 
-### There are two versions:  
-- A raw PowerShell script which is ran normally in PowerShell and is likely out of date:  
-  - hardening.ps1  
-
-- A PowerShell script that is designed to be compiled into a binary executable (which allows PowerShell to be disabled completely):
-  - hardening_exe.ps1  
-    - Compile using PS2EXE found at this URL  
-    https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5  
-    - 🔥 Use the executable from CLI and pass function names (below) as arguments/switches.
-
-### Microsoft Technet Scripts Retired
-[Announcement](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)  
+### [Microsoft Technet Scripts Retired](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)
 WebArchive Hack [credit](https://eskonr.com/2021/02/did-you-miss-to-download-your-samples-from-technet-gallery-here-is-how-you-can-do-it/):
 `http://web.archive.org/web/20200318065516/<TechnetURL>`  
 
