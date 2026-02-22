@@ -1,21 +1,19 @@
 # CCDC
+- [Fedora Linux Server Hardening](./fedora)
+- [Windows Server Hardening](./windows-server)
 
-The [CIS Benchmarks](https://downloads.cisecurity.org/#/) are a great place to begin researching operating system configuration and hardeing.
+> [!IMPORTANT]
+> The above software was not designed for production environments. These scripts were part of research projects and were built for educational purposes and testing scenarios only.
 
-> [!TIP]  
-> [Amazon - Blue Team Field Manual (BTFM)](https://a.co/d/01PzgV8h)
+> [!TIP]
+> - The [CIS Benchmarks](https://downloads.cisecurity.org/#/) are a great place to begin researching operating system configuration and hardeing.  
+> - [Amazon - Blue Team Field Manual (BTFM)](https://a.co/d/01PzgV8h)
 
-> [!IMPORTANT]  
-> The following software was not designed for production environments. These scripts were part of research projects and were built for educational purposes and testing scenarios only.
-
-## [Fedora Linux Server Hardening](./fedora)
-## [Windows Server Hardening](./windows-server)
-
-### [Microsoft Technet Retired](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)
+## [Microsoft Technet Retired](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)
 WebArchive Hack [credit](https://eskonr.com/2021/02/did-you-miss-to-download-your-samples-from-technet-gallery-here-is-how-you-can-do-it/):
 `http://web.archive.org/web/20200318065516/<TechnetURL>`  
 
-New Scripts Locations:  
+Updated Scripts Locations:  
 https://github.com/MicrosoftArchive  
 https://learn.microsoft.com/en-us/samples/browse/  
 https://www.powershellgallery.com/  
@@ -24,7 +22,7 @@ Community Scripts:
 https://rlmueller.net/Gallery.htm  
 https://github.com/MScholtes/TechNet-Gallery
 
-### Resources:  
+## Resources
 - [GitHub - Awesome Windows Domain Hardening](https://github.com/PaulSec/awesome-windows-domain-hardening)
 - [CodeProject - Data-encryption-with-DPAPI](https://www.codeproject.com/articles/Data-encryption-with-DPAPI)
 - [TechNet - PowerShell Encryption Examples](http://web.archive.org/web/20200318073412/https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87)
