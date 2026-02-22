@@ -5,26 +5,8 @@ These PowerShell scripts were a study of Windows Server 2008 R2 security harding
 The [hardening_exe.ps1](./hardening_exe.ps1) PowerShell script is designed to be compiled into a binary executable with [PS2EXE](http://web.archive.org/web/20200318065516/https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5), which allows the script to work even if PowerShell is completely disabled on the target machine.
   - 🔥 Use the executable from CLI and pass function names (below) as arguments/switches.
 
-### [Microsoft Technet Scripts Retired](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)
-WebArchive Hack [credit](https://eskonr.com/2021/02/did-you-miss-to-download-your-samples-from-technet-gallery-here-is-how-you-can-do-it/):
-`http://web.archive.org/web/20200318065516/<TechnetURL>`  
+## Documentation
 
-New Scripts Locations:  
-https://github.com/MicrosoftArchive  
-https://learn.microsoft.com/en-us/samples/browse/  
-https://www.powershellgallery.com/  
-
-Community Scripts:  
-https://rlmueller.net/Gallery.htm  
-https://github.com/MScholtes/TechNet-Gallery
-
-### Script Goals/To-Do:  
-Disable unecessary services  
-KB research and implementation  
-AD users  
-malware stuff  
-group policy efficiency  
-  
 ### Function Descriptions:  
 #### ------- Enumerate (reads the system): -------  
 **startups** (enumerate startup programs)  
@@ -80,17 +62,16 @@ group policy efficiency
 **firewallStatus**  
 **configNTP**  
 **firewallRules** (opt. 1) - Open RDP for an IP address  
-  
-## scrapes and sets ad users
+
+### Script Goals/To-Do:  
+- Disable unecessary services  
+- KB research and implementation  
+- AD users  
+- malware stuff  
+- group policy efficiency  
+
+## [Passwords](./passwords/) - enumerates and sets AD users passwords
 `ad_users_hashtable.xml` contains all user SamAccountNames (key) and Names (value).  
 `getalladusers.ps1` scrapes all ad users and saves to .xml  
 `passwords.ps1` for managing all the ad user passwords  
 `setalladusers.ps1` loads all users from .xml so as to add them into AD
-
-### Other credit:  
-https://github.com/PaulSec/awesome-windows-domain-hardening    
-https://www.codeproject.com/articles/2318/data-encryption-with-dpapi    
-https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87    
-https://gallery.technet.microsoft.com/Reset-the-krbtgt-account-581a9e51    
-https://support.microsoft.com/en-us/help/4023262/how-to-verify-that-ms17-010-is-installed    
-https://www.amazon.com/Blue-Team-Field-Manual-BTFM/dp/154101636X/ref=sr_1_3?dchild=1&hvadid=78134097399686&hvbmt=be&hvdev=c&hvqmt=e&keywords=blue+team+handbook&qid=1607392571&sr=8-3&tag=mh0b-20
