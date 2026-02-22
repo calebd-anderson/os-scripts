@@ -3,7 +3,9 @@
 These PowerShell scripts were a study of Windows Server 2008 R2 security harding during my time on the Metropolitan State University CCDC team in 2020.
 
 The [hardening_exe.ps1](./hardening_exe.ps1) PowerShell script is designed to be compiled into a binary executable with [PS2EXE](http://web.archive.org/web/20200318065516/https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5), which allows the script to work even if PowerShell is completely disabled on the target machine.
-  - 🔥 Use the executable from CLI and pass function names (below) as arguments/switches.
+  - 🔥 Use the compiled executable from CLI and pass function names (below) as arguments/switches.
+
+[Passwords](./passwords) was one of the more interesting projects, researching AD user enumeration and secure batch password changes.
 
 ## Documentation
 
@@ -69,9 +71,3 @@ The [hardening_exe.ps1](./hardening_exe.ps1) PowerShell script is designed to be
 - AD users  
 - malware stuff  
 - group policy efficiency  
-
-## [Passwords](./passwords/) - enumerates and sets AD users passwords
-`ad_users_hashtable.xml` contains all user SamAccountNames (key) and Names (value).  
-`getalladusers.ps1` scrapes all ad users and saves to .xml  
-`passwords.ps1` for managing all the ad user passwords  
-`setalladusers.ps1` loads all users from .xml so as to add them into AD
