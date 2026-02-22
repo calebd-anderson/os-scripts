@@ -1,28 +1,28 @@
-# CCDC
-- [Fedora Linux Server Hardening](./fedora)
-- [Windows Server Hardening](./windows-server)
+# CCDC Server Hardening Research
+- [Fedora Linux Server](./fedora) - Web Mail Hardening
+- [Windows Server](./windows-server) - Active Directory (AD) Hardening
 
 > [!IMPORTANT]
 > The above software was not designed for production environments. These scripts were part of research projects and were built for educational purposes and testing scenarios only.
 
-> [!TIP]
-> - The [CIS Benchmarks](https://downloads.cisecurity.org/#/) are a great place to begin researching operating system configuration and hardeing.  
-> - [Amazon - Blue Team Field Manual (BTFM)](https://a.co/d/01PzgV8h)
+## Resources
+- The [CIS Benchmarks](https://downloads.cisecurity.org/#/) are a great place to begin researching operating system configuration and hardeing.  
+- [Amazon - Blue Team Field Manual (BTFM)](https://a.co/d/01PzgV8h)
 
-## [Microsoft Technet Retired](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)
-WebArchive Hack [credit](https://eskonr.com/2021/02/did-you-miss-to-download-your-samples-from-technet-gallery-here-is-how-you-can-do-it/):
+### [Microsoft Technet Retired](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)
+[Wayback Machine hack](https://eskonr.com/2021/02/did-you-miss-to-download-your-samples-from-technet-gallery-here-is-how-you-can-do-it/):
 `http://web.archive.org/web/20200318065516/<TechnetURL>`  
 
-Updated scripts locations:  
-https://github.com/MicrosoftArchive  
-https://learn.microsoft.com/en-us/samples/browse/  
-https://www.powershellgallery.com/  
+#### Updated scripts locations:  
+- [GitHub - MicrosoftArchive](https://github.com/MicrosoftArchive)
+- [Microsoft - Sample Code from Microsoft Developer Tools ](https://learn.microsoft.com/en-us/samples/browse/)
+- [PowerShell Gallery](https://www.powershellgallery.com/)
 
-Community scripts:  
-https://rlmueller.net/Gallery.htm  
-https://github.com/MScholtes/TechNet-Gallery
+#### Other community scripts:
+- https://rlmueller.net/Gallery.htm
+- https://github.com/MScholtes/TechNet-Gallery
 
-## Resources
+## More resources
 - [GitHub - Awesome Windows Domain Hardening](https://github.com/PaulSec/awesome-windows-domain-hardening)
 - [CodeProject - Data-encryption-with-DPAPI](https://www.codeproject.com/articles/Data-encryption-with-DPAPI)
 - [TechNet - PowerShell Encryption Examples](http://web.archive.org/web/20200318073412/https://gallery.technet.microsoft.com/scriptcenter/PowerShell-Encryption-45709b87)
