@@ -5,7 +5,7 @@ These PowerShell scripts were a study of Windows Server 2008 R2 security harding
 The [hardening_exe.ps1](./hardening_exe.ps1) PowerShell script is designed to be compiled into a binary executable with [PS2EXE](http://web.archive.org/web/20200318065516/https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5), which allows the script to work even if PowerShell is completely disabled on the target machine.
   - 🔥 Use the compiled executable from CLI and pass function names (below) as arguments/switches.
 
-[Passwords](./passwords) was one of the more interesting projects, researching AD user enumeration and secure batch password changes.
+[Passwords](./passwords) was one of the more interesting projects, researching AD user enumeration and secure batch password changes. PowerShell [Data Protection API (DPAPI) Encryption](https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/using-secrets-in-automation?view=ps-modules) is explored.
 
 ## Documentation
 

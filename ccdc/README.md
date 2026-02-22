@@ -13,12 +13,12 @@
 WebArchive Hack [credit](https://eskonr.com/2021/02/did-you-miss-to-download-your-samples-from-technet-gallery-here-is-how-you-can-do-it/):
 `http://web.archive.org/web/20200318065516/<TechnetURL>`  
 
-Updated Scripts Locations:  
+Updated scripts locations:  
 https://github.com/MicrosoftArchive  
 https://learn.microsoft.com/en-us/samples/browse/  
 https://www.powershellgallery.com/  
 
-Community Scripts:  
+Community scripts:  
 https://rlmueller.net/Gallery.htm  
 https://github.com/MScholtes/TechNet-Gallery
 
