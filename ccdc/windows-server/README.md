@@ -1,8 +1,8 @@
 
 # Windows Server Hardening
-Windows Server PowerShell scripts inspired by my research on the Metropolitan State University CCDC team in 2020. This script was a study of Windows Server 2008 R2 security hardening.
+These PowerShell scripts were a study of Windows Server 2008 R2 security harding during my time on the Metropolitan State University CCDC team in 2020.
 
-The [hardening_exe.ps1](./hardening_exe.ps1) PowerShell script is designed to be compiled into a binary executable with [PS2EXE](http://web.archive.org/web/20200318065516/https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5), which allows the script to work even with PowerShell completely disabled on the target machine.
+The [hardening_exe.ps1](./hardening_exe.ps1) PowerShell script is designed to be compiled into a binary executable with [PS2EXE](http://web.archive.org/web/20200318065516/https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5), which allows the script to work even if PowerShell is completely disabled on the target machine.
   - 🔥 Use the executable from CLI and pass function names (below) as arguments/switches.
 
 ### [Microsoft Technet Scripts Retired](https://learn.microsoft.com/en-us/archive/teamblog/technet-gallery-retirement)
