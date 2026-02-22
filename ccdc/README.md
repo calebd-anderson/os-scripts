@@ -1,4 +1,4 @@
-# CCDC Server Hardening Research
+# CCDC - Server Hardening Research
 - [Fedora Linux Server](./fedora) - Web Mail Hardening
 - [Windows Server](./windows-server) - Active Directory (AD) Hardening
 
